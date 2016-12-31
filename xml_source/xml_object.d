@@ -372,6 +372,8 @@ enum XmlEncodeMode
     none // Text should be left as-is (no encode or decode needed)
 }
 
+enum XmlBufferDefaultCapacity = 1000;
+
 class XmlBuffer(S, bool checkEncoded) : XmlObject!S
 {
 public:
@@ -394,7 +396,7 @@ protected:
 public:
     XmlDecodeMode decodeMode = XmlDecodeMode.strict;
 
-    this(size_t aCapacity = 1000)
+    this(size_t aCapacity = XmlBufferDefaultCapacity)
     {
         _buffer.reserve(aCapacity);
     }
@@ -905,446 +907,109 @@ public:
     alias data this;
 }
 
-abstract class XmlWriter(S) : XmlObject!S
+struct XmlString(S)
+if (isXmlString!S)
 {
-protected:
-    size_t _nodeLevel;
-    size_t _onlyOneNodeText;
-    bool _prettyOutput;
-
-    pragma(inline, true)
-    final S indentString()
-    {
-        return stringOfChar!S(' ', _nodeLevel << 1);
-    }
+private:
+    S data;
+    XmlEncodeMode mode;
 
 public:
-    final void decOnlyOneNodeText()
+    this(S aStr)
     {
-        _onlyOneNodeText--;
+        this(aStr, XmlEncodeMode.check);
     }
 
-    final void decNodeLevel()
+    this(S aStr, XmlEncodeMode aMode)
     {
-        _nodeLevel--;
+        data = aStr;
+        mode = aMode;
     }
 
-    final void incOnlyOneNodeText()
+    auto ref opAssign(S aValue)
     {
-        _onlyOneNodeText++;
-    }
-
-    final void incNodeLevel()
-    {
-        _nodeLevel++;
-    }
-
-    abstract void put(C c);
-
-    abstract void put(const(C)[] s);
-
-    static if (!is(C == dchar))
-    {
-        final void put(dchar c)
-        {
-            import std.encoding : encode;
-
-            C[6] b;
-            size_t n = encode(c, b);
-            put(b[0 .. n]);
-        }
-    }
-
-    //pragma(inline, true)
-    final XmlWriter!S putLF()
-    {
-        version (none)
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("putLF%d.%d()", _nodeLevel, _onlyOneNodeText);
-        }
-
-        put('\n');
+        data = aValue;
+        if (mode != XmlEncodeMode.none)
+            mode = XmlEncodeMode.check;
 
         return this;
     }
 
-    pragma(inline, true)
-    final void putIndent()
+    S opCall()
     {
-        put(indentString());
+        return data;
     }
 
-    final void putWithPreSpace(const(C)[] s)
+    S decodeText(XmlBuffer!(S, false) buffer, in XmlEntityTable!S entityTable)
     {
-        put(' ');
-        put(s);
+        assert(buffer !is null);
+        assert(entityTable !is null);
+        assert(needDecode());
+
+        return buffer.decode(data, entityTable);
     }
 
-    final void putWithQuote(const(C)[] s)
+    S encodeText(XmlBuffer!(S, false) buffer)
     {
-        put('"');
-        put(s);
-        put('"');
+        assert(buffer !is null);
+        assert(needEncode());
+        
+        return buffer.encode(data);
     }
 
-    final void putAttribute(const(C)[] name, const(C)[] value)
+    bool needDecode()
     {
-        put(name);
-        put("=");
-        putWithQuote(value);
+        return (data.length > 0 && (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check));
     }
 
-    final void putComment(const(C)[] text)
+    bool needEncode()
     {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!--");
-        if (text.length > 0 && !isSpace(text.front))
-            put(' ');
-        put(text);
-        if (text.length > 0 && !isSpace(text.back))
-            put(' ');
-        put("-->");
-
-        if (prettyOutput)
-            putLF();
+        return (data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check));
     }
 
-    final void putCDataSection(const(C)[] data)
+    S toString()
     {
-        if (prettyOutput)
-            putIndent();
-
-        put("<![CDATA[");
-        put(data);
-        put("]]>");
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putDocumentTypeBegin(const(C)[] name, const(C)[] publicOrSystem,
-        const(C)[] publicId, const(C)[] text, Flag!"hasChild" hasChild)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!DOCTYPE ");
-        put(name);
-
-        if (publicOrSystem.length > 0)
-        {
-            putWithPreSpace(publicOrSystem);
-
-            if (publicId.length > 0 && publicOrSystem == XmlConst.public_)
-            {
-                put(' ');
-                putWithQuote(publicId);
-            }
-        }
-
-        if (text.length > 0)
-        {
-            put(' ');
-            putWithQuote(text);
-        }
-
-        if (hasChild)
-        {
-            put(" [");
-            if (prettyOutput)
-                putLF();
-        }
-    }
-
-    final void putDocumentTypeEnd(Flag!"hasChild" hasChild)
-    {
-        if (hasChild)
-            put("]>");
-        else
-            put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putDocumentTypeAttributeListBegin(const(C)[] name)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!ATTLIST ");
-        put(name);
-        put(' ');
-    }
-
-    final void putDocumentTypeAttributeListEnd()
-    {
-        put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putDocumentTypeElementBegin(const(C)[] name)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!ELEMENT ");
-        put(name);
-        put(' ');
-    }
-
-    final void putDocumentTypeElementEnd()
-    {
-        put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putElementEmpty(const(C)[] name)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put('<');
-        put(name);
-        put("/>");
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putElementEnd(const(C)[] name)
-    {
-        if (prettyOutput && !onlyOneNodeText)
-            putIndent();
-
-        put("</");
-        put(name);
-        put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putElementNameBegin(const(C)[] name, Flag!"hasAttribute" hasAttribute)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put('<');
-        put(name);
-        if (hasAttribute)
-            put(' ');
-        else
-        {
-            put('>');
-
-            if (prettyOutput && !onlyOneNodeText)
-                putLF();
-        }
-    }
-
-    final void putElementNameEnd(const(C)[] name, Flag!"hasChild" hasChild)
-    {
-        if (hasChild)
-            put('>');
-        else
-        {
-            if (name.front == '?')
-                put("?>");
-            else
-                put("/>");
-        }
-
-        if (prettyOutput && !onlyOneNodeText)
-            putLF();
-    }
-
-    final void putEntityGeneral(const(C)[] name, const(C)[] publicOrSystem,
-        const(C)[] publicId, const(C)[] notationName, const(C)[] text)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!ENTITY ");
-        put(name);
-
-        if (publicOrSystem.length > 0)
-        {
-            putWithPreSpace(publicOrSystem);
-
-            if (publicId.length != 0 && publicOrSystem == XmlConst.public_)
-            {
-                put(' ');
-                putWithQuote(publicId);
-            }
-        }
-
-        if (notationName.length > 0)
-            putWithPreSpace(notationName);
-
-        if (text.length > 0)
-        {
-            if (notationName == XmlConst.nData)
-                putWithPreSpace(text);
-            else
-            {
-                put(' ');
-                putWithQuote(text);
-            }
-        }
-
-        put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putEntityReference(const(C)[] name, const(C)[] publicOrSystem,
-        const(C)[] publicId, const(C)[] notationName, const(C)[] text)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!ENTITY % ");
-        put(name);
-
-        if (publicOrSystem.length > 0)
-        {
-            putWithPreSpace(publicOrSystem);
-
-            if (publicId.length != 0 && publicOrSystem == XmlConst.public_)
-            {
-                put(' ');
-                putWithQuote(publicId);
-            }
-        }
-
-        if (notationName.length > 0)
-            putWithPreSpace(notationName);
-
-        if (text.length > 0)
-        {
-            if (notationName == XmlConst.nData)
-                putWithPreSpace(text);
-            else
-            {
-                put(' ');
-                putWithQuote(text);
-            }
-        }
-
-        put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putNotation(const(C)[] name, const(C)[] publicOrSystem,
-        const(C)[] publicId, const(C)[] text)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<!NOTATION ");
-        put(name);
-
-        if (publicOrSystem.length > 0)
-        {
-            putWithPreSpace(publicOrSystem);
-
-            if (publicId.length > 0 && publicOrSystem == XmlConst.public_)
-            {
-                put(' ');
-                putWithQuote(publicId);
-            }
-        }
-
-        if (text.length > 0)
-        {
-            put(' ');
-            putWithQuote(text);
-        }
-
-        put('>');
-
-        if (prettyOutput)
-            putLF();
-    }
-
-    final void putProcessingInstruction(const(C)[] target, const(C)[] text)
-    {
-        if (prettyOutput)
-            putIndent();
-
-        put("<?");
-        put(target);
-        putWithPreSpace(text);
-        put("?>");
-
-        if (prettyOutput)
-            putLF();
+        return data;
     }
 
 @property:
-    final bool onlyOneNodeText() const
+    size_t length()
     {
-        return (_onlyOneNodeText != 0);
+        return data.length;
     }
 
-    final int nodeLevel() const
+    S value()
     {
-        return _nodeLevel;
+        if (needDecode())
+        {
+            auto buffer = new XmlBuffer!(S, false)(data.length);
+            data = buffer.decode(data);
+            mode = buffer.decodeOrEncodeResultMode;
+        }
+        return data;
     }
 
-    final bool prettyOutput() const
+    S value(S newText)
     {
-        return _prettyOutput;
+        data = newText;
+        if (mode != XmlEncodeMode.none)
+            mode = XmlEncodeMode.check;
+
+        return newText;
     }
 }
 
-class XmlStringWriter(S) : XmlWriter!S
+pragma(inline, true)
+XmlString!S toXmlString(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
-protected:
-    XmlBuffer!(S, false) buffer;
+    return XmlString!S(buffer.toString(), buffer.decodeOrEncodeResultMode);
+}
 
-public:
-    this(Flag!"PrettyOutput" aPrettyOutput, size_t aCapacity = 64000)
-    {
-        this(aPrettyOutput, new XmlBuffer!(S, false)(aCapacity));
-    }
-
-    this(Flag!"PrettyOutput" aPrettyOutput, XmlBuffer!(S, false) aBuffer)
-    {
-        _prettyOutput = aPrettyOutput;
-        buffer = aBuffer;
-    }
-
-    final override void put(C c)
-    {
-        buffer.put(c);
-    }
-
-    final override void put(const(C)[] s)
-    {
-        version (none)
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("put%d.%d('%s')", _nodeLevel, _onlyOneNodeText, s);
-        }
-
-        buffer.put(s);
-    }
+pragma(inline, true)
+XmlString!S toXmlStringAndClear(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
+{
+    XmlEncodeMode m = buffer.decodeOrEncodeResultMode;
+    return XmlString!S(buffer.toStringAndClear(), m);
 }
 
 unittest // XmlEntityTable.defaultEntityTable

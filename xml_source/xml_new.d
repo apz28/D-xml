@@ -17,6 +17,8 @@ import pham.xml_msg;
 public import pham.xml_exception;
 import pham.xml_util;
 import pham.xml_object;
+import pham.xml_reader;
+import pham.xml_writer;
 import pham.xml_parser;
 
 package enum defaultXmlLevels = 200;
@@ -659,7 +661,7 @@ public:
 
     final S outerXml(Flag!"PrettyOutput" aPrettyOutput = No.PrettyOutput)
     {
-        auto buffer = selfOwnerDocument.acquireBuffer(this, -1);
+        auto buffer = selfOwnerDocument.acquireBuffer(nodeType);
         write(new XmlStringWriter!S(aPrettyOutput, buffer));
         return selfOwnerDocument.getAndReleaseBuffer(buffer);
     }
@@ -870,7 +872,7 @@ public:
             return first.innerText;
         else
         {
-            auto buffer = selfOwnerDocument.acquireBuffer(this, -1);
+            auto buffer = selfOwnerDocument.acquireBuffer(nodeType);
             appendChildText(new XmlStringWriter!S(No.PrettyOutput, buffer));
             return selfOwnerDocument.getAndReleaseBuffer(buffer);
         }
@@ -1611,20 +1613,19 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putAttribute(name, _text.encodeText(ownerDocument));
+        aWriter.putAttribute(name, ownerDocument.getEncodeText(_text));
         return aWriter;
     }
 
 @property:
     final override S innerText()
     {
-        return _text.value;
+        return value;
     }
 
     final override S innerText(S newValue)
     {
-        _text.value = newValue;
-        return newValue;
+        return value(newValue);
     }
 
     final override size_t level()
@@ -1648,12 +1649,12 @@ public:
 
     final override S value()
     {
-        return _text.value;
+        return ownerDocument.getDecodeText(_text);
     }
 
     final override S value(S newValue)
     {
-        _text.value = newValue;
+        _text = newValue;
         return newValue;
     }
 }
@@ -1714,7 +1715,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putComment(_text.encodeText(ownerDocument));
+        aWriter.putComment(ownerDocument.getEncodeText(_text));
         return aWriter;
     }
 
@@ -1764,7 +1765,7 @@ protected:
     {
         if (_innerText.length == 0)
         {
-            auto buffer = selfOwnerDocument.acquireBuffer(this, -1);
+            auto buffer = selfOwnerDocument.acquireBuffer(nodeType);
             auto writer = new XmlStringWriter!S(No.PrettyOutput, buffer);
 
             S s;
@@ -1944,21 +1945,13 @@ protected:
     int _loading;
 
     pragma(inline, true)
-    final XmlBuffer!(S, false) acquireBuffer(XmlNode!S from, int aCapacity)
+    final XmlBuffer!(S, false) acquireBuffer(XmlNodeType fromNodeType, size_t aCapacity = 0)
     {
         auto b = _buffers.acquire();
+        if (aCapacity == 0 && fromNodeType == XmlNodeType.document)
+            aCapacity = 64000;
         if (aCapacity != 0)
-        {
-            if (aCapacity < 0)
-            {
-                if (from is this)
-                    b.capacity = 64000;
-                else
-                    b.capacity = 16000;
-            }
-            else
-                b.capacity = aCapacity;
-        }
+            b.capacity = aCapacity;
 
         return b;
     }
@@ -1967,6 +1960,32 @@ protected:
     final S getAndReleaseBuffer(XmlBuffer!(S, false) b)
     {
         return _buffers.getAndRelease(b);
+    }
+
+    final S getDecodeText(ref XmlString!S s)
+    {
+        if (s.needDecode())
+        {
+            auto buffer = acquireBuffer(XmlNodeType.text, s.length);
+            auto result = s.decodeText(buffer, decodeEntityTable());
+            releaseBuffer(buffer);
+            return result;
+        }
+        else
+            return s.toString();
+    }
+
+    final S getEncodeText(ref XmlString!S s)
+    {
+        if (s.needEncode())
+        {
+            auto buffer = acquireBuffer(XmlNodeType.text, s.length);
+            auto result = s.encodeText(buffer);
+            releaseBuffer(buffer);
+            return result;
+        }
+        else
+            return s.toString();
     }
 
     pragma(inline, true)
@@ -2384,6 +2403,14 @@ public:
         _text = XmlString!S(aText);
     }
 
+    this(XmlDocument!S aOwnerDocument, S aName, S aPublicOrSystem, XmlString!S aPublicId, XmlString!S aText)
+    {
+        this(aOwnerDocument, aName);
+        _publicOrSystem = aPublicOrSystem;
+        _publicId = aPublicId;
+        _text = aText;
+    }
+
     final override bool allowChild() const
     {
         return true;
@@ -2416,7 +2443,7 @@ public:
             c = Yes.hasChild;
 
         aWriter.putDocumentTypeBegin(name, publicOrSystem,
-            _publicId.encodeText(ownerDocument), _text.encodeText(ownerDocument), c);
+            ownerDocument.getEncodeText(_publicId), ownerDocument.getEncodeText(_text), c);
         if (c)
             writeChildren(aWriter);
         aWriter.putDocumentTypeEnd(c);
@@ -2432,12 +2459,12 @@ public:
 
     final S publicId()
     {
-        return _publicId.value;
+        return ownerDocument.getDecodeText(_publicId);
     }
 
     final S publicId(S newValue)
     {
-        _publicId.value = newValue;
+        _publicId = newValue;
         return newValue;
     }
 
@@ -2459,12 +2486,12 @@ public:
 
     final override S value()
     {
-        return _text.value;
+        return ownerDocument.getDecodeText(_text);
     }
 
     final override S value(S newValue)
     {
-        _text.value = newValue;
+        _text = newValue;
         return newValue;
     }
 }
@@ -2539,7 +2566,7 @@ public:
         if (_defaultDeclareText.length > 0)
         {
             aWriter.put(' ');
-            aWriter.putWithQuote(_defaultDeclareText.encodeText(ownerDocument));
+            aWriter.putWithQuote(ownerDocument.getEncodeText(_defaultDeclareText));
         }
 
         return aWriter;
@@ -2548,7 +2575,7 @@ public:
 @property:
     final S defaultDeclareText()
     {
-        return _defaultDeclareText.value;
+        return ownerDocument.getDecodeText(_defaultDeclareText);
     }
 
     final S defaultDeclareType()
@@ -2874,8 +2901,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putEntityGeneral(name, _publicOrSystem, _publicId.encodeText(ownerDocument),
-                _notationName, _text.encodeText(ownerDocument));
+        aWriter.putEntityGeneral(name, _publicOrSystem, ownerDocument.getEncodeText(_publicId),
+            _notationName, ownerDocument.getEncodeText(_text));
 
         return aWriter;
     }
@@ -2914,8 +2941,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putEntityReference(name, _publicOrSystem, _publicId.encodeText(ownerDocument),
-                _notationName, _text.encodeText(ownerDocument));
+        aWriter.putEntityReference(name, _publicOrSystem, ownerDocument.getEncodeText(_publicId),
+            _notationName, ownerDocument.getEncodeText(_text));
 
         return aWriter;
     }
@@ -2961,8 +2988,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putNotation(name, publicOrSystem,
-                _publicId.encodeText(ownerDocument), _text.encodeText(ownerDocument));
+        aWriter.putNotation(name, publicOrSystem, ownerDocument.getEncodeText(_publicId),
+            ownerDocument.getEncodeText(_text));
 
         return aWriter;
     }
@@ -2975,7 +3002,7 @@ public:
 
     final S publicId()
     {
-        return _publicId.value;
+        return ownerDocument.getDecodeText(_publicId);
     }
 
     final S publicOrSystem()
@@ -2985,12 +3012,12 @@ public:
 
     final override S value()
     {
-        return _text.value;
+        return ownerDocument.getDecodeText(_text);
     }
 
     final override S value(S newValue)
     {
-        _text.value = newValue;
+        _text = newValue;
         return newValue;
     }
 }
@@ -3022,7 +3049,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putProcessingInstruction(name, _text.encodeText(ownerDocument));
+        aWriter.putProcessingInstruction(name, ownerDocument.getEncodeText(_text));
 
         return aWriter;
     }
@@ -3030,12 +3057,12 @@ public:
 @property:
     final override S innerText()
     {
-        return _text;
+        return value;
     }
 
     final override S innerText(S newValue)
     {
-        return _text = newValue;
+        return value(newValue);
     }
 
     final override XmlNodeType nodeType() const
@@ -3050,12 +3077,13 @@ public:
 
     final override S value()
     {
-        return _text;
+        return ownerDocument.getDecodeText(_text); 
     }
 
     final override S value(S newValue)
     {
-        return _text = newValue;
+        _text = newValue;
+        return newValue;
     }
 }
 
@@ -3109,7 +3137,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.put(encodeText());
+        aWriter.put(ownerDocument.getEncodeText(_text));
 
         return aWriter;
     }
@@ -3180,11 +3208,6 @@ protected:
     }
 
 public:
-    final S encodeText()
-    {
-        return _text.encodeText(ownerDocument);
-    }
-
 @property:
     final override S innerText()
     {
@@ -3193,17 +3216,17 @@ public:
 
     final override S innerText(S newValue)
     {
-        return value = newValue;
+        return value(newValue);
     }
 
     override S value()
     {
-        return _text.value;
+        return ownerDocument.getDecodeText(_text);
     }
 
     override S value(S newValue)
     {
-        _text.value = newValue;
+        _text = newValue;
         return newValue;
     }
 }
@@ -3246,12 +3269,12 @@ public:
 
     final override S value()
     {
-        return _text.value;
+        return _text.toString();
     }
 
     final override S value(S newValue)
     {
-        _text.value = checkWhitespaces(newValue);
+        _text = checkWhitespaces(newValue);
         return newValue;
     }
 }
@@ -3311,7 +3334,7 @@ public:
 
     final S publicId()
     {
-        return _publicId.value;
+        return ownerDocument.getDecodeText(_publicId);
     }
 
     final S publicOrSystem()
@@ -3321,12 +3344,12 @@ public:
 
     final override S value()
     {
-        return _text.value;
+        return ownerDocument.getDecodeText(_text);
     }
 
     final override S value(S newValue)
     {
-        _text.value = newValue;
+        _text = newValue;
         return newValue;
     }
 }
@@ -3429,102 +3452,6 @@ public:
 
         return _prefix;
     }
-}
-
-struct XmlString(S)
-if (isXmlString!S)
-{
-private:
-    S data;
-    XmlEncodeMode mode;
-
-public:
-    this(S aStr)
-    {
-        this(aStr, XmlEncodeMode.check);
-    }
-
-    this(S aStr, XmlEncodeMode aMode)
-    {
-        data = aStr;
-        mode = aMode;
-    }
-
-    S decodeText(XmlDocument!S aOwnerDocument)
-    {
-        if (needDecode())
-        {
-            auto buffer = aOwnerDocument.acquireBuffer(null, data.length);
-            S r = buffer.decode(data, aOwnerDocument.decodeEntityTable());
-            aOwnerDocument.releaseBuffer(buffer);
-            return r;
-        }
-        else
-            return data;
-    }
-
-    S encodeText(XmlDocument!S aOwnerDocument)
-    {
-        if (needEncode())
-        {
-            auto buffer = aOwnerDocument.acquireBuffer(null, data.length);
-            S r = buffer.encode(data);
-            aOwnerDocument.releaseBuffer(buffer);
-            return r;
-        }
-        else
-            return data;
-    }
-
-    bool needDecode()
-    {
-        return (data.length > 0 && (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check));
-    }
-
-    bool needEncode()
-    {
-        return (data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check));
-    }
-
-    S toString()
-    {
-        return data;
-    }
-
-    alias data this;
-
-@property:
-    S value()
-    {
-        if (needDecode())
-        {
-            auto buffer = new XmlBuffer!(S, false)(data.length);
-            data = buffer.decode(data);
-            mode = buffer.decodeOrEncodeResultMode;
-        }
-        return data;
-    }
-
-    S value(S newText)
-    {
-        data = newText;
-        if (mode != XmlEncodeMode.none)
-            mode = XmlEncodeMode.check;
-        return newText;
-    }
-}
-
-pragma(inline, true)
-XmlString!S toXmlString(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
-{
-    return XmlString!S(buffer.toString(), buffer.decodeOrEncodeResultMode);
-}
-
-pragma(inline, true)
-XmlString!S toXmlStringAndClear(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
-{
-    XmlEncodeMode m = buffer.decodeOrEncodeResultMode;
-    return XmlString!S(buffer.toStringAndClear(), m);
 }
 
 unittest  // XmlDocument
