@@ -792,7 +792,7 @@ private:
         else
             node = parentNode.appendChild(document.createText(text));
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
+        if (node && useSaxOtherNode && !options.onSaxOtherNode(node))
             parentNode.removeChild(node);
     }
 
@@ -1491,3 +1491,82 @@ XML";
 
     assert(L.empty);
 }
+
+unittest  // XmlParser.SAX
+{
+    if (outputXmlTraceProgress)
+    {
+        import std.stdio : writeln;
+
+        writeln("unittest XmlParser.SAX");
+    }
+
+    static immutable string xml = q"XML
+<?xml version="1.0"?>
+<!-- A fragment of a book store inventory database -->
+<bookstore xmlns:bk="urn:samples">
+  <book genre="novel" publicationdate="1997" bk:ISBN="1-861001-57-8">
+    <title>Pride And Prejudice</title>
+    <author>
+      <first-name>Jane</first-name>
+      <last-name>Austen</last-name>
+    </author>
+    <price>24.95</price>
+  </book>
+  <book genre="novel" publicationdate="1992" bk:ISBN="1-861002-30-1">
+    <title>The Handmaid's Tale</title>
+    <author>
+      <first-name>Margaret</first-name>
+      <last-name>Atwood</last-name>
+    </author>
+    <price>29.95</price>
+  </book>
+</bookstore>
+XML";
+    
+    static bool processAttribute(XmlAttribute!string attribute)
+    {
+        // return true to keep the attribute, however if its parent node is discarded,
+        // the attribute will also be discarded at the end
+        // return false to discard the attribute
+        return false; 
+    }
+
+    static void processElementBegin(XmlElement!string element)
+    {
+    }
+
+    static bool processElementEnd(XmlElement!string element)
+    {
+        // return true to keep the element, however if its parent node is discarded,
+        // the element will also be discarded at the end
+        // return false to discard the element
+
+        // Only keep elements with localName = "bookstore" | "book" | "title"
+        auto localName = element.localName;
+        return localName == "bookstore" ||
+            localName == "book" ||
+            localName == "title";
+    }
+
+    static bool processOtherNode(XmlNode!string node)
+    {
+        // return true to keep the node, however if its parent node is discarded,
+        // the node will also be discarded at the end
+        // return false to discard the node
+
+        return node.nodeType == XmlNodeType.text; 
+    }
+
+    auto doc = new XmlDocument!string();
+    doc.parseOptions.flags.include(XmlParseOptionFlag.useSax);
+    doc.parseOptions.onSaxAttributeNode = &processAttribute;
+    doc.parseOptions.onSaxElementNodeBegin = &processElementBegin;
+    doc.parseOptions.onSaxElementNodeEnd = &processElementEnd;
+    doc.parseOptions.onSaxOtherNode = &processOtherNode;
+    
+    doc.load(xml);
+
+    assert(doc.outerXml() == "<bookstore><book><title>Pride And Prejudice</title></book><book><title>The Handmaid's Tale</title></book></bookstore>");
+}
+

@@ -237,13 +237,11 @@ public:
         return opBinary!op(aValue);
     }
 
-    pragma(inline, true)
     auto ref exclude(E aValue)
     {
         return opOpAssign!"^"(aValue);
     }
 
-    pragma(inline, true)
     auto ref include(E aValue)
     {
         return opOpAssign!"|"(aValue);

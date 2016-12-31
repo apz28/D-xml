@@ -4441,7 +4441,7 @@ XML";
     auto doc = new XmlDocument!string().load(xml);
     XmlNodeList!string nodeList;
     
-    nodeList = selectNodes(doc.documentElement, "descendant::book[author/last-name='Austen']");
+    nodeList = doc.documentElement.selectNodes("descendant::book[author/last-name='Austen']");
     assert(nodeList.length == 3);
     assert(nodeList.front.getAttribute("publicationdate") == "1997");
     assert(nodeList.moveFront.name == "book");
