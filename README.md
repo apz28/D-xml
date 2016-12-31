@@ -26,7 +26,7 @@ Still lacking document but you can read it from below link if the function name 
 
 https://msdn.microsoft.com/en-us/library/system.xml.xmlnode(v=vs.110).aspx
 
-Look in unittest section for varius samples on how to use this package
+Look in unittest section for various samples on how to use this package
 
 
 Sample usages
