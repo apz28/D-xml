@@ -2149,13 +2149,13 @@ public:
         }
     }
 
-    XmlDocument!S load(S aXmlText)
+    final XmlDocument!S load(S aXmlText)
     {
         auto reader = new XmlStringReader!S(aXmlText);
         return load(reader);
     }
 
-    XmlDocument!S load(XmlReader!S aReader)
+    final XmlDocument!S load(XmlReader!S aReader)
     {
         ++_loading;
         scope (exit)
@@ -2167,10 +2167,23 @@ public:
         return parser.parse();
     }
 
-    XmlDocument!S loadFromFile(string aFileName)
+    final XmlDocument!S loadFromFile(string aFileName)
     {
         auto reader = new XmlFileReader!S(aFileName);
+        scope (exit)
+            reader.close();
+
         return load(reader);
+    }
+
+    final string saveToFile(string aFileName, Flag!"PrettyOutput" aPrettyOutput = No.PrettyOutput)
+    {
+        auto writer = new XmlFileWriter!S(aFileName, aPrettyOutput);
+        scope (exit)
+            writer.close();
+
+        write(writer);
+        return aFileName;
     }
 
     XmlAttribute!S createAttribute(S aName)

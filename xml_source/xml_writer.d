@@ -13,6 +13,7 @@ module pham.xml_writer;
 
 import std.typecons : Flag;
 import std.range.primitives : back, empty, front, popFront;
+import std.array : Appender;
 
 import pham.xml_msg;
 import pham.xml_util;
