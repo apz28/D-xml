@@ -7,19 +7,20 @@ This is my first package written in D. Just discovered D few months ago and this
 
 Some features in this implementation
 
-1. Supports different encodings (char, wchar & dchar)
+f1. Supports different encodings (char, wchar & dchar)
 
-2. SAX parsing with parent node tracking
+f2. SAX parsing with parent node tracking
 
-3. Can be filtered nodes while loading
+f3. Can be filtered nodes while loading
 
-4. Pretty output
+f4. Pretty output
 
-5. XPath (selectNodes, selectSingleNode)
+f5. XPath (selectNodes, selectSingleNode)
 
-6. Support custom entity
+f6. Support custom entity
 
-7. Compare to current phobo\std.xml -> less memory used and twice as fast with validation while parsing
+f7. Compare to current phobo\std.xml -> less memory used and twice as fast with validation while parsing
+
 
 Still lacking document but you can read it from below link if the function name matched
 
@@ -27,16 +28,17 @@ https://msdn.microsoft.com/en-us/library/system.xml.xmlnode(v=vs.110).aspx
 
 Look in unittest section for varius samples on how to use this package
 
+
 Sample usages
 
-1. Load xml from utf-8 encoded string
+s1. Load xml from utf-8 encoded string
 
 import pham.xml_new;
 
 auto doc = new XmlDocument!string().load(xml);
 
 
-2. Get xml string from a document
+s2. Get xml string from a document
 
 string xml = doc.outerXml();
 
@@ -47,14 +49,14 @@ import std.typecons : Yes;
 string xml = doc.outerXml(Yes.PrettyOutput);
 
 
-3. Load xml from utf-8 encoded text file
+s3. Load xml from utf-8 encoded text file
 
 import pham.xml_new;
 
 auto doc = new XmlDocument!string().loadFromFile("c:\\a-file-name.xml");
 
 
-4. Save xml from a document to a file name
+s4. Save xml from a document to a file name
 
 doc.saveToFile("c:\\a-file-name.xml");
 
@@ -65,7 +67,7 @@ import std.typecons : Yes;
 doc.saveToFile("c:\\a-file-name.xml", Yes.PrettyOutput);
 
 
-3. Navigate all sub-nodes of a node
+s3. Navigate all sub-nodes of a node
 
 import std.typecons : Yes;
 
@@ -80,7 +82,7 @@ foreach (node; nodeList)
 }
 
 
-4. Navigate all child nodes of a node
+s4. Navigate all child nodes of a node
 
 auto nodeList = doc.documentElement.lastChild().getChildNodes();
 
@@ -93,7 +95,7 @@ foreach (node; nodeList)
 }
 
 
-5. Navigate sub-elements of a document
+s5. Navigate sub-elements of a document
 
 import std.typecons : Yes;
 
@@ -108,7 +110,7 @@ foreach (element; elementList)
 }
 
 
-6. Navigate all attributes of an element
+s6. Navigate all attributes of an element
 
 auto attributeList = doc.documentElement.getAttributes();
 
@@ -121,7 +123,7 @@ foreach (attribute; attributeList)
 }
 
 
-7. Use XPath
+s7. Use XPath
 
 import pham.xml_xpath;
 
@@ -140,7 +142,7 @@ or
 auto selectedNode = doc.documentElement.selectSingleNode("descendant::book[author/last-name='Austen']");
 
 
-8. Load using SAX as filter
+s8. Load using SAX as filter
 
 import pham.xml_new;
 
@@ -169,6 +171,7 @@ XML";
 
     
 static bool processAttribute(XmlAttribute!string attribute)
+
 {
     // return true to keep the attribute, however if its parent node is discarded,
 
@@ -186,7 +189,9 @@ static void processElementBegin(XmlElement!string element)
 
 }
 
+
 static bool processElementEnd(XmlElement!string element)
+
 {
     // return true to keep the element, however if its parent node is discarded,
 
@@ -204,6 +209,7 @@ static bool processElementEnd(XmlElement!string element)
 }
 
 static bool processOtherNode(XmlNode!string node)
+
 {
     // return true to keep the node, however if its parent node is discarded,
 
