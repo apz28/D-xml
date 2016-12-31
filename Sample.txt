@@ -1,0 +1,232 @@
+
+s1. Load xml from utf-8 encoded string
+
+import pham.xml_new;
+
+auto doc = new XmlDocument!string().load(xml);
+
+
+s2. Get xml string from a document
+
+string xml = doc.outerXml();
+
+or
+
+import std.typecons : Yes;
+
+string xml = doc.outerXml(Yes.PrettyOutput);
+
+
+s3. Load xml from utf-8 encoded text file
+
+import pham.xml_new;
+
+auto doc = new XmlDocument!string().loadFromFile("c:\\a-file-name.xml");
+
+
+s4. Save xml from a document to a file name
+
+doc.saveToFile("c:\\a-file-name.xml");
+
+or
+
+import std.typecons : Yes;
+
+doc.saveToFile("c:\\a-file-name.xml", Yes.PrettyOutput);
+
+
+s3. Navigate all sub-nodes of a node
+
+import std.typecons : Yes;
+
+auto nodeList = doc.documentElement.firstChild().getChildNodes(null, Yes.deep);
+
+foreach (node; nodeList)
+
+{
+
+...
+
+}
+
+
+s4. Navigate all child nodes of a node
+
+auto nodeList = doc.documentElement.lastChild().getChildNodes();
+
+foreach (node; nodeList)
+
+{
+
+...
+
+}
+
+
+s5. Navigate sub-elements of a document
+
+import std.typecons : Yes;
+
+auto elementList = doc.getElements(null, Yes.deep);
+
+foreach (element; elementList)
+
+{
+
+...
+
+}
+
+
+s6. Navigate all attributes of an element
+
+auto attributeList = doc.documentElement.getAttributes();
+
+foreach (attribute; attributeList)
+
+{
+
+...
+
+}
+
+
+s7. Use XPath
+
+import pham.xml_xpath;
+
+auto selectedNodes = doc.documentElement.selectNodes("descendant::book[author/last-name='Austen']");
+
+foreach (node; selectedNodes)
+
+{
+
+...
+
+}
+
+or
+
+auto selectedNode = doc.documentElement.selectSingleNode("descendant::book[author/last-name='Austen']");
+
+
+s8. Load using SAX as filter
+
+import pham.xml_new;
+
+static immutable string xml = q"XML
+
+<?xml version="1.0"?>
+
+<!-- A fragment of a book store inventory database -->
+
+<bookstore xmlns:bk="urn:samples">
+
+  <book genre="novel" publicationdate="1997" bk:ISBN="1-861001-57-8">
+
+    <title>Pride And Prejudice</title>
+
+    <author>
+
+      <first-name>Jane</first-name>
+
+      <last-name>Austen</last-name>
+
+    </author>
+
+    <price>24.95</price>
+
+  </book>
+
+  <book genre="novel" publicationdate="1992" bk:ISBN="1-861002-30-1">
+
+    <title>The Handmaid's Tale</title>
+
+    <author>
+
+      <first-name>Margaret</first-name>
+
+      <last-name>Atwood</last-name>
+
+    </author>
+
+    <price>29.95</price>
+
+  </book>
+
+</bookstore>
+
+XML";
+
+    
+static bool processAttribute(XmlAttribute!string attribute)
+
+{
+
+    // return true to keep the attribute, however if its parent node is discarded,
+
+    // the attribute will also be discarded at the end
+
+    // return false to discard the attribute
+
+    return false; 
+
+}
+
+static void processElementBegin(XmlElement!string element)
+
+{
+
+}
+
+
+static bool processElementEnd(XmlElement!string element)
+
+{
+
+    // return true to keep the element, however if its parent node is discarded,
+
+    // the element will also be discarded at the end
+
+    // return false to discard the element
+
+
+    // Only keep elements with localName = "bookstore" | "book" | "title"
+
+    auto localName = element.localName;
+
+    return localName == "bookstore" || localName == "book" || localName == "title";
+
+}
+
+static bool processOtherNode(XmlNode!string node)
+
+{
+
+    // return true to keep the node, however if its parent node is discarded,
+
+    // the node will also be discarded at the end
+
+    // return false to discard the node
+
+    return node.nodeType == XmlNodeType.text; 
+
+}
+
+auto doc = new XmlDocument!string();
+
+doc.parseOptions.flags.include(XmlParseOptionFlag.useSax);
+
+doc.parseOptions.onSaxAttributeNode = &processAttribute;
+
+doc.parseOptions.onSaxElementNodeBegin = &processElementBegin;
+
+doc.parseOptions.onSaxElementNodeEnd = &processElementEnd;
+
+doc.parseOptions.onSaxOtherNode = &processOtherNode;
+    
+doc.load(xml);
+
+assert(doc.outerXml() == "<bookstore><book><title>Pride And Prejudice</title></book><book><title>The Handmaid's Tale</title></book></bookstore>");
+
+
