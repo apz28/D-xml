@@ -213,7 +213,9 @@ del *.lst</postBuildCommand>
   <File path="..\..\xml_source\xml_new.d" />
   <File path="..\..\xml_source\xml_object.d" />
   <File path="..\..\xml_source\xml_parser.d" />
+  <File path="..\..\xml_source\xml_reader.d" />
   <File path="..\..\xml_source\xml_util.d" />
+  <File path="..\..\xml_source\xml_writer.d" />
   <File path="..\..\xml_source\xml_xpath.d" />
  </Folder>
 </DProject>
