@@ -147,32 +147,54 @@ s8. Load using SAX as filter
 import pham.xml_new;
 
 static immutable string xml = q"XML
+
 <?xml version="1.0"?>
+
 <!-- A fragment of a book store inventory database -->
+
 <bookstore xmlns:bk="urn:samples">
+
   <book genre="novel" publicationdate="1997" bk:ISBN="1-861001-57-8">
+
     <title>Pride And Prejudice</title>
+
     <author>
+
       <first-name>Jane</first-name>
+
       <last-name>Austen</last-name>
+
     </author>
+
     <price>24.95</price>
+
   </book>
+
   <book genre="novel" publicationdate="1992" bk:ISBN="1-861002-30-1">
+
     <title>The Handmaid's Tale</title>
+
     <author>
+
       <first-name>Margaret</first-name>
+
       <last-name>Atwood</last-name>
+
     </author>
+
     <price>29.95</price>
+
   </book>
+
 </bookstore>
+
 XML";
 
     
 static bool processAttribute(XmlAttribute!string attribute)
 
 {
+
     // return true to keep the attribute, however if its parent node is discarded,
 
     // the attribute will also be discarded at the end
@@ -193,6 +215,7 @@ static void processElementBegin(XmlElement!string element)
 static bool processElementEnd(XmlElement!string element)
 
 {
+
     // return true to keep the element, however if its parent node is discarded,
 
     // the element will also be discarded at the end
@@ -211,6 +234,7 @@ static bool processElementEnd(XmlElement!string element)
 static bool processOtherNode(XmlNode!string node)
 
 {
+
     // return true to keep the node, however if its parent node is discarded,
 
     // the node will also be discarded at the end
