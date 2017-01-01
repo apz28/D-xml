@@ -176,7 +176,7 @@ public:
     if (op == "^" || op == "|" || op == "&")
     {
         static if (op == "^")
-            values ^= aValue;
+            values &= ~aValue;
         else static if (op == "|")
             values |= aValue;
         else
@@ -189,7 +189,7 @@ public:
     if (op == "^" || op == "|" || op == "&")
     {
         static if (op == "^")
-            values ^= aValues.values;
+            values &= ~aValues.values;
         else static if (op == "|")
             values |= aValues.values;
         else
@@ -933,6 +933,7 @@ public:
         return this;
     }
 
+    version(none)
     S opCall()
     {
         return data;
