@@ -11,7 +11,7 @@
 
 module pham.xml_exception;
 
-public import std.exception : Exception;
+import std.exception : Exception;
 import std.format : format;
 
 import pham.xml_msg;
