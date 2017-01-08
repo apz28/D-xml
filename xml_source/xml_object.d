@@ -452,10 +452,9 @@ public:
 
         assert(entityTable !is null);
 
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParserF("decode(%s)", s);
-        */
 
         S refChars;
         size_t i, lastI, mark;
@@ -610,10 +609,9 @@ public:
     */
     final S encode(S s)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("encode(%s)", s);
-        */
 
         S r;
         size_t lastI;

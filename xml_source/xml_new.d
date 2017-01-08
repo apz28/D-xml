@@ -402,12 +402,11 @@ public:
         return XmlNodeList!S(this, XmlNodeListType.childNodesDeep, &getElementsByTagNameFilterUri, filterContext);
     }
 
-    /*
+    version (none)
     XmlNodeList!S opSlice()
     {
         return children(false);
     }
-    */
 
 public:
     version (none)  ~this()
@@ -1119,10 +1118,9 @@ private:
 
     void checkFilter(void delegate() aAdvance)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.checkFilter()");
-        */
 
         assert(_listType != XmlNodeListType.flat);
 
@@ -1136,10 +1134,9 @@ private:
 
     void popFrontSibling()
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.popFrontSibling()");
-        */
 
         assert(_listType != XmlNodeListType.flat);
         assert(_current !is null);
@@ -1152,10 +1149,9 @@ private:
 
     void popFrontDeep()
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParserF("XmlNodeList.popFrontDeep(current(%s.%s))", _parent.name, _current.name);
-        */
 
         assert(_listType != XmlNodeListType.flat);
         assert(_current !is null);
@@ -1164,11 +1160,10 @@ private:
         {
             if (_current.nextSibling !is null)
             {
-                /*
+                version (none)
                 version (unittest)
                 outputXmlTraceParserF("XmlNodeList.popFrontDeep(push(%s.%s))", _parent.name,
                     _current.nextSibling.name);
-                */
 
                 _walkNodes ~= WalkNode(_parent, _current.nextSibling);
             }
@@ -1199,10 +1194,9 @@ private:
 
     XmlNode!S getItemSibling(size_t aIndex)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.getItem()");
-        */
 
         assert(_listType != XmlNodeListType.flat);
 
@@ -1228,10 +1222,9 @@ private:
 
     XmlNode!S getItemDeep(size_t aIndex)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.getItemDeep()");
-        */
 
         assert(_listType != XmlNodeListType.flat);
 
@@ -1258,10 +1251,9 @@ private:
     version(none)
     void moveBackSibling()
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.moveBackSibling()");
-        */
 
         assert(_listType != XmlNodeListType.flat);
         assert(_current !is null);
@@ -1275,10 +1267,9 @@ private:
 public:
     this(this)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.this(this)");
-        */
 
         if (_listType == XmlNodeListType.childNodesDeep)
             _walkNodes = _walkNodes.dup;
@@ -1286,10 +1277,9 @@ public:
 
     this(XmlNode!S aParent, XmlNodeListType aListType, XmlNodeListFilterEvent aOnFilter, Object aContext)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.this(...)");
-        */
 
         if (aListType == XmlNodeListType.flat)
             throw new XmlInvalidOperationException(Message.eInvalidOpDelegate,
@@ -1324,10 +1314,9 @@ public:
 
     XmlNode!S item(size_t aIndex)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.item()");
-        */
 
         if (_listType == XmlNodeListType.flat)
         {
@@ -1361,10 +1350,9 @@ public:
 
     void popFront()
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.popFront()");
-        */
 
         if (_listType == XmlNodeListType.flat)
             ++_currentIndex;
@@ -1414,10 +1402,9 @@ public:
 
     void reset()
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceParser("XmlNodeList.reset()");
-        */
 
         if (_listType == XmlNodeListType.flat)
             _currentIndex = 0;

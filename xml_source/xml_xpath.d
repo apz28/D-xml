@@ -958,10 +958,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest) 
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -1083,10 +1082,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -1720,10 +1718,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -1809,10 +1806,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -1945,10 +1941,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -2033,12 +2028,11 @@ private void opCompare(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!
             v2 = Variant(e2.toText());
             normalizeValueTo!S(v2, t1);
 
-            /*
+            version (none)
             version (unittest)
             outputXmlTraceXPathParserF("%s%s.evaluate%s(name: %s, value: %s, v1: %s)", 
-                    inputContext.indentString, aOpNode.shortClassName, aOp,
-                    e2.name, e2.toText(), v1.toString());
-            */
+                inputContext.indentString, aOpNode.shortClassName, aOp,
+                e2.name, e2.toText(), v1.toString());
 
             if (mixin("v1 " ~ aOp ~ " v2"))
             {
@@ -2259,10 +2253,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write(%s)", shortClassName, opType);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -2330,10 +2323,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -2384,10 +2376,9 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", this.shortClassName);
-        */
 
         aWriter.putIndent();
         aWriter.put(className);
@@ -2832,10 +2823,9 @@ public:
             nextChar();
         }
 
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("scanName(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
-        */
 
         return _xPathExpression[start .. end];
     }
@@ -2854,10 +2844,9 @@ public:
             nextChar();
         }
 
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("scanNumberM(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
-        */
 
         return to!double(_xPathExpression[start .. end]);
     }
@@ -2885,10 +2874,9 @@ public:
             }
         }
 
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("scanNumberS(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
-        */
 
         return to!double(_xPathExpression[start .. end]);
     }
@@ -2909,10 +2897,9 @@ public:
         assert(currentChar == quoteChar);
         nextChar();
 
-        /*
+        version (none)
         version (unittest)
         outputXmlTraceXPathParserF("scanText(%s [%d .. %d])", leftStringIndicator!S(_xPathExpression[start .. end], 30), start, end);
-        */
 
         return _xPathExpression[start .. end];
     }
