@@ -80,16 +80,14 @@ public:
             else
                 inXml = cast(string) temp;
 
-            debug (TraceXmlParser)
+            version (unittest)
             {
-                import std.stdio : writefln;
-
                 if (temp.length >= 4)
-                    writefln("chars: %X.%X.%X.%X; lens: %s/%s", temp[0], temp[1],
+                    outputXmlTraceParserF("chars: %X.%X.%X.%X; lens: %s/%s", temp[0], temp[1],
                         temp[2], temp[3], formatNumber!size_t(temp.length),
                         formatNumber!size_t(inXml.length));
                 else if (temp.length >= 2)
-                    writefln("chars: %X.%X; lens: %s/%s",
+                    outputXmlTraceParserF("chars: %X.%X; lens: %s/%s",
                         temp[0], temp[1], formatNumber!size_t(temp.length),
                         formatNumber!size_t(inXml.length));
             }
@@ -146,12 +144,12 @@ struct TestOptions
         debug
         {
             timingIteratedCount = 1;
-            debug (traceXmlProfile)
+            debug (xmlTraceProfile)
             {
                 outputXmlTraceTiming = false;
                 timingXml = defaultXmlProfile;
             }
-            else debug (traceXmlParser)
+            else debug (xmlTraceParser)
                 testXmlSourceFileName = ".\\xml_test\\test\\xmltest.xml";
             else
             {
@@ -194,26 +192,6 @@ struct TestOptions
                     testXmlSourceFileName = s[1];
                 else if (s[0] == "testSourceFileNameLoad")
                     testXmlSourceFileNameLoad = s[1];
-            }
-        }
-    }
-}
-
-void removeFile(string aFileName)
-{
-    if (std.file.exists(aFileName))
-    {
-        try
-        {
-            std.file.remove(aFileName);
-        }
-        catch (Throwable)
-        {
-            debug (traceXmlParser)
-            {
-                import std.stdio : writefln;
-
-                writefln("removeFile: ", aFileName);
             }
         }
     }
@@ -263,8 +241,8 @@ private:
     bool executeItem(ref TestItem testItem, size_t aIteratedCount)
     {
         version (unittest)
-        if (outputXmlTraceProgress && testItem.inFileName.length > 0)
-            writeln("executeItem: ", testItem.inFileName);
+        if (isXmlTraceProgress && testItem.inFileName.length > 0)
+            outputXmlTraceProgress("executeItem: ", testItem.inFileName);
 
         MonoTime timeStart = MonoTime.currTime;
         do
@@ -372,8 +350,8 @@ public:
         Flag!"AutoSaveOutXml" aAutoSaveOutXml)
     {
         version (unittest)
-        if (outputXmlTraceProgress)
-            writeln("testDirectory: ", aDirectory);
+        if (isXmlTraceProgress && aDirectory.length > 0)
+            outputXmlTraceProgress("testDirectory: ", aDirectory);
 
         TestItem[] testItems;
 
