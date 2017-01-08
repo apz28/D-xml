@@ -453,12 +453,8 @@ public:
         assert(entityTable !is null);
 
         /*
-        debug (traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writefln("decode(%s)", s);
-        }
+        version (unittest)
+        outputXmlTraceParserF("decode(%s)", s);
         */
 
         S refChars;
@@ -484,26 +480,20 @@ public:
                     case ';':
                         refChars = s[i .. j + 1];
                         mark = 1;
-                        /*
-                        debug (traceXmlParser)
-                        {
-                            import std.stdio : writeln;
 
-                            writefln("refChars(;): %s, i: %d, j: %d", refChars, i, j);
-                        }
-                        */
+                        version (none)
+                        version (unittest)
+                        outputXmlTraceParserF("refChars(;): %s, i: %d, j: %d", refChars, i, j);
+
                         break;
                     case '&':
                         refChars = s[i .. j];
                         mark = 2;
-                        /*
-                        debug (traceXmlParser)
-                        {
-                            import std.stdio : writeln;
 
-                            writefln("refChars(&): %s, i: %d, j: %d", refChars, i, j);
-                        }
-                        */
+                        version (none)
+                        version (unittest)
+                        outputXmlTraceParserF("refChars(&): %s, i: %d, j: %d", refChars, i, j);
+
                         break;
                     default:
                         break;
@@ -528,14 +518,9 @@ public:
             }
             else
             {
-                /*
-                debug (traceXmlParser)
-                {
-                    import std.stdio : writeln;
-
-                    writefln("refChars(convert): %s", refChars);
-                }
-                */
+                version (none)
+                version (unittest)
+                outputXmlTraceParserF("refChars(convert): %s", refChars);
 
                 if (refChars[1] == '#')
                 {
@@ -567,14 +552,9 @@ public:
                 i += refChars.length;
             }
 
-            /*
-            debug (traceXmlParser)
-            {
-                import std.stdio : writeln;
-
-                writefln("refChars.length: %d, i: %d", refChars.length, i);
-            }
-            */
+            version (none)
+            version (unittest)
+            outputXmlTraceParserF("refChars.length: %d, i: %d", refChars.length, i);
 
             lastI = i;
         }
@@ -631,12 +611,8 @@ public:
     final S encode(S s)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writefln("encode(%s)", s);
-        }
+        version (unittest)
+        outputXmlTraceParser("encode(%s)", s);
         */
 
         S r;
@@ -1013,12 +989,7 @@ XmlString!S toXmlStringAndClear(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded
 
 unittest // XmlEntityTable.defaultEntityTable
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest XmlEntityTable.defaultEntityTable");
-    }
+    outputXmlTraceProgress("unittest XmlEntityTable.defaultEntityTable");
 
     auto table = XmlEntityTable!string.defaultEntityTable();
     assert(table !is null);
@@ -1049,12 +1020,7 @@ unittest  // XmlBuffer.decode
 {
     import std.exception : assertThrown;
 
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest XmlBuffer.decode");
-    }
+    outputXmlTraceProgress("unittest XmlBuffer.decode");
 
     string s;
     auto buffer = new XmlBuffer!(string, false)();
@@ -1093,12 +1059,7 @@ unittest  // XmlBuffer.decode
 
 unittest  // XmlBuffer.encode
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest XmlBuffer.encode");
-    }
+    outputXmlTraceProgress("unittest XmlBuffer.encode");
 
     string s;
     auto buffer = new XmlBuffer!(string, false)();

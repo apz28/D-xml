@@ -73,12 +73,8 @@ public:
     final XmlWriter!S putLF()
     {
         version (none)
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("putLF%d.%d()", _nodeLevel, _onlyOneNodeText);
-        }
+        version (unittest)
+        outputXmlTraceParserF("putLF%d.%d()", _nodeLevel, _onlyOneNodeText);
 
         put('\n');
 
@@ -450,12 +446,8 @@ public:
     final override void put(const(C)[] s)
     {
         version (none)
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("put%d.%d('%s')", _nodeLevel, _onlyOneNodeText, s);
-        }
+        version (unittest)
+        outputXmlTraceParserF("put%d.%d('%s')", _nodeLevel, _onlyOneNodeText, s);
 
         buffer.put(s);
     }

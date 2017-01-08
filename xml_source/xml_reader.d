@@ -340,13 +340,9 @@ package:
         }
         name.s = buffer.toStringAndClear();
 
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("readAnyName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
-                name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
-        }
+        version (unittest)
+        outputXmlTraceParserF("readAnyName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);
@@ -395,13 +391,9 @@ package:
         while (!empty && !isDeclarationAttributeNameSeparator(front));
         name.s = buffer.toStringAndClear();
 
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("readDeclarationAttributeName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
-                name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
-        }
+        version (unittest)
+        outputXmlTraceParserF("readDeclarationAttributeName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);
@@ -453,13 +445,9 @@ package:
         }
         name.s = buffer.toStringAndClear();
 
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("readElementEName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
-                name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
-        }
+        version (unittest)
+        outputXmlTraceParserF("readElementEName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);
@@ -477,13 +465,9 @@ package:
         }
         name.s = buffer.toStringAndClear();
 
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("readElementPName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
-                name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
-        }
+        version (unittest)
+        outputXmlTraceParserF("readElementPName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);
@@ -504,13 +488,9 @@ package:
         while (!empty && !isElementAttributeNameSeparator(front));
         name.s = buffer.toStringAndClear();
 
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("readElementXAttributeName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
-                name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
-        }
+        version (unittest)
+        outputXmlTraceParserF("readElementXAttributeName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);
@@ -528,13 +508,9 @@ package:
         }
         name.s = buffer.toStringAndClear();
 
-        debug (traceXmlParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("readElementXName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
-                name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
-        }
+        version (unittest)
+        outputXmlTraceParserF("readElementXName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);

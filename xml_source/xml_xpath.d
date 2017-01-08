@@ -409,7 +409,7 @@ private:
     XmlElement!S _xpathDocumentElement;
 
 package:
-    debug (traceXmlXPathParser) 
+    version (unittest)
     {
         static size_t _nodeIndent;
 
@@ -442,8 +442,8 @@ public:
 
     this(XmlNode!S aXPathNode)
     {
-        debug (traceXmlXPathParser) 
-            nodeIndent = &_nodeIndent;
+        version (unittest) 
+        nodeIndent = &_nodeIndent;
 
         _xpathNode = aXPathNode;
     }
@@ -600,12 +600,8 @@ protected:
                 result = equalName(aNode.localName, localName);
         }
 
-        debug (traceXmlXPathParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("%s%s.accept(name: %s): %s", inputContext.indentString, shortClassName, aNode.name, result);
-        }
+        //version (unittest)
+        //outputXmlTraceXPathParserF("%s%s.accept(name: %s): %s", inputContext.indentString, shortClassName, aNode.name, result);
 
         return result;
     }
@@ -623,14 +619,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateAncestor(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateAncestor(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateAncestorOrSelf(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -649,14 +641,10 @@ protected:
             }
         }        
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateAncestorOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateAncestorOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateAttribute(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -674,14 +662,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateAttribute(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateAttribute(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateChild(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -699,14 +683,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateChild(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateChild(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateDescendant(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -721,14 +701,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateDescendant(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateDescendant(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);        
     }
 
     final void evaluateDescendantOrSelf(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -746,14 +722,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateDescendantOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateDescendantOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateFollowing(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -768,14 +740,10 @@ protected:
                 outputContext.resNodes.insertBack(n);
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateFollowing(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateFollowing(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateFollowingSibling(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -794,14 +762,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateFollowingSibling(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateFollowingSibling(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateNamespace(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -819,14 +783,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateNamespace(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateNamespace(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateParent(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -838,14 +798,10 @@ protected:
                 outputContext.resNodes.insertBack(p);
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateParent(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateParent(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);        
     }
 
     final void evaluatePreceding(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -860,14 +816,10 @@ protected:
                 outputContext.resNodes.insertBack(n);
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluatePreceding(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluatePreceding(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluatePrecedingSibling(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -886,14 +838,10 @@ protected:
             }
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluatePrecedingSibling(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluatePrecedingSibling(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);
     }
 
     final void evaluateSelf(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -904,27 +852,19 @@ protected:
                 outputContext.resNodes.insertBack(e);
         }
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluateSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
-                outputContext.resNodes.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluateSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            outputContext.resNodes.length);        
     }
 
 public:
     this(XPathNode!S aParent, XPathAxisType aAxisType, XPathNode!S aInput,
         XPathNodeType aNodetype, const(C)[] aPrefix, const(C)[] aLocalName)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(axisType: %s, input: %s, nodeType: %s, prefix: %s, localName: %s)", 
-                shortClassName, aAxisType, getShortClassName!S(aInput), aNodetype, aPrefix, aLocalName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(axisType: %s, input: %s, nodeType: %s, prefix: %s, localName: %s)", 
+            shortClassName, aAxisType, getShortClassName!S(aInput), aNodetype, aPrefix, aLocalName);        
 
         _parent = aParent;
         _input = aInput;
@@ -986,12 +926,8 @@ public:
 
     this(XPathNode!S aParent, XPathAxisType aAxisType, XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(axisType: %s, input: %s)", shortClassName, aAxisType, getShortClassName!S(aInput));
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(axisType: %s, input: %s)", shortClassName, aAxisType, getShortClassName!S(aInput));
 
         this(aParent, aAxisType, aInput, XPathNodeType.all, null, null);
         _abbreviated = true;
@@ -999,11 +935,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {        
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
+            outputXmlTraceXPathParserF("%s%s.evaluate(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
                 inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
@@ -1025,12 +959,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser) 
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest) 
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -1098,13 +1028,9 @@ protected:
 public:
     this(XPathNode!S aParent, XPathNode!S aInput, XPathNode!S aCondition)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(input: %s, condition: %s)", shortClassName, 
-                getShortClassName!S(aInput), getShortClassName!S(aCondition));
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(input: %s, condition: %s)", shortClassName, 
+            getShortClassName!S(aInput), getShortClassName!S(aCondition));
 
         _parent = aParent;
         _input = aInput;
@@ -1113,11 +1039,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate(input: %s, condition: %s, nodeListCount: %d)", 
+            outputXmlTraceXPathParserF("%s%s.evaluate(input: %s, condition: %s, nodeListCount: %d)", 
                 inputContext.indentString, shortClassName,
                 getShortClassName!S(input), getShortClassName!S(condition),
                 inputContext.resNodes.length);
@@ -1160,12 +1084,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -1731,13 +1651,9 @@ public:
     {
         assert(aFunctionType != XPathFunctionType.userDefined);
 
-        debug (traceXmlXPathParser) 
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(function: %s, argc: %d)", shortClassName, 
-                aFunctionType, aArgumentList.length);
-        }
+        version (unittest) 
+        outputXmlTraceXPathParserF("%s.this(function: %s, argc: %d)", shortClassName, 
+            aFunctionType, aArgumentList.length);        
 
         _parent = aParent;
         _functionType = aFunctionType;
@@ -1748,13 +1664,9 @@ public:
 
     this(XPathNode!S aParent, const(C)[] aPrefix, const(C)[] aLocalName, XPathNode!S[] aArgumentList)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(prefix: %s, localName: %s, argc: %d)", shortClassName, 
-                aPrefix, aLocalName, aArgumentList.length);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s, argc: %d)", shortClassName, 
+            aPrefix, aLocalName, aArgumentList.length);
 
         _parent = aParent;
         _functionType = XPathFunctionType.userDefined;
@@ -1769,12 +1681,8 @@ public:
     {
         assert(aFunctionType != XPathFunctionType.userDefined);
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(function: %s)", shortClassName, aFunctionType);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(function: %s)", shortClassName, aFunctionType);
 
         _parent = aParent;
         _functionType = aFunctionType;
@@ -1786,12 +1694,8 @@ public:
     {
         assert(aFunctionType != XPathFunctionType.userDefined);
 
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(function: %s, argn: %s)", shortClassName, getShortClassName!S(aArgument));
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(function: %s, argn: %s)", shortClassName, getShortClassName!S(aArgument));
 
         _parent = aParent;
         _functionType = aFunctionType;
@@ -1802,11 +1706,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writefln;
-
-            writefln("%s.evaluate(function: %s, returnType: %s, qName: %s, resNodes.length: %d, resValue.hasValue: %d)",
+            outputXmlTraceXPathParserF("%s.evaluate(function: %s, returnType: %s, qName: %s, resNodes.length: %d, resValue.hasValue: %d)",
                 shortClassName, functionType, returnType, qualifiedName(), inputContext.resNodes.length, inputContext.resValue.hasValue);
             inputContext.incNodeIndent;
             scope (exit)
@@ -1819,12 +1721,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -1885,12 +1783,8 @@ protected:
 public:
     this(XPathNode!S aParent, XPathNode!S aGroupNode)
     {
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(group: %s)", shortClassName, getShortClassName!S(aGroupNode));
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(group: %s)", shortClassName, getShortClassName!S(aGroupNode));
 
         _parent = aParent;
         _groupNode = aGroupNode;
@@ -1898,13 +1792,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "evaluate()");
-
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate(group: %s, nodeListCount: %d)",
+            outputXmlTraceXPathParserF("%s%s.evaluate(group: %s, nodeListCount: %d)",
                 inputContext.indentString, shortClassName, getShortClassName!S(groupNode),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
@@ -1912,18 +1802,16 @@ public:
                 inputContext.decNodeIndent;
         }
 
+        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "evaluate()");
+
         //todo
     }
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -1961,12 +1849,8 @@ protected:
 public:
     this(XPathNode!S aParent, bool aValue)
     {
-        debug (traceXmlXPathParser) 
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(value: %s)", shortClassName, aValue);
-        }
+        version (unittest) 
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.boolean;
@@ -1975,12 +1859,8 @@ public:
 
     this(XPathNode!S aParent, double aValue)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(value: %s)", shortClassName, aValue);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.number;
@@ -1989,12 +1869,8 @@ public:
 
     this(XPathNode!S aParent, S aValue)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(value: %s)", shortClassName, aValue);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.text;
@@ -2003,12 +1879,8 @@ public:
 
     this(XPathNode!S aParent, const(C)[] aValue)
     {
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(value: %s)", shortClassName, aValue);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.text;
@@ -2064,13 +1936,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate(value: %s)", inputContext.indentString,
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluate(value: %s)", inputContext.indentString,
                 shortClassName, value.toString());
-        }
 
         outputContext.resValue = value;
     }
@@ -2078,12 +1946,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -2118,14 +1982,12 @@ private void opCompare(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!
     XPathContext!S outputContext2 = inputContext.createOutputContext();
     aOpNode.operand2.evaluate(inputContext, outputContext2);
 
-    debug (traceXmlXPathParser)
+    version (unittest)
     {
-        import std.stdio : writefln;
-
-        writefln("%s%s.evaluate%s(operand1: %s, nodeListCount1: %d)",
+        outputXmlTraceXPathParserF("%s%s.evaluate%s(operand1: %s, nodeListCount1: %d)",
             inputContext.indentString, aOpNode.shortClassName, aOp,
             getShortClassName!S(aOpNode.operand1), outputContext1.resNodes.length);
-        writefln("%s%s.evaluate%s(operand2: %s, nodeListCount2: %d)",
+        outputXmlTraceXPathParserF("%s%s.evaluate%s(operand2: %s, nodeListCount2: %d)",
             inputContext.indentString, aOpNode.shortClassName, aOp,
             getShortClassName!S(aOpNode.operand2), outputContext2.resNodes.length);
     }
@@ -2172,14 +2034,10 @@ private void opCompare(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!
             normalizeValueTo!S(v2, t1);
 
             /*
-            debug (traceXmlXPathParser)
-            {            
-                import std.stdio : writefln;
-
-                writefln("%s%s.evaluate%s(name: %s, value: %s, v1: %s)", 
+            version (unittest)
+            outputXmlTraceXPathParserF("%s%s.evaluate%s(name: %s, value: %s, v1: %s)", 
                     inputContext.indentString, aOpNode.shortClassName, aOp,
                     e2.name, e2.toText(), v1.toString());
-            }
             */
 
             if (mixin("v1 " ~ aOp ~ " v2"))
@@ -2372,13 +2230,9 @@ protected:
 public:
     this(XPathNode!S aParent, XPathOp aOpType, XPathNode!S aOperand1, XPathNode!S aOperand2)
     {
-        debug (traceXmlXPathParser) 
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(opType: %s, operand1: %s, operand2: %s)",
-                shortClassName, aOpType, getShortClassName!S(aOperand1), getShortClassName!S(aOperand2));
-        }
+        version (unittest) 
+        outputXmlTraceXPathParserF("%s.this(opType: %s, operand1: %s, operand2: %s)",
+            shortClassName, aOpType, getShortClassName!S(aOperand1), getShortClassName!S(aOperand2));
 
         _parent = aParent;
         _opType = aOpType;
@@ -2390,11 +2244,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate(opType: %s, operand1: %s, operand2: %s, nodeListCount: %d)",
+            outputXmlTraceXPathParserF("%s%s.evaluate(opType: %s, operand1: %s, operand2: %s, nodeListCount: %d)",
                 inputContext.indentString, shortClassName, opType, getShortClassName!S(operand1), getShortClassName!S(operand2),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
@@ -2408,12 +2260,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write(%s)", shortClassName, opType);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write(%s)", shortClassName, opType);
         */
 
         aWriter.putIndent();
@@ -2466,24 +2314,16 @@ class XPathRoot(S) : XPathNode!S
 public:
     this(XPathNode!S aParent)
     {
-        debug (traceXmlXPathParser) 
-        {            
-            import std.stdio : writeln;
-
-            writeln(shortClassName, ".this()");
-        }
+        version (unittest) 
+        outputXmlTraceXPathParser(shortClassName, ".this()");
 
         _parent = aParent;
     }
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate()", inputContext.indentString, shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluate()", inputContext.indentString, shortClassName);
 
         outputContext.resNodes.insertBack(inputContext.xpathDocumentElement());
     }
@@ -2491,12 +2331,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -2522,12 +2358,8 @@ class XPathVariable(S) : XPathNode!S
 public:
     this(XPathNode!S aParent, const(C)[] aPrefix, const(C)[] aLocalName)
     {
-        debug (traceXmlXPathParser) 
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.this(prefix: %s, localName: %s)", shortClassName, aPrefix, aLocalName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s)", shortClassName, aPrefix, aLocalName);
 
         _parent = aParent;
         _prefix = prefix;
@@ -2536,13 +2368,9 @@ public:
 
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s%s.evaluate(prefix: %s, localName: %s)",
+        version (unittest)
+        outputXmlTraceXPathParserF("%s%s.evaluate(prefix: %s, localName: %s)",
                 inputContext.indentString, shortClassName, prefix, localName);
-        }
 
         Variant* result = qualifiedName() in inputContext.variables;
         if (result is null && prefix.length > 0)
@@ -2557,12 +2385,8 @@ public:
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%s.write", this.shortClassName);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
         */
 
         aWriter.putIndent();
@@ -3009,12 +2833,8 @@ public:
         }
 
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("scanName(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("scanName(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
         */
 
         return _xPathExpression[start .. end];
@@ -3035,12 +2855,8 @@ public:
         }
 
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("scanNumberM(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("scanNumberM(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
         */
 
         return to!double(_xPathExpression[start .. end]);
@@ -3070,12 +2886,8 @@ public:
         }
 
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("scanNumberS(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("scanNumberS(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
         */
 
         return to!double(_xPathExpression[start .. end]);
@@ -3098,12 +2910,8 @@ public:
         nextChar();
 
         /*
-        debug(traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("scanText(%s [%d .. %d])", leftStringIndicator!S(_xPathExpression[start .. end], 30), start, end);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("scanText(%s [%d .. %d])", leftStringIndicator!S(_xPathExpression[start .. end], 30), start, end);
         */
 
         return _xPathExpression[start .. end];
@@ -3239,7 +3047,7 @@ private:
     size_t parseDepth;
     enum maxParseDepth = 200;
 
-    debug (traceXmlXPathParser)
+    version (unittest)
     {
         size_t nodeIndent;
 
@@ -3258,12 +3066,8 @@ private:
     pragma(inline, true)
     void checkAndSkipToken(C t)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%spassToken('%c') ? '%c'", indentString(), t, scanner.kind);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%spassToken('%c') ? '%c'", indentString(), t, scanner.kind);
 
         checkToken(t);
         nextLex();
@@ -3272,13 +3076,9 @@ private:
     pragma(inline, true)
     void checkNodeSet(XPathResultType t)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%scheckNodeSet(%d) ? [%d, %d]", indentString(), t,
-                XPathResultType.nodeSet, XPathResultType.any);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%scheckNodeSet(%d) ? [%d, %d]", indentString(), t,
+            XPathResultType.nodeSet, XPathResultType.any);
 
         if (t != XPathResultType.nodeSet && t != XPathResultType.any)
             throw new XmlParserException(Message.eNodeSetExpectedAtOf,
@@ -3288,26 +3088,18 @@ private:
     pragma(inline, true)
     void checkToken(C t)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%scheckToken('%c') ? '%c'", indentString(), t, scanner.kind);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%scheckToken('%c') ? '%c'", indentString(), t, scanner.kind);
 
         if (scanner.kind != t)
             throw new XmlParserException(Message.eInvalidTokenAtOf,
-                    scanner.currentChar, scanner.currentIndex + 1, sourceText);
+                scanner.currentChar, scanner.currentIndex + 1, sourceText);
     }
 
     XPathAxisType getAxisType()
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%sgetAxisType() ? '%s'", indentString(), scanner.name);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%sgetAxisType() ? '%s'", indentString(), scanner.name);
 
         auto axis = scanner.nameAxisType();
         if (axis == XPathAxisType.error)
@@ -3319,12 +3111,8 @@ private:
     pragma(inline, true)
     bool isOp(const(C)[] opName)
     {
-        debug (traceXmlXPathParser)
-        {            
-            import std.stdio : writefln;
-
-            writefln("%stestOp('%s') ? '%s'", indentString(), opName, scanner.name);
-        }
+        version (unittest)
+        outputXmlTraceXPathParserF("%stestOp('%s') ? '%s'", indentString(), opName, scanner.name);
 
         return (scanner.kind == XPathScannerLexKind.name &&
                 scanner.prefix.length == 0 &&
@@ -3339,11 +3127,9 @@ private:
 
     XPathNode!S parseExpression(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseExpression", aInput));
+            outputXmlTraceXPathParser(traceString("parseExpression", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3360,11 +3146,9 @@ private:
     // OrExpr ::= ( OrExpr 'or' )? AndExpr 
     XPathNode!S parseOrExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseOrExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseOrExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3386,11 +3170,9 @@ private:
     // AndExpr ::= ( AndExpr 'and' )? EqualityExpr 
     XPathNode!S parseAndExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseAndExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseAndExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3413,11 +3195,9 @@ private:
     // EqualityExpr ::= ( EqualityExpr EqualityOp )? RelationalExpr
     XPathNode!S parseEqualityExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseEqualityExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseEqualityExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3443,11 +3223,9 @@ private:
     // RelationalExpr ::= ( RelationalExpr RelationalOp )? AdditiveExpr  
     XPathNode!S parseRelationalExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseRelationalExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseRelationalExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3475,11 +3253,9 @@ private:
     // AdditiveExpr ::= ( AdditiveExpr AdditiveOp )? MultiplicativeExpr
     XPathNode!S parseAdditiveExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseAdditiveExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseAdditiveExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3505,11 +3281,9 @@ private:
     // MultiplicativeExpr ::= ( MultiplicativeExpr MultiplicativeOp )? UnaryExpr
     XPathNode!S parseMultiplicativeExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseMultiplicativeExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseMultiplicativeExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3535,11 +3309,9 @@ private:
     // UnaryExpr ::= UnionExpr | '-' UnaryExpr
     XPathNode!S parseUnaryExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseUnaryExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseUnaryExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3562,11 +3334,9 @@ private:
     // UnionExpr ::= ( UnionExpr '|' )? PathExpr  
     XPathNode!S parseUnionExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseUnionExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseUnionExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3593,11 +3363,9 @@ private:
     // PathExpr ::= LocationPath | FilterExpr ( PathOp  RelativeLocationPath )?
     XPathNode!S parsePathExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parsePathExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parsePathExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3630,11 +3398,9 @@ private:
     // FilterExpr ::= PrimaryExpr | FilterExpr Predicate 
     XPathNode!S parseFilterExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseFilterExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parseFilterExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3650,11 +3416,9 @@ private:
     // Predicate ::= '[' Expr ']'
     XPathNode!S parsePredicate(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parsePredicate", aInput));
+            outputXmlTraceXPathParser(traceString("parsePredicate", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3673,11 +3437,9 @@ private:
     // LocationPath ::= RelativeLocationPath | AbsoluteLocationPath
     XPathNode!S parseLocationPath(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseLocationPath", aInput));
+            outputXmlTraceXPathParser(traceString("parseLocationPath", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3706,11 +3468,9 @@ private:
     // Pattern ::= ( Pattern '|' )? LocationPathPattern
     XPathNode!S parsePattern(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parsePattern", aInput));
+            outputXmlTraceXPathParser(traceString("parsePattern", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3734,11 +3494,9 @@ private:
     // RelativeLocationPath ::= ( RelativeLocationPath PathOp )? Step 
     XPathNode!S parseRelativeLocationPath(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseRelativeLocationPath", aInput));
+            outputXmlTraceXPathParser(traceString("parseRelativeLocationPath", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3766,11 +3524,9 @@ private:
     // Step ::= '.' | '..' | ( AxisName '::' | '@' )? NodeTest Predicate*
     XPathNode!S parseStep(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseStep", aInput));
+            outputXmlTraceXPathParser(traceString("parseStep", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3822,11 +3578,9 @@ private:
     // NodeTest ::= NameTest | 'comment ()' | 'text ()' | 'node ()' | 'processing-instruction ('  Literal ? ')'
     XPathNode!S parseNodeTest(XPathNode!S aInput, XPathAxisType axisType, XPathNodeType nodeType)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseNodeTest", aInput));
+            outputXmlTraceXPathParser(traceString("parseNodeTest", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3883,11 +3637,9 @@ private:
     // PrimaryExpr ::= Literal | Number | VariableReference | '(' Expr ')' | FunctionCall
     XPathNode!S parsePrimaryExpr(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parsePrimaryExpr", aInput));
+            outputXmlTraceXPathParser(traceString("parsePrimaryExpr", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -3934,11 +3686,9 @@ private:
 
     XPathNode!S parseMethod(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseMethod", aInput));
+            outputXmlTraceXPathParser(traceString("parseMethod", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4033,11 +3783,9 @@ private:
     //  IdKeyPattern (('/' | '//') RelativePathPattern)?  
     XPathNode!S parseLocationPathPattern(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseLocationPathPattern", aInput));
+            outputXmlTraceXPathParser(traceString("parseLocationPathPattern", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4088,11 +3836,9 @@ private:
     // IdKeyPattern ::= 'id' '(' Literal ')' | 'key' '(' Literal ',' Literal ')'  
     XPathNode!S parseIdKeyPattern(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseIdKeyPattern", aInput));
+            outputXmlTraceXPathParser(traceString("parseIdKeyPattern", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4140,11 +3886,9 @@ private:
     // RelativePathPattern ::= ( RelativePathPattern PathOp )? StepPattern
     XPathNode!S parseRelativePathPattern(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseRelativePathPattern", aInput));
+            outputXmlTraceXPathParser(traceString("parseRelativePathPattern", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4168,11 +3912,9 @@ private:
     // ChildOrAttributeAxisSpecifier ::= @ ? | ('child' | 'attribute') '::' 
     XPathNode!S parseStepPattern(XPathNode!S aInput)
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writeln;
-
-            writeln(traceString("parseStepPattern", aInput));
+            outputXmlTraceXPathParser(traceString("parseStepPattern", aInput));
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4215,11 +3957,9 @@ public:
 
     XPathNode!S parseExpression()
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writefln;
-
-            writefln("%sparseExpression(%s)", indentString(), sourceText);
+            outputXmlTraceXPathParserF("%sparseExpression(%s)", indentString(), sourceText);
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4234,11 +3974,9 @@ public:
 
     XPathNode!S parsePattern()
     {
-        debug (traceXmlXPathParser)
+        version (unittest)
         {
-            import std.stdio : writefln;
-
-            writefln("%sparsePattern(%s)", indentString(), sourceText);
+            outputXmlTraceXPathParserF("%sparsePattern(%s)", indentString(), sourceText);
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -4263,12 +4001,10 @@ XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
     XPathParser!S xpathParser = XPathParser!S(xpath);
     XPathNode!S xpathNode = xpathParser.parseExpression();
 
-    debug (traceXmlXPathParser)
+    version (unittest)
     {
-        import std.stdio : writeln;
-
-        writeln("\n", xpath);
-        writeln(xpathNode.toString(), "\n");
+        outputXmlTraceXPathParser("\n", xpath);
+        outputXmlTraceXPathParser(xpathNode.toString(), "\n");
     }
 
     XPathContext!S inputContext = XPathContext!S(aSource);
@@ -4292,12 +4028,7 @@ unittest  // XPathParser
 {
     import std.file : write; // write parser tracer info to file
 
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest XPathParser");
-    }
+    outputXmlTraceProgress("unittest XPathParser");
 
     string[] output;
     XPathParser!string xpathParser;
@@ -4392,12 +4123,7 @@ unittest  // XPathParser
 
 unittest  // XPathParser.selectNodes
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest XPathParser.selectNodes");
-    }
+    outputXmlTraceProgress("unittest XPathParser.selectNodes");
 
     static immutable string xml = q"XML
 <?xml version="1.0"?>

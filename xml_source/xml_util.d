@@ -17,13 +17,52 @@ import std.typecons : Flag;
 import pham.xml_msg;
 import pham.xml_exception;
 
-version (unittest)
+version (unittest) 
 {
-    debug (traceXmlProfile)
-        __gshared bool outputXmlTraceProgress = false;
+    import std.stdio : write, writef, writeln, writefln;
+
+    debug (xmlTraceProfile)
+        __gshared bool isXmlTraceProgress = false;
     else
-        __gshared bool outputXmlTraceProgress = true;
+        __gshared bool isXmlTraceProgress = true;
+
+    void outputXmlTraceParser(T...)(T args)
+    {
+        debug (xmlTraceParser)
+            writeln(args);
+    }
+
+    void outputXmlTraceParserF(Char, T...)(in Char[] fmt, T args)
+    {
+        debug (xmlTraceParser)
+            writefln(fmt, args);
+    }
+
+    void outputXmlTraceParserF0(Char, T...)(in Char[] fmt, T args)
+    {
+        debug (xmlTraceParser)
+            writef(fmt, args);
+    }
+
+    void outputXmlTraceXPathParser(T...)(T args)
+    {
+        debug (xmlTraceXPathParser)
+            writeln(args);
+    }
+
+    void outputXmlTraceXPathParserF(Char, T...)(in Char[] fmt, T args)
+    {
+        debug (xmlTraceXPathParser)
+            writefln(fmt, args);
+    }
+
+    void outputXmlTraceProgress(T...)(T args)
+    {
+        if (isXmlTraceProgress)
+            writeln(args);
+    }
 }
+
 
 enum bool isXmlString(S) = is(S == string) || is(S == wstring) || is(S == dstring);
 
@@ -742,12 +781,7 @@ private immutable ideographicTable = [[0x3007, 0x3007], [0x3021, 0x3029], [0x4E0
 
 unittest  // xml_util.combineName
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.combineName");
-    }
+    outputXmlTraceProgress("unittest xml_util.combineName");
 
     assert(combineName("", "") == "");
     assert(combineName("", "name") == "name");
@@ -757,12 +791,7 @@ unittest  // xml_util.combineName
 
 unittest  // xml_util.sequalCase
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.sequalCase");
-    }
+    outputXmlTraceProgress("unittest xml_util.sequalCase");
 
     assert(sequalCase!string("", ""));
     assert(sequalCase!string(" ", " "));
@@ -777,12 +806,7 @@ unittest  // xml_util.sequalCase
 
 unittest  // sequalCaseInsensitive
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.sequalCaseInsensitive");
-    }
+    outputXmlTraceProgress("unittest xml_util.sequalCaseInsensitive");
 
     assert(sequalCaseInsensitive!string("", ""));
     assert(sequalCaseInsensitive!string(" ", " "));
@@ -797,12 +821,7 @@ unittest  // sequalCaseInsensitive
 
 unittest  // xml_util.formatNumber
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.formatNumber");
-    }
+    outputXmlTraceProgress("unittest xml_util.formatNumber");
 
     assert(formatNumber!int(0) == "0");
     assert(formatNumber!int(100) == "100");
@@ -835,12 +854,7 @@ unittest  // xml_util.formatNumber
 
 unittest  // xml_util.formatFloat
 {
-   if (outputXmlTraceProgress)
-   {
-       import std.stdio : writeln;
-
-        writeln("unittest xml_util.formatFloat");
-   }
+   outputXmlTraceProgress("unittest xml_util.formatFloat");
 
     assert(formatFloat!double(0.0) == "0.000_000");
     assert(formatFloat!double(100.0) == "100.000_000");
@@ -858,12 +872,7 @@ unittest  // xml_util.formatFloat
 
 unittest  // xml_util.stringOfChar
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.stringOfChar");
-    }
+    outputXmlTraceProgress("unittest xml_util.stringOfChar");
 
     assert(stringOfChar!string(' ', 0) == "");
     assert(stringOfChar!string(' ', 1) == " ");
@@ -872,12 +881,7 @@ unittest  // xml_util.stringOfChar
 
 unittest  // xml_util.isChar
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.isChar");
-    }
+    outputXmlTraceProgress("unittest xml_util.isChar");
 
     assert(isChar(cast(dchar) 0x9));
     assert(isChar(cast(dchar) 0xA));
@@ -919,12 +923,7 @@ unittest  // xml_util.isChar
 
 unittest  // xml_util.isDigit
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.isDigit");
-    }
+    outputXmlTraceProgress("unittest xml_util.isDigit");
 
     assert(isDigit('0'));
     assert(isDigit('1'));
@@ -994,12 +993,7 @@ unittest  // xml_util.isDigit
 
 unittest  // xml_util.isExtender
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.isExtender");
-    }
+    outputXmlTraceProgress("unittest xml_util.isExtender");
 
     assert(isExtender(cast(dchar) 0x00B7));
     assert(isExtender(cast(dchar) 0x02D0));
@@ -1022,12 +1016,7 @@ unittest  // xml_util.isExtender
 
 unittest  // xml_util.isIdeographic
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.isIdeographic");
-    }
+    outputXmlTraceProgress("unittest xml_util.isIdeographic");
 
     assert(isIdeographic('\u4E00'));
     assert(isIdeographic('\u9FA5'));
@@ -1050,12 +1039,7 @@ unittest  // all code points for xml_util.isChar, xml_util.isDigit, xml_util.isI
     {
         import std.conv;
 
-        if (outputXmlTraceProgress)
-        {
-            import std.stdio : writeln;
-
-            writeln("unittest xml_util.isChar, isDigit, isIdeographic");
-        }
+        outputXmlTraceProgress("unittest xml_util.isChar, isDigit, isIdeographic");
 
         foreach (c; 0 .. dchar.max + 1)
         {
@@ -1069,12 +1053,7 @@ unittest  // all code points for xml_util.isChar, xml_util.isDigit, xml_util.isI
 
 unittest  // xml_util.isSpaces
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.isSpaces");
-    }
+    outputXmlTraceProgress("unittest xml_util.isSpaces");
 
     assert(isSpaces(" "));
     assert(isSpaces("    \n\t"));
@@ -1096,12 +1075,7 @@ unittest  // xml_util.isVersionStr
 {
     import std.typecons : No, Yes;
 
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.isVersionStr");
-    }
+    outputXmlTraceProgress("unittest xml_util.isVersionStr");
 
     assert(isVersionStr("", Yes.allowEmpty));
     assert(isVersionStr("1.1", No.allowEmpty));
@@ -1118,12 +1092,7 @@ unittest  // xml_util.isVersionStr
 
 unittest  // xml_util.leftString
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.leftString");
-    }
+    outputXmlTraceProgress("unittest xml_util.leftString");
 
     assert(leftString("", 1) == "");
     assert(leftString("abc", 1) == "a");
@@ -1133,12 +1102,7 @@ unittest  // xml_util.leftString
 
 unittest  // xml_util.leftStringIndicator
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.leftStringIndicator");
-    }
+    outputXmlTraceProgress("unittest xml_util.leftStringIndicator");
 
     assert(leftStringIndicator("", 1) == "");
     assert(leftStringIndicator("abc", 1) == "a...");
@@ -1148,12 +1112,7 @@ unittest  // xml_util.leftStringIndicator
 
 unittest  // xml_util.rightString 
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.rightString");
-    }
+    outputXmlTraceProgress("unittest xml_util.rightString");
 
     assert(rightString("", 1) == "");
     assert(rightString("abc", 1) == "c");
@@ -1163,12 +1122,7 @@ unittest  // xml_util.rightString
 
 unittest  // xml_util.splitName
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.splitName");
-    }
+    outputXmlTraceProgress("unittest xml_util.splitName");
 
     string p, n;
 
@@ -1187,12 +1141,7 @@ unittest  // xml_util.splitName
 
 unittest  // xml_util.splitNameValue
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest xml_util.splitNameValue");
-    }
+    outputXmlTraceProgress("unittest xml_util.splitNameValue");
 
     string n, v;
 

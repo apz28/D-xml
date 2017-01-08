@@ -1120,13 +1120,10 @@ private:
     void checkFilter(void delegate() aAdvance)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.checkFilter()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.checkFilter()");
         */
+
         assert(_listType != XmlNodeListType.flat);
 
         ++_inFilter;
@@ -1140,13 +1137,10 @@ private:
     void popFrontSibling()
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.popFrontSibling()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.popFrontSibling()");
         */
+
         assert(_listType != XmlNodeListType.flat);
         assert(_current !is null);
 
@@ -1159,13 +1153,10 @@ private:
     void popFrontDeep()
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writefln("XmlNodeList.popFrontDeep(current(%s.%s))", _parent.name, _current.name);
-        }
+        version (unittest)
+        outputXmlTraceParserF("XmlNodeList.popFrontDeep(current(%s.%s))", _parent.name, _current.name);
         */
+
         assert(_listType != XmlNodeListType.flat);
         assert(_current !is null);
 
@@ -1174,13 +1165,9 @@ private:
             if (_current.nextSibling !is null)
             {
                 /*
-                debug(traceXmlParser)
-                {
-                    import std.stdio : writeln;
-
-                    writefln("XmlNodeList.popFrontDeep(push(%s.%s))", _parent.name,
-                        _current.nextSibling.name);
-                }
+                version (unittest)
+                outputXmlTraceParserF("XmlNodeList.popFrontDeep(push(%s.%s))", _parent.name,
+                    _current.nextSibling.name);
                 */
 
                 _walkNodes ~= WalkNode(_parent, _current.nextSibling);
@@ -1213,13 +1200,10 @@ private:
     XmlNode!S getItemSibling(size_t aIndex)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.getItem()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.getItem()");
         */
+
         assert(_listType != XmlNodeListType.flat);
 
         if (_current is null || aIndex == 0)
@@ -1245,13 +1229,10 @@ private:
     XmlNode!S getItemDeep(size_t aIndex)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.getItemDeep()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.getItemDeep()");
         */
+
         assert(_listType != XmlNodeListType.flat);
 
         if (_current is null || aIndex == 0)
@@ -1278,13 +1259,10 @@ private:
     void moveBackSibling()
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.moveBackSibling()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.moveBackSibling()");
         */
+
         assert(_listType != XmlNodeListType.flat);
         assert(_current !is null);
 
@@ -1298,12 +1276,8 @@ public:
     this(this)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.this(this)");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.this(this)");
         */
 
         if (_listType == XmlNodeListType.childNodesDeep)
@@ -1313,17 +1287,13 @@ public:
     this(XmlNode!S aParent, XmlNodeListType aListType, XmlNodeListFilterEvent aOnFilter, Object aContext)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.this(...)");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.this(...)");
         */
 
         if (aListType == XmlNodeListType.flat)
             throw new XmlInvalidOperationException(Message.eInvalidOpDelegate,
-                    "XmlNodeList", "this(listType = XmlNodeListType.flat)");
+                "XmlNodeList", "this(listType = XmlNodeListType.flat)");
 
         _orgParent = aParent;
         _listType = aListType;
@@ -1355,12 +1325,8 @@ public:
     XmlNode!S item(size_t aIndex)
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.item()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.item()");
         */
 
         if (_listType == XmlNodeListType.flat)
@@ -1396,12 +1362,8 @@ public:
     void popFront()
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.popFront()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.popFront()");
         */
 
         if (_listType == XmlNodeListType.flat)
@@ -1453,12 +1415,8 @@ public:
     void reset()
     {
         /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.reset()");
-        }
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.reset()");
         */
 
         if (_listType == XmlNodeListType.flat)
@@ -1530,14 +1488,9 @@ public:
 
     size_t length()
     {
-        /*
-        debug(traceXmlParser)
-        {
-            import std.stdio : writeln;
-
-            writeln("XmlNodeList.length()");
-        }
-        */
+        version (none)
+        version (unittest)
+        outputXmlTraceParser("XmlNodeList.length()");
 
         if (empty)
             return 0;
@@ -3469,12 +3422,7 @@ public:
 
 unittest  // XmlDocument
 {
-    if (outputXmlTraceProgress)
-    {
-        import std.stdio : writeln;
-
-        writeln("unittest XmlDocument");
-    }
+    outputXmlTraceProgress("unittest XmlDocument");
 
     auto doc = new XmlDocument!string();
     auto root = doc.appendChild(doc.createElement("root"));
