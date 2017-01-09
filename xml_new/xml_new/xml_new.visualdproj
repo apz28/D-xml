@@ -9,7 +9,7 @@
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <mscoff>1</mscoff>
-  <trace>0</trace>
+  <trace>1</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>1</vtls>
@@ -33,7 +33,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -70,7 +70,7 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids>notraceXmlProfile notraceXmlParser notraceXmlXPathParser</debugids>
+  <debugids>xmlTraceProfile noxmlTraceParser noxmlTraceXPathParser</debugids>
   <versionlevel>0</versionlevel>
   <versionids />
   <dump_source>0</dump_source>
