@@ -89,14 +89,6 @@ private:
         return c;
     }
 
-    void initParser()
-    {
-        useSaxAttribute = options.useSax && options.onSaxAttributeNode !is null;
-        useSaxElementBegin = options.useSax && options.onSaxElementNodeBegin !is null;
-        useSaxElementEnd = options.useSax && options.onSaxElementNodeEnd !is null;
-        useSaxOtherNode = options.useSax && options.onSaxOtherNode !is null;
-    }
-
     pragma(inline, true)
     XmlNode!S peekNode()
     {
@@ -874,9 +866,13 @@ public:
 
     this(XmlDocument!S aDocument, XmlReader!S aReader)
     {
-        document = aDocument;
         reader = aReader;
+        document = aDocument;
         options = aDocument.parseOptions;
+        useSaxAttribute = options.useSax && options.onSaxAttributeNode !is null;
+        useSaxElementBegin = options.useSax && options.onSaxElementNodeBegin !is null;
+        useSaxElementEnd = options.useSax && options.onSaxElementNodeEnd !is null;
+        useSaxOtherNode = options.useSax && options.onSaxOtherNode !is null;
 
         asIsBuffer = new XmlBuffer!(S, false);
         nameBuffer = new XmlBuffer!(S, false);
@@ -890,8 +886,6 @@ public:
     {
         version (unittest)
         outputXmlTraceParser("parse");
-
-        initParser();
 
         try
         {

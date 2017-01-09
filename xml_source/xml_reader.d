@@ -435,7 +435,7 @@ package:
         return name.s;
     }
 
-    final S readElementEName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final void readElementEName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
     {
         name.loc = loc;
         while (!empty && !isElementENameSeparator(front))
@@ -451,8 +451,6 @@ package:
 
         if (name.s.length == 0)
             throw new XmlParserException(name.loc, Message.eBlankName);
-
-        return name.s;
     }
 
     final S readElementPName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
@@ -522,8 +520,9 @@ package:
     {
         assert(!empty && !isElementTextSeparator(front));
 
-        dchar c;
         allWhitespaces = true;
+        dchar c;
+
         do
         {
             c = current;
