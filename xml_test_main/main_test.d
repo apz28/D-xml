@@ -41,10 +41,6 @@ public:
         Flag!"LoadFromFile" aLoadFromFile,
         Flag!"AutoSaveOutXml" aAutoSaveOutXml)
     {
-        // let do it in batch file
-        //removeFile(setExtension(aFileName, ".out"));
-        //removeFile(setExtension(aFileName, ".err"));
-
         getOutXml = true;
         inFileName = aFileName;
         autoSaveOutXml = aAutoSaveOutXml;
@@ -55,30 +51,26 @@ public:
         {
             ubyte[] temp = cast(ubyte[]) std.file.read(aFileName);
 
-            if (temp.length >= 2)
+            switch (getEncodedMarker(temp))
             {
-                // utf8
-                if (temp.length >= 3 && temp[0] == 0xEF && temp[1] == 0xBB && temp[2] == 0xBF)
+                case XmlEncodedMarker.utf8:
                     inXml = cast(string)(cast(char[]) temp[3 .. $]);
-                // utf32be 
-                else if (temp.length >= 4 && temp[0] == 0x00 && temp[1] == 0x00 &&
-                        temp[2] == 0xFE && temp[3] == 0xFF)
-                    inXml = to!string(cast(dstring)(cast(dchar[]) temp[4 .. $]));
-                // utf32le
-                else if (temp.length >= 4 && temp[0] == 0xFF && temp[1] == 0xFE &&
-                        temp[2] == 0x00 && temp[3] == 0x00)
-                    inXml = to!string(cast(dstring)(cast(dchar[]) temp[4 .. $]));
-                // utf16be 
-                else if (temp[0] == 0xFE && temp[1] == 0xFF)
+                    break;
+                case XmlEncodedMarker.utf16be:
                     inXml = to!string(cast(wstring)(cast(wchar[]) temp[2 .. $]));
-                // utf16le
-                else if (temp[0] == 0xFF && temp[1] == 0xFE)
+                    break;
+                case XmlEncodedMarker.utf16le:
                     inXml = to!string(cast(wstring)(cast(wchar[]) temp[2 .. $]));
-                else
+                    break;
+                case XmlEncodedMarker.utf32be:
+                    inXml = to!string(cast(dstring)(cast(dchar[]) temp[4 .. $]));
+                    break;
+                case XmlEncodedMarker.utf32le:
+                    inXml = to!string(cast(dstring)(cast(dchar[]) temp[4 .. $]));
+                    break;
+                default:
                     inXml = cast(string) temp;
             }
-            else
-                inXml = cast(string) temp;
 
             version (unittest)
             {
