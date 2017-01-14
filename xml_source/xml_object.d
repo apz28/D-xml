@@ -367,7 +367,7 @@ enum XmlEncodeMode
     checked, // Text does not have reserved char
     decoded, // Text has reserved char in decoded form
     encoded, // Text has reserved char in encoded form
-    none // Text should be left as-is (no encode or decode needed)
+    none // Text should be left as-is (no encode or decode check needed)
 }
 
 enum XmlBufferDefaultCapacity = 1000;

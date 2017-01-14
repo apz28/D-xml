@@ -66,6 +66,47 @@ version (unittest)
 
 enum bool isXmlString(S) = is(S == string) || is(S == wstring) || is(S == dstring);
 
+enum XmlEncodedMarker
+{
+    none,
+    utf8,
+    utf16be,
+    utf16le,
+    utf32be,
+    utf32le
+}
+
+XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
+{
+    if (s.length >= 2)
+    {
+        // utf8
+        if (s.length >= 3 && s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
+            return XmlEncodedMarker.utf8;
+        
+        if (s.length >= 4)
+        {
+            // utf32be 
+            if (s[0] == 0x00 && s[1] == 0x00 && s[2] == 0xFE && s[3] == 0xFF)
+                return XmlEncodedMarker.utf32be;
+
+            // utf32le
+            if (s[0] == 0xFF && s[1] == 0xFE && s[2] == 0x00 && s[3] == 0x00)
+                return XmlEncodedMarker.utf32le;
+        }
+
+        // utf16be 
+        if (s[0] == 0xFE && s[1] == 0xFF)
+            return XmlEncodedMarker.utf16be;
+
+        // utf16le
+        if (s[0] == 0xFF && s[1] == 0xFE)
+            return XmlEncodedMarker.utf16le;
+    }
+    
+    return XmlEncodedMarker.none;
+}
+
 template XmlChar(S)
 if (isXmlString!S)
 {
@@ -196,13 +237,13 @@ if (isXmlString!S)
     return isChar(c);
 }
 
-bool sequalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2)
+bool sequalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure nothrow @safe 
 if (isXmlString!S)
 {
     return (s1 == s2);
 }
 
-bool sequalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2)
+bool sequalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure @safe 
 if (isXmlString!S)
 {
     import std.uni : sicmp;
@@ -225,7 +266,7 @@ struct FormatFloatSpec
     alias fmtg this;
 }
 
-string formatFloat(N)(N n, in FormatFloatSpec spec = FormatFloatSpec.init)
+string formatFloat(N)(N n, in FormatFloatSpec spec = FormatFloatSpec.init) @safe 
 if (isFloatingPoint!N)
 {
     import std.format : format;
@@ -254,7 +295,7 @@ struct FormatNumberSpec
     alias fmtg this;
 }
 
-string formatNumber(N)(N n, in FormatNumberSpec spec = FormatNumberSpec.init)
+string formatNumber(N)(N n, in FormatNumberSpec spec = FormatNumberSpec.init) pure @safe 
 if (isIntegral!N)
 {
     import std.format : format;
@@ -262,7 +303,7 @@ if (isIntegral!N)
     return formatGroup(format(spec.fmt, n), spec.fmtg);
 }
 
-private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGroupSpec.init)
+private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGroupSpec.init) pure nothrow @safe 
 {
     import std.uni : byGrapheme;
     import std.array : Appender, appender, walkLength;
@@ -512,7 +553,7 @@ bool isClassType(T)(Object aObj)
 *    s = the string to be tested
 *    allowEmpty = return true if allowEmpty is true and s.length is 0 
 */
-bool isVersionStr(S)(S s, Flag!"allowEmpty" allowEmpty)
+bool isVersionStr(S)(S s, Flag!"allowEmpty" allowEmpty) pure nothrow @safe 
 if (isXmlString!S)
 {
     import std.string : isNumeric;
