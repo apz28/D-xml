@@ -88,7 +88,7 @@ mixin template DLink()
     }
 }
 
-T singleton(T)(ref T v, T function() initiate)
+T singleton(T)(ref T v, T function() initiate) nothrow @safe
 if (is(T == class))
 {
     if (v is null)
@@ -103,9 +103,10 @@ if (is(T == class))
     return v;
 }
 
-struct EnumBitFlags(E) 
+struct EnumBitFlags(E)
 if (isBitFlagEnum!(E))
 {
+nothrow @safe:
 private:
     enum isBaseEnumType(T) = is(E == T);
     alias EType = OriginalType!E;
@@ -114,7 +115,6 @@ private:
 
     static struct BitFlagNegations
     {
-    @safe @nogc pure nothrow:
     private:
         EType values;
 
@@ -274,6 +274,7 @@ public:
 
 struct EnumArray(E, V) 
 {
+nothrow @safe:
 public:
     struct Entry 
     {
@@ -341,7 +342,7 @@ public:
     }
 }
 
-package string getShortClassName(S)(XmlObject!S obj)
+package string getShortClassName(S)(XmlObject!S obj) pure nothrow @safe
 {
     if (obj is null)
         return "null";
