@@ -88,7 +88,7 @@ mixin template DLink()
     }
 }
 
-T singleton(T)(ref T v, T function() initiate) nothrow @safe
+T singleton(T)(ref T v, T function() initiate)
 if (is(T == class))
 {
     if (v is null)
