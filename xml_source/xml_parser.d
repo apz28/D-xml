@@ -177,18 +177,14 @@ private:
         auto parentNode = peekNode();
         auto node = parentNode.appendChild(document.createDeclaration());
 
-        if (!reader.skipSpaces().empty &&
-            isNameStartC(reader.front) &&
-            !isDeclarationAttributeNameSeparator(reader.front))
+        if (reader.skipSpaces().isDeclarationNameStart())
         {
             ParseContext!S attributeName;
             do
             {
                 parseAttributeDeclaration(node, attributeName);
             }
-            while (!reader.skipSpaces().empty &&
-                   isNameStartC(reader.front) &&
-                   !isDeclarationAttributeNameSeparator(reader.front));
+            while (reader.skipSpaces().isDeclarationNameStart());
         }
 
         expectChar!(0)('?');
@@ -249,7 +245,7 @@ private:
 
         auto parentNode = peekNode();
 
-        if (!reader.skipSpaces().empty && reader.front != '[')
+        if (reader.skipSpaces().isAnyFrontBut('['))
         {
             S systemOrPublic;
             XmlString!S publicId, text;
@@ -314,7 +310,7 @@ private:
         auto parentNode = peekNode();
         auto node = cast(XmlDocumentTypeAttributeList!S) parentNode.appendChild(document.createDocumentTypeAttributeList(name));
 
-        while (!reader.skipSpaces().empty && reader.front != '>')
+        while (reader.skipSpaces().isAnyFrontBut('>'))
             parseDocumentTypeAttributeListItem(node);
 
         expectChar!(0)('>');
@@ -343,7 +339,7 @@ private:
         // EnumerateType
         if (reader.skipSpaces().moveFrontIf('('))
         {
-            while (!reader.skipSpaces().empty && reader.front != ')')
+            while (reader.skipSpaces().isAnyFrontBut(')'))
             {
                 typeItems ~= reader.readDocumentTypeAttributeListChoiceName(nameBuffer, localContext);
                 reader.skipSpaces().moveFrontIf('|');
@@ -357,7 +353,7 @@ private:
             if (type == XmlConst.notation)
             {
                 expectChar!(skipSpaceBefore)('(');
-                while (!reader.skipSpaces().empty && reader.front != ')')
+                while (reader.skipSpaces().isAnyFrontBut(')'))
                 {
                     typeItems ~= reader.readDocumentTypeAttributeListChoiceName(nameBuffer, localContext);
                     reader.skipSpaces().moveFrontIf('|');
@@ -439,7 +435,7 @@ private:
         XmlDocumentTypeElementItem!S last;
         bool done;
 
-        while (!done && !reader.skipSpaces().empty && reader.front != ')')
+        while (!done && reader.skipSpaces().isAnyFrontBut(')'))
         {
             switch (reader.front)
             {
@@ -567,7 +563,7 @@ private:
         {
             parseExternalId(systemOrPublic, publicId, text, false);
 
-            if (!reference && !reader.skipSpaces().empty && reader.front != '>')
+            if (!reference && reader.skipSpaces().isAnyFrontBut('>'))
             {
                 S nData = reader.readAnyName(nameBuffer, localContext);
                 if (nData != XmlConst.nData)
@@ -621,31 +617,27 @@ private:
         if (useSaxElementBegin)
             options.onSaxElementNodeBegin(element);
 
-        if (!reader.skipSpaces().empty && 
-            isNameStartC(reader.front) &&
-            !isElementAttributeNameSeparator(reader.front))
+        if (reader.skipSpaces().isElementAttributeNameStart())
         {
             ParseContext!S attributeName;
             do
             {
                 parseElementXAttribute(element, attributeName);
             }
-            while (!reader.skipSpaces().empty &&
-                   isNameStartC(reader.front) &&
-                   !isElementAttributeNameSeparator(reader.front));
+            while (reader.skipSpaces().isElementAttributeNameStart());
         }
 
         if (reader.moveFrontIf('>'))
         {
-            if (!reader.empty && !isElementSeparator(reader.front))
+            if (reader.isElementTextStart())
                 parseElementXText(element);
 
             expectChar!(0)('<');
-            while (!reader.empty && reader.front != '/')
+            while (reader.isAnyFrontBut('/'))
             {
                 parseElement();
 
-                if (!reader.empty && !isElementSeparator(reader.front))
+                if (reader.isElementTextStart())
                     parseElementXText(element);
 
                 expectChar!(0)('<');
@@ -757,7 +749,7 @@ private:
             publicId = parseQuotedValue();
             reader.skipSpaces();
 
-            if (!optionalText || (!reader.empty && reader.front != '>'))
+            if (!optionalText || reader.isAnyFrontBut('>'))
                 text = parseQuotedValue();
         }
         else

@@ -54,69 +54,6 @@ package struct ParseContext(S)
     XmlLoc loc;
 }
 
-alias IsCharEvent = bool function(dchar c);
-
-pragma(inline, true)
-bool isDocumentTypeAttributeListChoice(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == '|' || c == '(' || c == ')' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isDeclarationAttributeNameSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == '?' || c == '=' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isDocumentTypeElementChoice(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == ']' || c == '*' || c == '+' || c == '|'
-        || c == ',' || c == '(' || c == ')' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isElementAttributeNameSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == '/' || c == '=' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isElementENameSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == '!' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isElementPNameSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == '?' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isElementXNameSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || c == '/' || isSpace(c);
-}
-
-pragma(inline, true)
-bool isElementSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>';
-}
-
-pragma(inline, true)
-bool isElementTextSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<';
-}
-
-pragma(inline, true)
-bool isNameSeparator(dchar c) pure nothrow @safe
-{
-    return c == '<' || c == '>' || isSpace(c);
-}
-
 abstract class XmlReader(S) : XmlObject!S
 {
 protected:
@@ -315,7 +252,104 @@ protected:
             loc.column += 1;
     }
 
-package:
+    pragma(inline, true)
+    static bool isDocumentTypeAttributeListChoice(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == '|' || c == '(' || c == ')' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isDeclarationAttributeNameSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == '?' || c == '=' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isDocumentTypeElementChoice(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == ']' || c == '*' || c == '+' || c == '|'
+            || c == ',' || c == '(' || c == ')' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isElementAttributeNameSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == '/' || c == '=' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isElementENameSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == '!' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isElementPNameSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == '?' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isElementXNameSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || c == '/' || isSpace(c);
+    }
+
+    pragma(inline, true)
+    static bool isElementSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>';
+    }
+
+    pragma(inline, true)
+    static bool isElementTextSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<';
+    }
+
+    pragma(inline, true)
+    static bool isNameSeparator(dchar c) pure nothrow @safe
+    {
+        return c == '<' || c == '>' || isSpace(c);
+    }
+
+package:    
+    pragma(inline, true)
+    final bool isAnyFrontBut(dchar c)
+    {
+        return !empty && front != c;
+    }
+
+    pragma(inline, true)
+    final bool isDeclarationNameStart()
+    {
+        if (empty)
+            return false;
+        else
+        {
+            auto c = front;
+            return !isDeclarationAttributeNameSeparator(c) && isNameStartC(c);
+        }
+    }
+
+    pragma(inline, true)
+    final bool isElementAttributeNameStart()
+    {
+        if (empty)
+            return false;
+        else
+        {
+            auto c = front;
+            return !isElementAttributeNameSeparator(c) && isNameStartC(c);
+        }
+    }
+
+    pragma(inline, true)
+    final bool isElementTextStart()
+    {
+        return !empty && !isElementSeparator(front);
+    }
+
     final dchar moveFrontIf(dchar aCheckNonSpaceChar)
     {
         //assert(!isSpace(aCheckNonSpaceChar));
@@ -578,9 +612,9 @@ public:
     }
 
     version(none)
-    final auto readUntil(XmlBuffer!(S, false) buffer, IsCharEvent untilChar)
+    final auto readUntil(alias stopChar)(XmlBuffer!(S, false) buffer)
     {
-        while (!empty && !untilChar(front))
+        while (!empty && !stopChar(front))
         {
             readCurrent(buffer);
             popFront();
@@ -590,9 +624,9 @@ public:
     }
 
     version(none)
-    final auto readUntil(XmlBuffer!(S, true) buffer, IsCharEvent untilChar)
+    final auto readUntil(alias stopChar)(XmlBuffer!(S, true) buffer)
     {
-        while (!empty && !untilChar(front))
+        while (!empty && !stopChar(front))
         {
             readCurrent(buffer);
             popFront();
