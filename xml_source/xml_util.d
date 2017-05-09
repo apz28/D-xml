@@ -64,8 +64,25 @@ version (unittest)
 }
 
 
+/** Template trait to determine if S is an build in D string (string, wstring, dstring.)
+
+    Params:
+        S = A type name.
+
+    Returns:
+        true if S is of a type string, wstring or dstring.
+*/
 enum bool isXmlString(S) = is(S == string) || is(S == wstring) || is(S == dstring);
 
+/** Code to identify what kind of encoding of an array of bytes or stream of bytes.
+
+    $(XmlEncodedMarker none) there is not encoded marker
+    $(XmlEncodedMarker utf8) utf8 encoded marker
+    $(XmlEncodedMarker utf16be) utf16be encoded marker
+    $(XmlEncodedMarker utf16le) utf16le encoded marker
+    $(XmlEncodedMarker utf32be) utf32be encoded marker
+    $(XmlEncodedMarker utf32le) utf32le encoded marker
+*/
 enum XmlEncodedMarker
 {
     none,
@@ -76,6 +93,19 @@ enum XmlEncodedMarker
     utf32le
 }
 
+/** Determine XmlEncodedMarker of an array of bytes
+
+    Params:
+        s = array of bytes
+
+    Returns:
+        XmlEncodedMarker.none if s.length is less or equal to 1 
+        XmlEncodedMarker.utf8 if s starts with 0xEF 0xBB 0xBF
+        XmlEncodedMarker.utf16be if s starts with 0xFE 0xFF
+        XmlEncodedMarker.utf16le if s starts with 0xFF 0xFE
+        XmlEncodedMarker.utf32be if s starts with 0x00 0x00 0xFE 0xFF
+        XmlEncodedMarker.utf32le if s starts with 0xFF 0xFE 0x00 0x00
+*/
 XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
 {
     if (s.length >= 2)
@@ -107,6 +137,8 @@ XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
     return XmlEncodedMarker.none;
 }
 
+/** Get XMLChar qualifier template from one of D string type S
+*/
 template XmlChar(S)
 if (isXmlString!S)
 {
@@ -120,6 +152,16 @@ if (isXmlString!S)
         static assert(0);
 }
 
+/** Combine two string into a XML qualified name
+
+    Params:
+        prefix = one of the D string type
+        localName = one of the D string type
+
+    Returns:
+        localName if prefix.length is zero
+        otherwise prefix ":" localName
+*/
 pragma(inline, true)
 S combineName(S)(S prefix, S localName) pure nothrow @safe 
 if (isXmlString!S)
@@ -130,13 +172,12 @@ if (isXmlString!S)
         return prefix ~ ":" ~ localName;
 }
 
-/**
-* Throws a XmlException if the string is not pass isName function according to the
-* XML standard
-*
-* Params:
-*    name = the string to be tested
-*    allowEmpty = consider valid if allowEmpty is true and name.length is 0
+/** Throws a XmlException if the string is not pass isName function according to the
+    XML standard
+
+    Params:
+        name = the string to be tested
+        allowEmpty = consider valid if allowEmpty is true and name.length is 0
 */
 void checkName(S)(S name, Flag!"allowEmpty" allowEmpty)
 if (isXmlString!S)
@@ -150,15 +191,15 @@ if (isXmlString!S)
     }
 }
 
-/**
-* Returns true if the character is a base character according to the XML
-* standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [66]
-*
-* Params:
-*    c = the character to be returned
+/** Returns true if the characters can be converted to a base character according to the XML standard
+
+    Standards:
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [66]
+
+    Params:
+        s = encoded char sequences (digit or hex form) to be converted
+        c = the character to be returned
 */
 bool convertToChar(S)(S s, out dchar c) pure nothrow @safe 
 if (isXmlString!S)
@@ -237,12 +278,25 @@ if (isXmlString!S)
     return isChar(c);
 }
 
+/** Returns true if both strings are the same (case-sensitive)
+
+    Params:
+        s1 = one of D string type
+        s2 = one of D string type
+*/
 bool sequalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure nothrow @safe 
 if (isXmlString!S)
 {
     return (s1 == s2);
 }
 
+/** Returns true if both strings are the same (case-insensitive.)
+    Using phobo std.uni.sicmp function
+
+    Params:
+        s1 = one of D string type
+        s2 = one of D string type
+*/
 bool sequalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure @safe 
 if (isXmlString!S)
 {
@@ -340,15 +394,14 @@ private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGrou
     return result;
 }
 
-/**
-* Returns true if the character is a base character according to the XML
-* standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [85]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is a base character according to the XML standard
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [85]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isBaseChar(dchar c) pure nothrow @safe
@@ -356,14 +409,14 @@ bool isBaseChar(dchar c) pure nothrow @safe
     return lookup(baseCharTable, c);
 }
 
-/**
-* Returns true if the character is a character according to the XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [2]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is a character according to the XML standard
+
+    Standards:
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [2]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isChar(dchar c) pure nothrow @safe
@@ -373,15 +426,14 @@ bool isChar(dchar c) pure nothrow @safe
         isSpace(c);
 }
 
-/**
-* Returns true if the character is a combining character according to the
-* XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [87]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is a combining character according to the XML standard
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [87]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isCombiningChar(dchar c) pure nothrow @safe
@@ -389,14 +441,14 @@ bool isCombiningChar(dchar c) pure nothrow @safe
     return lookup(combiningCharTable, c);
 }
 
-/**
-* Returns true if the character is a digit according to the XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [88]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is a digit according to the XML standard
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [88]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isDigit(dchar c) pure nothrow @safe
@@ -410,14 +462,14 @@ bool isDigit(char c) pure nothrow @safe
     return (c >= 0x30 && c <= 0x39);
 }
 
-/**
-* Returns true if the character is an extender according to the XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [89]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is an extender according to the XML standard
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [89]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isExtender(dchar c) pure nothrow @safe
@@ -425,15 +477,14 @@ bool isExtender(dchar c) pure nothrow @safe
     return lookup(extenderTable, c);
 }
 
-/**
-* Returns true if the character is an ideographic character according to the
-* XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [86]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is an ideographic character according to the XML standard
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [86]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isIdeographic(dchar c) pure nothrow @safe
@@ -441,15 +492,14 @@ bool isIdeographic(dchar c) pure nothrow @safe
     return (c == 0x3007) || (c >= 0x3021 && c <= 0x3029) || (c >= 0x4E00 && c <= 0x9FA5);
 }
 
-/**
-* Returns true if the character is a combining character according to the
-* XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [84]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is a combining character according to the XML standard
+
+    Standards:
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [84]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isLetter(dchar c) pure nothrow @safe
@@ -457,12 +507,28 @@ bool isLetter(dchar c) pure nothrow @safe
     return isIdeographic(c) || isBaseChar(c);
 }
 
+/** Returns true if the character is a first character of a XML name according to the XML standard
+
+    Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+    rule [5]
+
+    Params:
+        c = the character to be tested
+*/
 pragma(inline, true)
 bool isNameStartC(dchar c) pure nothrow @safe
 {
     return (c == '_' || c == ':' || isLetter(c));
 }
 
+/** Returns true if the character is a subsequecence character of a XML name according to the XML standard
+
+    Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+    rule [5]
+
+    Params:
+        c = the character to be tested
+*/
 pragma(inline, true)
 bool isNameInC(dchar c) pure nothrow @safe
 {
@@ -470,16 +536,14 @@ bool isNameInC(dchar c) pure nothrow @safe
         isLetter(c) || isDigit(c) || isCombiningChar(c) || isExtender(c));
 }
 
-/**
-* Returns true if the string is a combining characters according to the
-* XML standard
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [5]
-*
-* Params:
-*    name = the string to be tested
-*    allowEmpty = return true if allowEmpty is true and name.lenght is 0
+/** Returns true if the string is a combining characters according to the XML standard
+
+    Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+    rule [5]
+
+    Params:
+        name = the string to be tested
+        allowEmpty = return true if allowEmpty is true and name.lenght is 0
 */
 bool isName(S)(S name, Flag!"allowEmpty" allowEmpty) pure nothrow @safe 
 if (isXmlString!S)
@@ -501,17 +565,16 @@ if (isXmlString!S)
     return true;
 }
 
-/**
-* Returns true if the character is whitespace according to the XML standard
-*
-* Only the following characters are considered whitespace in XML - tab,
-* carriage return, linefeed and space
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* rule [3]
-*
-* Params:
-*    c = the character to be tested
+/** Returns true if the character is whitespace according to the XML standard
+    Only the following characters are considered whitespace in XML - tab,
+    carriage return, linefeed and space
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        rule [3]
+
+    Params:
+        c = the character to be tested
 */
 pragma(inline, true)
 bool isSpace(dchar c) pure nothrow @safe
@@ -519,12 +582,11 @@ bool isSpace(dchar c) pure nothrow @safe
     return c == 0x09 || c == 0x0A || c == 0x0D || c == 0x20;
 }
 
-/**
-* Returns true if the string is all whitespace characters (using isSpace function for testing)
-* Returns false if the s.lenght is 0
-*
-* Params:
-*    s = the string to be tested
+/** Returns true if the string is all whitespace characters (using isSpace function for testing)
+    Returns false if the s.lenght is 0
+
+    Params:
+        s = the string to be tested
 */
 bool isSpaces(S)(S s) pure nothrow @safe 
 if (isXmlString!S)
@@ -537,21 +599,26 @@ if (isXmlString!S)
     return (s.length > 0);
 }
 
+/** Returns true if object parameter is class type of T
+
+    Params:
+        aObj = A class object.
+*/
 bool isClassType(T)(Object aObj)
 {
     return ((cast(T) aObj) !is null);
 }
 
-/**
-* Returns true if the string is in form "D.D"
-* D is any digit characters 0 to 9
-*
-* Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-* relax of rule [26]
-*
-* Params:
-*    s = the string to be tested
-*    allowEmpty = return true if allowEmpty is true and s.length is 0 
+/** Returns true if the string is in form "D.D"
+    D is any digit characters 0 to 9
+
+    Standards: 
+        $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+        relax of rule [26]
+
+    Params:
+        s = the string to be tested
+        allowEmpty = return true if allowEmpty is true and s.length is 0 
 */
 bool isVersionStr(S)(S s, Flag!"allowEmpty" allowEmpty) pure nothrow @safe 
 if (isXmlString!S)

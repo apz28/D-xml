@@ -353,8 +353,8 @@ package string getShortClassName(S)(XmlObject!S obj) pure nothrow @safe
 /**
 * Mode to use for decoding.
 *
-* $(DDOC_ENUM_MEMBERS loose) decode, but ignore errors
-* $(DDOC_ENUM_MEMBERS strict) decode, and throw exception on error
+* $(XmlDecodeMode loose) decode, but ignore errors
+* $(XmlDecodeMode strict) decode, and throw exception on error
 */
 enum XmlDecodeMode
 {
@@ -408,39 +408,34 @@ public:
         return this;
     }
 
+    /** Decode a string by unescaping all predefined XML entities.    
+        This function decode the entities "&amp;amp;", "&amp;quot;", "&amp;apos;",
+        "&amp;lt;" and "&amp;gt",
+        as well as decimal and hexadecimal entities such as &amp;#x20AC;
+    
+        Standards:
+            $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+    
+        Params:
+            s = The string to be decoded
+    
+        Throws:
+            XMLExceptionConvert if decode fails
+    
+        Returns: 
+            The XML decoded string
+    
+        Example:
+            writeln(decode("a &gt; b")); // writes "a > b"
+        */
+
     /**
-    * xmlDecodes a string by unescaping all predefined XML entities.
-    *
     * encode() escapes certain characters (ampersand, quote, apostrophe, less-than
     * and greater-than), and similarly, decode() unescapes them. These functions
     * are provided for convenience only. You do not need to use them when using
     * the std.xml classes, because then all the encoding and decoding will be done
     * for you automatically.
     *
-    * This function xmlDecodes the entities &amp;amp;, &amp;quot;, &amp;apos;,
-    * &amp;lt; and &amp;gt,
-    * as well as decimal and hexadecimal entities such as &amp;#x20AC;
-    *
-    * If the string does not contain an ampersand, the original will be returned.
-    *
-    * Note that the "mode" parameter can be one of DecodeMode.NONE (do not
-    * decode), DecodeMode.LOOSE (decode, but ignore errors), or DecodeMode.STRICT
-    * (decode, and throw a XMLExceptionConvert in the event of an error).
-    *
-    * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-    *
-    * Params:
-    *      s = The string to be xmlDecoded
-    *      mode = (optional) Mode to use for decoding. (Defaults to LOOSE).
-    *
-    * Throws: XMLExceptionConvert if mode == DecodeMode.STRICT and decode fails
-    *
-    * Returns: The xmlDecoded string
-    *
-    * Example:
-    * --------------
-    * writefln(decode("a &gt; b")); // writes "a > b"
-    * --------------
     */
     final S decode(S s)
     {
