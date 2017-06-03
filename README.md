@@ -1,5 +1,5 @@
 # dlang-xml
-XML DOM Implementation for DLang
+XML DOM Implementation for D Lang
 
 Boost Software License - Version 1.0
 
