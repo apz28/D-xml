@@ -175,14 +175,16 @@ if (isXmlString!S)
 /** Throws a XmlException if the string is not pass isName function according to the
     XML standard
 
+    Template Params:
+        allowEmpty = consider valid if allowEmpty is true and name.length is 0
+
     Params:
         name = the string to be tested
-        allowEmpty = consider valid if allowEmpty is true and name.length is 0
 */
-void checkName(S)(S name, Flag!"allowEmpty" allowEmpty)
+void checkName(S, Flag!"allowEmpty" allowEmpty)(S name)
 if (isXmlString!S)
 {
-    if (!isName(name, allowEmpty))
+    if (!isName!(S, allowEmpty)(name))
     {
         if (name.length == 0)
             throw new XmlException(Message.eBlankName);
@@ -208,7 +210,7 @@ if (isXmlString!S)
     if (s.length == 0)
         return false;
 
-    if (s[0] == 'x')
+    if (s[0] == 'x' || s[0] == 'X')
     {
         s = s[1 .. $];
         if (s.length == 0)
@@ -218,36 +220,36 @@ if (isXmlString!S)
         {
             switch (d)
             {
-            case 'a':
-            case 'b':
-            case 'c':
-            case 'd':
-            case 'e':
-            case 'f':
-                c = (c * 16) + (d - 'a' + 10);
-                break;
-            case 'A':
-            case 'B':
-            case 'C':
-            case 'D':
-            case 'E':
-            case 'F':
-                c = (c * 16) + (d - 'A' + 10);
-                break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                c = (c * 16) + (d - '0');
-                break;
-            default:
-                return false;
+                case 'a':
+                case 'b':
+                case 'c':
+                case 'd':
+                case 'e':
+                case 'f':
+                    c = (c * 16) + (d - 'a' + 10);
+                    break;
+                case 'A':
+                case 'B':
+                case 'C':
+                case 'D':
+                case 'E':
+                case 'F':
+                    c = (c * 16) + (d - 'A' + 10);
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    c = (c * 16) + (d - '0');
+                    break;
+                default:
+                    return false;
             }
         }
     }
@@ -257,20 +259,20 @@ if (isXmlString!S)
         {
             switch (d)
             {
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                c = (c * 10) + (d - '0');
-                break;
-            default:
-                return false;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    c = (c * 10) + (d - '0');
+                    break;
+                default:
+                    return false;
             }
         }
     }
@@ -284,7 +286,7 @@ if (isXmlString!S)
         s1 = one of D string type
         s2 = one of D string type
 */
-bool sequalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure nothrow @safe 
+bool equalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure nothrow @safe 
 if (isXmlString!S)
 {
     return (s1 == s2);
@@ -297,7 +299,7 @@ if (isXmlString!S)
         s1 = one of D string type
         s2 = one of D string type
 */
-bool sequalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure @safe 
+bool equalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure @safe 
 if (isXmlString!S)
 {
     import std.uni : sicmp;
@@ -541,11 +543,13 @@ bool isNameInC(dchar c) pure nothrow @safe
     Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
     rule [5]
 
+    Template Params:
+        allowEmpty = return true if allowEmpty is true and name.lenght is 0
+
     Params:
         name = the string to be tested
-        allowEmpty = return true if allowEmpty is true and name.lenght is 0
 */
-bool isName(S)(S name, Flag!"allowEmpty" allowEmpty) pure nothrow @safe 
+bool isName(S, Flag!"allowEmpty" allowEmpty)(S name) pure nothrow @safe 
 if (isXmlString!S)
 {
     if (name.length == 0)
@@ -616,27 +620,33 @@ bool isClassType(T)(Object aObj)
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         relax of rule [26]
 
+    Template Params:
+        allowEmpty = return true if allowEmpty is true and s.length is 0 
+
     Params:
         s = the string to be tested
-        allowEmpty = return true if allowEmpty is true and s.length is 0 
 */
-bool isVersionStr(S)(S s, Flag!"allowEmpty" allowEmpty) pure nothrow @safe 
+bool isVersionStr(S, Flag!"allowEmpty" allowEmpty)(S s) pure nothrow @safe 
 if (isXmlString!S)
 {
     import std.string : isNumeric;
 
-    if (s.length > 0)
-    {
-        S p1, p2;
-        if (splitNameValueD(s, '.', p1, p2) == 1)
-            return isNumeric(p1) && isNumeric(p2);
-        else
-            return false;
-    }
-    else
+    if (s.length == 0)
         return allowEmpty;
+    
+    S p1, p2;
+    if (splitNameValueD(s, '.', p1, p2) == 1)
+        return isNumeric(p1) && isNumeric(p2);
+    else
+        return false;
 }
 
+/** Returns number of code-points from left of a string
+
+    Params:
+        s = the string to be sliced
+        count = how many characters that the function returns
+*/
 pragma(inline, true)
 S leftString(S)(S s, size_t count) pure nothrow @safe 
 if (isXmlString!S)
@@ -647,6 +657,13 @@ if (isXmlString!S)
         return s[0 .. count];
 }
 
+/** Returns number of code-points from left of a string
+    If s length is greater than the count, it will append "..." to the end of result
+
+    Params:
+        s = the string to be sliced
+        count = how many characters that the function returns
+*/
 S leftStringIndicator(S)(S s, size_t count) pure nothrow @safe 
 if (isXmlString!S)
 {
@@ -666,9 +683,12 @@ if (isXmlString!S)
 }
 
 private bool lookup(const(int[][]) table, int c) pure nothrow @safe
+in
 {
     assert(table.length > 0);
-
+}
+body
+{
     int l;
     int r = table.length - 1;
     while (l <= r)
@@ -684,6 +704,12 @@ private bool lookup(const(int[][]) table, int c) pure nothrow @safe
     return false;
 }
 
+/** Returns number of code-points from right of a string
+
+    Params:
+        s = the string to be sliced
+        count = how many characters that the function returns
+*/
 pragma(inline, true)
 S rightString(S)(S s, size_t count) pure nothrow @safe 
 if (isXmlString!S)
@@ -694,22 +720,45 @@ if (isXmlString!S)
         return s[$ - count .. $];
 }
 
+/** Split the string into prefix and localName using ":" separator character.
+    If there is no ":" separator character, the localName will be the passed in string
+
+    Params:
+        aName = the string to be splitted
+        prefix = string part before the ":" character
+        localName = string part after the ":" character
+*/
 void splitName(S)(in S aName, out S prefix, out S localName) pure nothrow @safe 
 if (isXmlString!S)
+in
+{
+    assert(aName.length > 0);
+}
+body
 {
     import std.string : indexOf;
-
-    assert(aName.length > 0);
 
     splitNameI(aName, aName.indexOf(':'), prefix, localName);
 }
 
+/** Split the string into prefix and localName at aIndex.
+    If aIndex is less than zero, the localName will be the passed in string
+
+    Params:
+        aName = the string to be splitted
+        aIndex = where the index of string to be splitted
+        prefix = string part before the aIndex
+        localName = string part after the aIndex
+*/
 void splitNameI(S)(in S aName, in ptrdiff_t aIndex, out S prefix, out S localName) pure nothrow @safe 
 if (isXmlString!S)
+in
 {
     assert(aName.length > 0);
     assert(aIndex < 0 || aIndex < aName.length);
-
+}
+body
+{
     if (aIndex >= 0)
     {
         prefix = aName[0 .. aIndex];
@@ -725,39 +774,24 @@ if (isXmlString!S)
     }
 }
 
-pragma(inline, true)
-void splitNameValueI(S)(in S s, in ptrdiff_t aIndex, out S name, out S value) pure nothrow @safe 
-if (isXmlString!S)
-{
-    assert(aIndex < s.length);
+/** Split the string into name and value separated by a character.
+    If a separator character, aDelimiter, is not found, the name will be the pass in string
+    and value will be null
+    if the pass in string is empty, name and value will be null
 
-    name = s[0 .. aIndex];
-    if (aIndex + 1 < s.length)
-        value = s[aIndex + 1 .. s.length];
-    else
-        value = null;
-}
-
-int splitNameValueD(S)(in S s, in dchar delimiter, out S name, out S value) pure nothrow @safe 
+    Params:
+        s = the string to be splitted
+        aDelimiter = a separator character 
+        name = string part before the aDelimiter
+        value = string part after the aDelimiter
+*/
+int splitNameValueD(S)(in S s, in dchar aDelimiter, out S name, out S value) pure nothrow @safe 
 if (isXmlString!S)
 {
     import std.string : indexOf;
 
     if (s.length > 0)
-    {
-        auto i = s.indexOf(delimiter);
-        if (i >= 0)
-        {
-            splitNameValueI(s, i, name, value);
-            return 1;
-        }
-        else
-        {
-            name = s;
-            value = null;
-            return -1;
-        }
-    }
+        return splitNameValueI(s, s.indexOf(aDelimiter), name, value);
     else
     {
         name = null;
@@ -766,12 +800,57 @@ if (isXmlString!S)
     }
 }
 
+/** Split the string into name and value at the index, aIndex.
+    If aIndex is equal or greater then the pass in string length, name will be the pass in string
+    and value will be null
+
+    Params:
+        s = the string to be splitted
+        aIndex = a index where the string to be splitted 
+        name = string part before the aIndex
+        value = string part after the aIndex
+*/
+pragma(inline, true)
+int splitNameValueI(S)(in S s, in ptrdiff_t aIndex, out S name, out S value) pure nothrow @safe 
+if (isXmlString!S)
+in
+{
+    assert(aIndex < s.length);
+}
+body
+{    
+    if (aIndex >= 0)
+    {
+        name = s[0 .. aIndex];
+        if (aIndex + 1 < s.length)
+            value = s[aIndex + 1 .. s.length];
+        else
+            value = null;
+        return 1;
+    }
+    else
+    {
+        name = s;
+        value = null;
+        return -1;
+    }
+}
+
+/** Return a string of repetitive aChar for aCount times
+
+    Params:
+        aChar = the character that be repeated
+        aCount = number of times aChar to be repeated
+*/
 S stringOfChar(S)(XmlChar!S aChar, size_t aCount)
 if (isXmlString!S)
+in
 {
-    import std.array : Appender;
-
     assert(aCount < (size_t.max / 2));
+}
+body
+{
+    import std.array : Appender;    
 
     if (aCount > 0)
     {
@@ -897,34 +976,34 @@ unittest  // xml_util.combineName
     assert(combineName("prefix", "name") == "prefix:name");
 }
 
-unittest  // xml_util.sequalCase
+unittest  // xml_util.equalCase
 {
-    outputXmlTraceProgress("unittest xml_util.sequalCase");
+    outputXmlTraceProgress("unittest xml_util.equalCase");
 
-    assert(sequalCase!string("", ""));
-    assert(sequalCase!string(" ", " "));
-    assert(sequalCase!string("a", "a"));
-    assert(sequalCase!string("za", "za"));
-    assert(sequalCase!string("1", "1"));
+    assert(equalCase!string("", ""));
+    assert(equalCase!string(" ", " "));
+    assert(equalCase!string("a", "a"));
+    assert(equalCase!string("za", "za"));
+    assert(equalCase!string("1", "1"));
 
-    assert(!sequalCase!string("a", "A"));
-    assert(!sequalCase!string("za", "ZA"));
-    assert(!sequalCase!string("1", "9"));
+    assert(!equalCase!string("a", "A"));
+    assert(!equalCase!string("za", "ZA"));
+    assert(!equalCase!string("1", "9"));
 }
 
-unittest  // sequalCaseInsensitive
+unittest  // equalCaseInsensitive
 {
-    outputXmlTraceProgress("unittest xml_util.sequalCaseInsensitive");
+    outputXmlTraceProgress("unittest xml_util.equalCaseInsensitive");
 
-    assert(sequalCaseInsensitive!string("", ""));
-    assert(sequalCaseInsensitive!string(" ", " "));
-    assert(sequalCaseInsensitive!string("a", "a"));
-    assert(sequalCaseInsensitive!string("za", "za"));
-    assert(sequalCaseInsensitive!string("a", "A"));
-    assert(sequalCaseInsensitive!string("za", "ZA"));
-    assert(sequalCaseInsensitive!string("1", "1"));
+    assert(equalCaseInsensitive!string("", ""));
+    assert(equalCaseInsensitive!string(" ", " "));
+    assert(equalCaseInsensitive!string("a", "a"));
+    assert(equalCaseInsensitive!string("za", "za"));
+    assert(equalCaseInsensitive!string("a", "A"));
+    assert(equalCaseInsensitive!string("za", "ZA"));
+    assert(equalCaseInsensitive!string("1", "1"));
 
-    assert(!sequalCaseInsensitive!string("1", "9"));
+    assert(!equalCaseInsensitive!string("1", "9"));
 }
 
 unittest  // xml_util.formatNumber
@@ -1185,17 +1264,17 @@ unittest  // xml_util.isVersionStr
 
     outputXmlTraceProgress("unittest xml_util.isVersionStr");
 
-    assert(isVersionStr("", Yes.allowEmpty));
-    assert(isVersionStr("1.1", No.allowEmpty));
-    assert(isVersionStr("1.2", No.allowEmpty));
-    assert(isVersionStr("123.456", No.allowEmpty));
+    assert(isVersionStr!(string, Yes.allowEmpty)(""));
+    assert(isVersionStr!(string, No.allowEmpty)("1.1"));
+    assert(isVersionStr!(string, No.allowEmpty)("1.2"));
+    assert(isVersionStr!(string, No.allowEmpty)("123.456"));
 
-    assert(!isVersionStr("", No.allowEmpty));
-    assert(!isVersionStr("0", No.allowEmpty));
-    assert(!isVersionStr(".1", No.allowEmpty));
-    assert(!isVersionStr("1.", No.allowEmpty));
-    assert(!isVersionStr("ab", No.allowEmpty));
-    assert(!isVersionStr("a.b", No.allowEmpty));
+    assert(!isVersionStr!(string, No.allowEmpty)(""));
+    assert(!isVersionStr!(string, No.allowEmpty)("0"));
+    assert(!isVersionStr!(string, No.allowEmpty)(".1"));
+    assert(!isVersionStr!(string, No.allowEmpty)("1."));
+    assert(!isVersionStr!(string, No.allowEmpty)("ab"));
+    assert(!isVersionStr!(string, No.allowEmpty)("a.b"));
 }
 
 unittest  // xml_util.leftString

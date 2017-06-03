@@ -19,7 +19,7 @@ import pham.xml_msg;
 struct XmlLoc
 {
 public:
-    // Zero based values
+    // Zero based index values
     size_t line;
     size_t column;
 

@@ -557,7 +557,7 @@ public:
 
     final override S toString()
     {
-        auto buffer = new XmlBuffer!(S, false)();
+        auto buffer = new XmlBuffer!(S, No.checkEncoded)();
         write(new XmlStringWriter!S(No.PrettyOutput, buffer));
         return buffer.toString();
     }

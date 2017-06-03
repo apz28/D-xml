@@ -11,7 +11,7 @@
 
 module pham.xml_reader;
 
-import std.typecons : Flag;
+import std.typecons : Flag, No, Yes;
 import std.range.primitives : back, empty, front, popFront;
 
 import pham.xml_msg;
@@ -364,7 +364,7 @@ package:
             return 0;
     }
 
-    final S readAnyName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readAnyName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         name.loc = loc;
         while (!empty && !isNameSeparator(front))
@@ -385,7 +385,7 @@ package:
     }
 
     //pragma(inline, true)
-    final void readCurrent(XmlBuffer!(S, false) buffer)
+    final void readCurrent(XmlBuffer!(S, No.checkEncoded) buffer)
     {
         static if (is(C == dchar))
             buffer.put(current);
@@ -399,7 +399,7 @@ package:
     }
 
     //pragma(inline, true)
-    final void readCurrent(XmlBuffer!(S, true) buffer)
+    final void readCurrent(XmlBuffer!(S, Yes.checkEncoded) buffer)
     {
         static if (is(C == dchar))
             buffer.put(current);
@@ -412,7 +412,7 @@ package:
         }
     }
 
-    final S readDeclarationAttributeName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readDeclarationAttributeName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         assert(!empty && !isDeclarationAttributeNameSeparator(front));
 
@@ -435,7 +435,7 @@ package:
         return name.s;
     }
 
-    final S readDocumentTypeAttributeListChoiceName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readDocumentTypeAttributeListChoiceName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         assert(!empty && !isDocumentTypeAttributeListChoice(front));
 
@@ -452,7 +452,7 @@ package:
         return name.s;
     }
 
-    final S readDocumentTypeElementChoiceName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readDocumentTypeElementChoiceName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         assert(!empty && !isDocumentTypeElementChoice(front));
 
@@ -469,7 +469,7 @@ package:
         return name.s;
     }
 
-    final void readElementEName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final void readElementEName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         name.loc = loc;
         while (!empty && !isElementENameSeparator(front))
@@ -487,7 +487,7 @@ package:
             throw new XmlParserException(name.loc, Message.eBlankName);
     }
 
-    final S readElementPName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readElementPName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         name.loc = loc;
         while (!empty && !isElementPNameSeparator(front))
@@ -507,7 +507,7 @@ package:
         return name.s;
     }
 
-    final S readElementXAttributeName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readElementXAttributeName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         assert(!empty && !isElementAttributeNameSeparator(front));
 
@@ -530,7 +530,7 @@ package:
         return name.s;
     }
 
-    final S readElementXName(XmlBuffer!(S, false) buffer, out ParseContext!S name)
+    final S readElementXName(XmlBuffer!(S, No.checkEncoded) buffer, out ParseContext!S name)
     {
         name.loc = loc;
         while (!empty && !isElementXNameSeparator(front))
@@ -550,7 +550,7 @@ package:
         return name.s;
     }
 
-    final void readElementXText(XmlBuffer!(S, true) buffer, out XmlString!S text, out bool allWhitespaces)
+    final void readElementXText(XmlBuffer!(S, Yes.checkEncoded) buffer, out XmlString!S text, out bool allWhitespaces)
     {
         assert(!empty && !isElementTextSeparator(front));
 
@@ -598,7 +598,7 @@ public:
         empty; // Advance to next char
     }
 
-    final S readSpaces(XmlBuffer!(S, false) buffer)
+    final S readSpaces(XmlBuffer!(S, No.checkEncoded) buffer)
     {
         assert(!empty && isSpace(front));
 
@@ -635,7 +635,7 @@ public:
         return buffer;
     }
 
-    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, false) buffer, dchar untilChar, bool keepUntilChar)
+    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, No.checkEncoded) buffer, dchar untilChar, bool keepUntilChar)
     {
         while (!empty)
         {
@@ -660,7 +660,7 @@ public:
         return false;
     }
 
-    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, true) buffer, dchar untilChar, bool keepUntilChar)
+    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, Yes.checkEncoded) buffer, dchar untilChar, bool keepUntilChar)
     {
         while (!empty)
         {
@@ -685,7 +685,7 @@ public:
         return false;
     }
 
-    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, false) buffer, S s)
+    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, No.checkEncoded) buffer, S s)
     {
         auto c = s[$ - 1];
         while (!empty)
@@ -706,7 +706,7 @@ public:
         return false;
     }
 
-    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, true) buffer, S s)
+    final bool readUntilAdv(bool checkReservedChar)(XmlBuffer!(S, Yes.checkEncoded) buffer, S s)
     {
         auto c = s[$ - 1];
         while (!empty)

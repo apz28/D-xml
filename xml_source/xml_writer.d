@@ -11,7 +11,7 @@
 
 module pham.xml_writer;
 
-import std.typecons : Flag;
+import std.typecons : Flag, No, Yes;
 import std.range.primitives : back, empty, front, popFront;
 import std.array : Appender;
 
@@ -424,15 +424,15 @@ public:
 class XmlStringWriter(S) : XmlWriter!S
 {
 protected:
-    XmlBuffer!(S, false) buffer;
+    XmlBuffer!(S, No.checkEncoded) buffer;
 
 public:
     this(Flag!"PrettyOutput" aPrettyOutput, size_t aCapacity = 64000)
     {
-        this(aPrettyOutput, new XmlBuffer!(S, false)(aCapacity));
+        this(aPrettyOutput, new XmlBuffer!(S, No.checkEncoded)(aCapacity));
     }
 
-    this(Flag!"PrettyOutput" aPrettyOutput, XmlBuffer!(S, false) aBuffer)
+    this(Flag!"PrettyOutput" aPrettyOutput, XmlBuffer!(S, No.checkEncoded) aBuffer)
     {
         _prettyOutput = aPrettyOutput;
         buffer = aBuffer;

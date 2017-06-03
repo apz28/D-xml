@@ -510,7 +510,7 @@ public:
     {
         for (auto i = firstAttribute; i !is null; i = i.nextSibling)
         {
-            if (sequalCaseInsensitive!S(i.name, "id"))
+            if (equalCaseInsensitive!S(i.name, "id"))
                 return cast(XmlAttribute!S) i;
         }
         return null;
@@ -1529,8 +1529,8 @@ package:
     {
         if (!aOwnerDocument.isLoading())
         {
-            checkName(aName.prefix, Yes.allowEmpty);
-            checkName(aName.localName, No.allowEmpty);
+            checkName!(S, Yes.allowEmpty)(aName.prefix);
+            checkName!(S, No.allowEmpty)(aName.localName);
         }
 
         super(aOwnerDocument);
@@ -1543,8 +1543,8 @@ public:
     {
         if (!aOwnerDocument.isLoading())
         {
-            checkName(aName.prefix, Yes.allowEmpty);
-            checkName(aName.localName, No.allowEmpty);
+            checkName!(S, Yes.allowEmpty)(aName.prefix);
+            checkName!(S, No.allowEmpty)(aName.localName);
         }
 
         super(aOwnerDocument);
@@ -1742,7 +1742,7 @@ protected:
 
     final void checkVersion(S s) // rule 26
     {
-        if (!isVersionStr(s, Yes.allowEmpty))
+        if (!isVersionStr!(S, Yes.allowEmpty)(s))
             throw new XmlException(Message.eInvalidVersionStr, s);
     }
 
@@ -1879,13 +1879,13 @@ protected:
     }
 
 protected:
-    XmlBufferList!(S, false) _buffers;
+    XmlBufferList!(S, No.checkEncoded) _buffers;
     XmlEntityTable!S _entityTable;
     S[S] _symbolTable;
     int _loading;
 
     pragma(inline, true)
-    final XmlBuffer!(S, false) acquireBuffer(XmlNodeType fromNodeType, size_t aCapacity = 0)
+    final XmlBuffer!(S, No.checkEncoded) acquireBuffer(XmlNodeType fromNodeType, size_t aCapacity = 0)
     {
         auto b = _buffers.acquire();
         if (aCapacity == 0 && fromNodeType == XmlNodeType.document)
@@ -1897,7 +1897,7 @@ protected:
     }
 
     pragma(inline, true)
-    final S getAndReleaseBuffer(XmlBuffer!(S, false) b)
+    final S getAndReleaseBuffer(XmlBuffer!(S, No.checkEncoded) b)
     {
         return _buffers.getAndRelease(b);
     }
@@ -1929,7 +1929,7 @@ protected:
     }
 
     pragma(inline, true)
-    final void releaseBuffer(XmlBuffer!(S, false) b)
+    final void releaseBuffer(XmlBuffer!(S, No.checkEncoded) b)
     {
         _buffers.release(b);
     }
@@ -2059,9 +2059,9 @@ public:
     this()
     {
         super(null);
-        equalName = &sequalCase!S;
+        equalName = &equalCase!S;
         _qualifiedName = singleton!(XmlName!S)(_defaultQualifiedName, &createDefaultQualifiedName);
-        _buffers = new XmlBufferList!(S, false)();
+        _buffers = new XmlBufferList!(S, No.checkEncoded)();
     }
 
     final override bool allowChild() const
@@ -2738,8 +2738,8 @@ public:
     {
         if (!aOwnerDocument.isLoading())
         {
-            checkName(aName.prefix, Yes.allowEmpty);
-            checkName(aName.localName, No.allowEmpty);
+            checkName!(S, Yes.allowEmpty)(aName.prefix);
+            checkName!(S, No.allowEmpty)(aName.localName);
         }
 
         super(aOwnerDocument);
@@ -3382,7 +3382,7 @@ public:
         {
             bool function(const(C)[] s1, const(C)[] s2) equalName;
             if (ownerDocument is null)
-                equalName = &sequalCase!S;
+                equalName = &equalCase!S;
             else
                 equalName = ownerDocument.equalName;
             if (equalName(prefix, XmlConst.xmlns) || (prefix.length == 0 && equalName(localName, XmlConst.xmlns)))

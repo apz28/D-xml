@@ -13,7 +13,7 @@ module pham.xml_object;
 
 import std.meta : allSatisfy;
 import std.traits : EnumMembers, OriginalType;
-import std.typecons : Flag, isBitFlagEnum;
+import std.typecons : Flag, No, Yes, isBitFlagEnum;
 import std.range.primitives : back, empty, front, popFront;
 import std.array : Appender; 
 
@@ -88,7 +88,16 @@ mixin template DLink()
     }
 }
 
-T singleton(T)(ref T v, T function() initiate)
+/** Initialize parameter v if it is null in thread safe manner using pass in aInitiate function
+
+    Params:
+        v = variable to be initialized to object T if it is null
+        aInitiate = a function that returns the newly created object as of T
+
+    Returns:
+        parameter v
+*/
+T singleton(T)(ref T v, T function() aInitiate)
 if (is(T == class))
 {
     if (v is null)
@@ -96,7 +105,7 @@ if (is(T == class))
         synchronized
         {
             if (v is null)
-                v = initiate();
+                v = aInitiate();
         }
     }
 
@@ -342,19 +351,24 @@ public:
     }
 }
 
-package string getShortClassName(S)(XmlObject!S obj) pure nothrow @safe
+/** Returns the short class-name of pass in aObject.
+    If it is null, returns "null"
+
+    Params:
+        aObject = the object to get the class-name from
+*/
+package string getShortClassName(S)(XmlObject!S aObject) pure nothrow @safe
 {
-    if (obj is null)
+    if (aObject is null)
         return "null";
     else
-        return obj.shortClassName;
+        return aObject.shortClassName;
 }
 
-/**
-* Mode to use for decoding.
-*
-* $(XmlDecodeMode loose) decode, but ignore errors
-* $(XmlDecodeMode strict) decode, and throw exception on error
+/** Mode to use for decoding.
+
+    $(XmlDecodeMode.loose) Decode but ignore error
+    $(XmlDecodeMode.strict) Decode and throw exception on error
 */
 enum XmlDecodeMode
 {
@@ -362,18 +376,26 @@ enum XmlDecodeMode
     strict
 }
 
+/** A state if a string if it has an reserved xml character
+
+    $(XmlEncodeMode.check) A text need to be checked for reserved char
+    $(XmlEncodeMode.checked) A text is already checked and it does not have reserved character
+    $(XmlEncodeMode.decoded) A text has reserved character in decoded form
+    $(XmlEncodeMode.encoded) A text has reserved char in encoded form
+    $(XmlEncodeMode.none) A text should be left as-is and no need to do encode or decode check
+*/
 enum XmlEncodeMode
 {
-    check, // Text need to check for reserved char
-    checked, // Text does not have reserved char
-    decoded, // Text has reserved char in decoded form
-    encoded, // Text has reserved char in encoded form
-    none // Text should be left as-is (no encode or decode check needed)
+    check, 
+    checked, 
+    decoded, 
+    encoded, 
+    none 
 }
 
 enum XmlBufferDefaultCapacity = 1000;
 
-class XmlBuffer(S, bool checkEncoded) : XmlObject!S
+class XmlBuffer(S, Flag!"checkEncoded" checkEncoded) : XmlObject!S
 {
 public:
     alias XmlBuffer = typeof(this);
@@ -429,13 +451,11 @@ public:
             writeln(decode("a &gt; b")); // writes "a > b"
         */
 
-    /**
-    * encode() escapes certain characters (ampersand, quote, apostrophe, less-than
-    * and greater-than), and similarly, decode() unescapes them. These functions
-    * are provided for convenience only. You do not need to use them when using
-    * the std.xml classes, because then all the encoding and decoding will be done
-    * for you automatically.
-    *
+    /** encode() escapes certain characters (ampersand, quote, apostrophe, less-than
+        and greater-than), and similarly, decode() unescapes them. These functions
+        are provided for convenience only. You do not need to use them when using
+        the std.xml classes, because then all the encoding and decoding will be done
+        for you automatically.
     */
     final S decode(S s)
     {
@@ -579,29 +599,28 @@ public:
         }
     }
 
-    /**
-    * xmlEncodes a string by replacing all characters which need to be escaped with
-    * appropriate predefined XML entities.
-    *
-    * encode() escapes certain characters (ampersand, quote, apostrophe, less-than
-    * and greater-than), and similarly, decode() unescapes them. These functions
-    * are provided for convenience only. You do not need to use them when using
-    * the std.xml classes, because then all the encoding and decoding will be done
-    * for you automatically.
-    *
-    * If the string is not modified, the original will be returned.
-    *
-    * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
-    *
-    * Params:
-    *      s = The string to be xmlEncoded
-    *
-    * Returns: The xmlEncoded string
-    *
-    * Example:
-    * --------------
-    * writefln(encode("a > b")); // writes "a &gt; b"
-    * --------------
+    /** Encodes a string by replacing all characters which need to be escaped with
+        appropriate predefined XML entities.
+    
+        encode() escapes certain characters (ampersand, quote, apostrophe, less-than
+        and greater-than), and similarly, decode() unescapes them. These functions
+        are provided for convenience only. You do not need to use them when using
+        the std.xml classes, because then all the encoding and decoding will be done
+        for you automatically.
+    
+        If the string is not modified, the original will be returned.
+    
+        Standards: 
+            $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
+    
+        Params:
+            s = The string to be xmlEncoded
+    
+        Returns: 
+            The xml encoded string
+    
+        Example:    
+            writefln(encode("a > b")); // writes "a &gt; b"    
     */
     final S encode(S s)
     {
@@ -663,29 +682,23 @@ public:
         _buffer.put(c);
 
         static if (checkEncoded)
-        {
-            if (c == '&')
-                _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
-        }
+        if (c == '&')
+            _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
     }
 
     static if (!is(C == dchar))
+    final void put(dchar c)
     {
-        final void put(dchar c)
-        {
-            import std.encoding : encode;
+        import std.encoding : encode;
 
-            C[6] b;
-            size_t n = encode(c, b);
-            reserve(n);
-            _buffer.put(b[0 .. n]);
+        C[6] b;
+        size_t n = encode(c, b);
+        reserve(n);
+        _buffer.put(b[0 .. n]);
 
-            static if (checkEncoded)
-            {
-                if (c == '&')
-                    _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
-            }
-        }
+        if (checkEncoded)
+        if (c == '&')
+            _decodeOrEncodeResultMode = XmlEncodeMode.encoded;        
     }
 
     final void put(const(C)[] s)
@@ -694,19 +707,17 @@ public:
         _buffer.put(s);
 
         static if (checkEncoded)
+        if (_decodeOrEncodeResultMode != XmlEncodeMode.encoded)
         {
-            if (_decodeOrEncodeResultMode != XmlEncodeMode.encoded)
+            foreach (c; s)
             {
-                foreach (c; s)
+                if (c == '&')
                 {
-                    if (c == '&')
-                    {
-                        _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
-                        break;
-                    }
+                    _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
+                    break;
                 }
             }
-        }
+        }       
     }
 
     final bool rightEqual(const(C)[] s) const
@@ -776,7 +787,7 @@ public:
     }
 }
 
-class XmlBufferList(S, bool checkEncoded) : XmlObject!S
+class XmlBufferList(S, Flag!"checkEncoded" checkEncoded) : XmlObject!S
 {
 private:
     XmlBuffer!(S, checkEncoded) last;
@@ -785,7 +796,8 @@ protected:
     mixin DLink;
 
 public:
-    version (none)  ~this()
+    version (none)  
+    ~this()
     {
         clear();
     }
@@ -837,6 +849,7 @@ protected:
         data["&gt;"] = ">";
         data["&lt;"] = "<";
         data["&quot;"] = "\"";
+
         data.rehash();
     }
 
@@ -909,7 +922,7 @@ public:
         return data;
     }
 
-    S decodeText(XmlBuffer!(S, false) buffer, in XmlEntityTable!S entityTable)
+    S decodeText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
     {
         assert(buffer !is null);
         assert(entityTable !is null);
@@ -918,7 +931,7 @@ public:
         return buffer.decode(data, entityTable);
     }
 
-    S encodeText(XmlBuffer!(S, false) buffer)
+    S encodeText(XmlBuffer!(S, No.checkEncoded) buffer)
     {
         assert(buffer !is null);
         assert(needEncode());
@@ -951,10 +964,11 @@ public:
     {
         if (needDecode())
         {
-            auto buffer = new XmlBuffer!(S, false)(data.length);
+            auto buffer = new XmlBuffer!(S, No.checkEncoded)(data.length);
             data = buffer.decode(data);
             mode = buffer.decodeOrEncodeResultMode;
         }
+
         return data;
     }
 
@@ -975,7 +989,7 @@ XmlString!S toXmlString(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer
 }
 
 pragma(inline, true)
-XmlString!S toXmlStringAndClear(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
+XmlString!S toXmlStringAndClear(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
     XmlEncodeMode m = buffer.decodeOrEncodeResultMode;
     return XmlString!S(buffer.toStringAndClear(), m);
@@ -1017,7 +1031,7 @@ unittest  // XmlBuffer.decode
     outputXmlTraceProgress("unittest XmlBuffer.decode");
 
     string s;
-    auto buffer = new XmlBuffer!(string, false)();
+    auto buffer = new XmlBuffer!(string, No.checkEncoded)();
 
     // Assert that things that should work, do
     s = "hello";
@@ -1056,7 +1070,7 @@ unittest  // XmlBuffer.encode
     outputXmlTraceProgress("unittest XmlBuffer.encode");
 
     string s;
-    auto buffer = new XmlBuffer!(string, false)();
+    auto buffer = new XmlBuffer!(string, No.checkEncoded)();
 
     s = "hello";
     assert(buffer.clear().encode(s) is s); // no change

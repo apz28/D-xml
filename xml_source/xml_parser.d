@@ -33,8 +33,8 @@ private:
 
     XmlDocument!S document;
     XmlReader!S reader;
-    XmlBuffer!(S, false) asIsBuffer, nameBuffer;
-    XmlBuffer!(S, true) textBuffer;
+    XmlBuffer!(S, No.checkEncoded) asIsBuffer, nameBuffer;
+    XmlBuffer!(S, Yes.checkEncoded) textBuffer;
     XmlNode!S[] nodeStack;
 
     const XmlParseOptions!S options;
@@ -208,7 +208,7 @@ private:
         auto name = reader.readDeclarationAttributeName(nameBuffer, contextName);
         if (options.validate)
         {
-            if (!isName(name, No.allowEmpty))
+            if (!isName!(S, No.allowEmpty)(name))
                 throw new XmlParserException(contextName.loc, Message.eInvalidName, name);
             if (parentNode.findAttribute(name))
                 throw new XmlParserException(contextName.loc, Message.eAttributeDuplicated, name);
@@ -610,7 +610,7 @@ private:
         }
 
         auto name = tagName.s;
-        if (options.validate && !isName(name, No.allowEmpty))
+        if (options.validate && !isName!(S, No.allowEmpty)(name))
             throw new XmlParserException(tagName.loc, Message.eInvalidName, name);
 
         auto element = cast(XmlElement!S) pushNode(peekNode().appendChild(document.createElement(name)));
@@ -669,7 +669,7 @@ private:
         auto name = reader.readElementXAttributeName(nameBuffer, contextName);
         if (options.validate)
         {
-            if (!isName(name, No.allowEmpty))
+            if (!isName!(S, No.allowEmpty)(name))
                 throw new XmlParserException(contextName.loc, Message.eInvalidName, name);
             if (parentNode.findAttribute(name))
                 throw new XmlParserException(contextName.loc, Message.eAttributeDuplicated, name);
@@ -795,7 +795,7 @@ private:
 
         // Name
         auto name = tagName.s;
-        if (options.validate && !isName(name, No.allowEmpty))
+        if (options.validate && !isName!(S, No.allowEmpty)(name))
             throw new XmlParserException(tagName.loc, Message.eInvalidName, name);
 
         if (!reader.readUntilAdv!true(textBuffer, "?>"))
@@ -866,9 +866,9 @@ public:
         useSaxElementEnd = options.useSax && options.onSaxElementNodeEnd !is null;
         useSaxOtherNode = options.useSax && options.onSaxOtherNode !is null;
 
-        asIsBuffer = new XmlBuffer!(S, false);
-        nameBuffer = new XmlBuffer!(S, false);
-        textBuffer = new XmlBuffer!(S, true);
+        asIsBuffer = new XmlBuffer!(S, No.checkEncoded);
+        nameBuffer = new XmlBuffer!(S, No.checkEncoded);
+        textBuffer = new XmlBuffer!(S, Yes.checkEncoded);
 
         nodeStack.reserve(defaultXmlLevels);
         pushNode(document);
