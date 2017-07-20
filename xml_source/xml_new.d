@@ -15,8 +15,12 @@ import std.typecons : Flag, No, Yes;
 
 import pham.xml_msg;
 public import pham.xml_exception;
+import pham.xml_enum;
 import pham.xml_util;
 import pham.xml_object;
+import pham.xml_entity_table;
+import pham.xml_buffer;
+import pham.xml_string;
 import pham.xml_reader;
 import pham.xml_writer;
 import pham.xml_parser;

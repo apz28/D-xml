@@ -19,8 +19,10 @@ import std.variant;
 
 import pham.xml_msg;
 import pham.xml_exception;
+import pham.xml_enum;
 import pham.xml_util;
 import pham.xml_object;
+import pham.xml_buffer;
 import pham.xml_writer;
 import pham.xml_new;
 

@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -815,7 +815,7 @@ int splitNameValueI(S)(in S s, in ptrdiff_t aIndex, out S name, out S value) pur
 if (isXmlString!S)
 in
 {
-    assert(aIndex < s.length);
+    assert(aIndex < 0 || aIndex < s.length);
 }
 body
 {    

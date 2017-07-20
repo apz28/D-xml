@@ -19,6 +19,8 @@ import pham.xml_msg;
 import pham.xml_exception;
 import pham.xml_util;
 import pham.xml_object;
+import pham.xml_buffer;
+import pham.xml_string;
 import pham.xml_reader;
 import pham.xml_new;
 

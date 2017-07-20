@@ -18,6 +18,8 @@ import pham.xml_msg;
 import pham.xml_exception;
 import pham.xml_util;
 import pham.xml_object;
+import pham.xml_buffer;
+import pham.xml_string;
 
 enum unicodeHalfShift = 10; 
 enum unicodeHalfBase = 0x00010000;

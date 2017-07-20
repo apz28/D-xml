@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -18,6 +18,7 @@ import std.array : Appender;
 import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_object;
+import pham.xml_buffer;
 
 abstract class XmlWriter(S) : XmlObject!S
 {
