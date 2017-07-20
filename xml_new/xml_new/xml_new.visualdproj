@@ -9,7 +9,7 @@
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
   <mscoff>1</mscoff>
-  <trace>1</trace>
+  <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>1</vtls>
@@ -33,7 +33,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>0</useUnitTests>
+  <useUnitTests>1</useUnitTests>
   <useInline>1</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -70,7 +70,7 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids>xmlTraceProfile noxmlTraceParser noxmlTraceXPathParser</debugids>
+  <debugids>noxmlTraceProfile noxmlTraceParser noxmlTraceXPathParser</debugids>
   <versionlevel>0</versionlevel>
   <versionids />
   <dump_source>0</dump_source>
@@ -208,12 +208,16 @@ del *.lst</postBuildCommand>
  <Folder name="xml_new">
   <File path="main.d" />
   <File path="..\..\xml_test_main\main_test.d" />
+  <File path="..\..\xml_source\xml_buffer.d" />
+  <File path="..\..\xml_source\xml_entity_table.d" />
+  <File path="..\..\xml_source\xml_enum.d" />
   <File path="..\..\xml_source\xml_exception.d" />
   <File path="..\..\xml_source\xml_msg.d" />
   <File path="..\..\xml_source\xml_new.d" />
   <File path="..\..\xml_source\xml_object.d" />
   <File path="..\..\xml_source\xml_parser.d" />
   <File path="..\..\xml_source\xml_reader.d" />
+  <File path="..\..\xml_source\xml_string.d" />
   <File path="..\..\xml_source\xml_util.d" />
   <File path="..\..\xml_source\xml_writer.d" />
   <File path="..\..\xml_source\xml_xpath.d" />
