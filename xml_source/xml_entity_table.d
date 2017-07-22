@@ -49,6 +49,15 @@ public:
         return singleton!(XmlEntityTable!S)(_defaultEntityTable, &createDefaultEntityTable);
     }
 
+    /** Find an encodedValue and set the decodedValue if it finds a match
+
+        Params:
+            encodedValue = a string type XML encoded value to search for
+            decodedValue = a corresponding XML decoded value if found
+        Returns:
+            true if encodedValue found in the table
+            false otherwise
+    */
     final bool find(S encodedValue, ref S decodedValue) const
     {
         const S* r = encodedValue in data;
@@ -62,6 +71,8 @@ public:
         }
     }
 
+    /** Reset the table with 5 standard reserved encoded XML characters
+    */
     final void reset()
     {
         data = null;

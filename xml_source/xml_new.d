@@ -189,10 +189,10 @@ protected:
     final void checkChild(XmlNode!S aChild, string aOp)
     {
         if (!allowChild())
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, aOp);
+            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), aOp);
 
         if (!allowChildType(aChild.nodeType))
-            throw new XmlException(Message.eNotAllowChild, shortClassName, aOp, name, nodeType, aChild.name, aChild.nodeType);
+            throw new XmlException(Message.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
 
         if (!isLoading())
         {
@@ -207,10 +207,10 @@ protected:
     final void checkParent(XmlNode!S aNode, bool aChild, string aOp)
     {
         if (aNode._parent !is this)
-            throw new XmlInvalidOperationException(Message.eInvalidOpFromWrongParent, shortClassName, aOp);
+            throw new XmlInvalidOperationException(Message.eInvalidOpFromWrongParent, shortClassName(this), aOp);
 
         if (aChild && aNode.nodeType == XmlNodeType.attribute)
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, aOp);
+            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), aOp);
     }
 
     final XmlNode!S findChild(XmlNodeType aNodeType)
@@ -301,7 +301,7 @@ package:
     final XmlAttribute!S appendAttribute(XmlAttribute!S newAttribute)
     {
         if (!allowAttribute())
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "appendAttribute()");
+            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "appendAttribute()");
 
         checkAttribute(newAttribute);
 
@@ -766,7 +766,7 @@ public:
     final XmlAttribute!S setAttribute(S aName, S aText)
     {
         if (!allowAttribute())
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "setAttribute()");
+            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "setAttribute()");
 
         XmlAttribute!S a = findAttribute(aName);
         if (a is null)
@@ -778,7 +778,7 @@ public:
     final XmlAttribute!S setAttribute(S aLocalName, S aNamespaceUri, S aText)
     {
         if (!allowAttribute())
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "setAttribute()");
+            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "setAttribute()");
 
         XmlAttribute!S a = findAttribute(aLocalName, aNamespaceUri);
         if (a is null)
@@ -1011,7 +1011,7 @@ public:
 
     S prefix(S newValue)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "prefix()");
+        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "prefix()");
     }
 
     final XmlNode!S previousSibling()
@@ -1038,7 +1038,7 @@ public:
 
     S value(S newValue)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "value()");
+        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "value()");
     }
 }
 
@@ -2321,7 +2321,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "write()");
+        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "write()");
         //todo
         //return writer;
     }

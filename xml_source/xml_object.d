@@ -109,21 +109,20 @@ if (isXmlString!S)
 {
 public:
     alias C = XmlChar!S;
+}
 
-@property:
-    final string className()
-    {
-        return this.classinfo.name;
-    }
+/** Returns the class-name of aObject.
+    If it is null, returns "null"
 
-    final string shortClassName()
-    {
-        import std.array : join, split;
-        import std.algorithm.iteration : filter;
-        import std.string : indexOf;
-
-        return split(className, ".").filter!(e => e.indexOf('!') < 0).join(".");
-    }
+    Params:
+        aObject = the object to get the class-name from
+*/
+string className(Object aObject) pure nothrow @safe
+{
+    if (aObject is null)
+        return "null";
+    else
+        return aObject.classinfo.name;
 }
 
 /** Returns the short class-name of aObject.
@@ -132,10 +131,17 @@ public:
     Params:
         aObject = the object to get the class-name from
 */
-package string getShortClassName(S)(XmlObject!S aObject) pure nothrow @safe
+string shortClassName(Object aObject) pure nothrow @safe
 {
+    import std.array : join, split;
+    import std.algorithm.iteration : filter;
+    import std.string : indexOf;
+
     if (aObject is null)
         return "null";
     else
-        return aObject.shortClassName;
+    {
+        string className = aObject.classinfo.name;
+        return split(className, ".").filter!(e => e.indexOf('!') < 0).join(".");
+    }
 }

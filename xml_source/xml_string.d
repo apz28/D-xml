@@ -14,7 +14,6 @@ module pham.xml_string;
 import std.typecons : Flag, No, Yes;
 
 import pham.xml_util;
-import pham.xml_object;
 import pham.xml_entity_table;
 import pham.xml_buffer;
 
@@ -69,12 +68,12 @@ public:
         return buffer.encode(data);
     }
 
-    bool needDecode()
+    bool needDecode() const nothrow @safe
     {
         return (data.length > 0 && (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check));
     }
 
-    bool needEncode()
+    bool needEncode() const nothrow @safe
     {
         return (data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check));
     }
@@ -85,7 +84,7 @@ public:
     }
 
 @property:
-    size_t length()
+    size_t length() const nothrow @safe
     {
         return data.length;
     }
@@ -113,14 +112,15 @@ public:
 }
 
 pragma(inline, true)
-XmlString!S toXmlString(S, bool checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
+XmlString!S toXmlString(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
-    return XmlString!S(buffer.toString(), buffer.decodeOrEncodeResultMode);
+    auto m = buffer.decodeOrEncodeResultMode;
+    return XmlString!S(buffer.toString(), m);
 }
 
 pragma(inline, true)
 XmlString!S toXmlStringAndClear(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
-    XmlEncodeMode m = buffer.decodeOrEncodeResultMode;
+    auto m = buffer.decodeOrEncodeResultMode;
     return XmlString!S(buffer.toStringAndClear(), m);
 }

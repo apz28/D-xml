@@ -500,7 +500,7 @@ protected:
 
     final void evaluateError(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "evaluate()");
+        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
     }
 
 public:
@@ -603,7 +603,7 @@ protected:
         }
 
         //version (unittest)
-        //outputXmlTraceXPathParserF("%s%s.accept(name: %s): %s", inputContext.indentString, shortClassName, aNode.name, result);
+        //outputXmlTraceXPathParserF("%s%s.accept(name: %s): %s", inputContext.indentString, shortClassName(this), aNode.name, result);
 
         return result;
     }
@@ -623,7 +623,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateAncestor(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -645,7 +645,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateAncestorOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -666,7 +666,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateAttribute(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -687,7 +687,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateChild(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -705,7 +705,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateDescendant(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);        
     }
 
@@ -726,7 +726,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateDescendantOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -744,7 +744,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateFollowing(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -766,7 +766,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateFollowingSibling(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -787,7 +787,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateNamespace(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -802,7 +802,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateParent(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);        
     }
 
@@ -820,7 +820,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluatePreceding(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -842,7 +842,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluatePrecedingSibling(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);
     }
 
@@ -856,7 +856,7 @@ protected:
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-            inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+            inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
             outputContext.resNodes.length);        
     }
 
@@ -866,7 +866,7 @@ public:
     {
         version (unittest)
         outputXmlTraceXPathParserF("%s.this(axisType: %s, input: %s, nodeType: %s, prefix: %s, localName: %s)", 
-            shortClassName, aAxisType, getShortClassName!S(aInput), aNodetype, aPrefix, aLocalName);        
+            shortClassName(this), aAxisType, shortClassName(aInput), aNodetype, aPrefix, aLocalName);        
 
         _parent = aParent;
         _input = aInput;
@@ -929,7 +929,7 @@ public:
     this(XPathNode!S aParent, XPathAxisType aAxisType, XPathNode!S aInput)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(axisType: %s, input: %s)", shortClassName, aAxisType, getShortClassName!S(aInput));
+        outputXmlTraceXPathParserF("%s.this(axisType: %s, input: %s)", shortClassName(this), aAxisType, shortClassName(aInput));
 
         this(aParent, aAxisType, aInput, XPathNodeType.all, null, null);
         _abbreviated = true;
@@ -940,7 +940,7 @@ public:
         version (unittest)
         {        
             outputXmlTraceXPathParserF("%s%s.evaluate(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, axisType, nodeType, abbreviated, qualifiedName(),
+                inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
             scope (exit)
@@ -962,10 +962,10 @@ public:
     {
         version (none)
         version (unittest) 
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.putAttribute(format("::name(axisType=%s, nodeType=%s, abbreviated=%s)",
                 axisType, nodeType, abbreviated), qualifiedName());
 
@@ -1030,8 +1030,8 @@ public:
     this(XPathNode!S aParent, XPathNode!S aInput, XPathNode!S aCondition)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(input: %s, condition: %s)", shortClassName, 
-            getShortClassName!S(aInput), getShortClassName!S(aCondition));
+        outputXmlTraceXPathParserF("%s.this(input: %s, condition: %s)", shortClassName(this), 
+            shortClassName(aInput), shortClassName(aCondition));
 
         _parent = aParent;
         _input = aInput;
@@ -1043,8 +1043,8 @@ public:
         version (unittest)
         {
             outputXmlTraceXPathParserF("%s%s.evaluate(input: %s, condition: %s, nodeListCount: %d)", 
-                inputContext.indentString, shortClassName,
-                getShortClassName!S(input), getShortClassName!S(condition),
+                inputContext.indentString, shortClassName(this),
+                shortClassName(input), shortClassName(condition),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
             scope (exit)
@@ -1086,10 +1086,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.incNodeLevel();
         input.write(aWriter.putLF());
         condition.write(aWriter.putLF());
@@ -1631,7 +1631,7 @@ protected:
             XPathFunctionTable!S.defaultFunctionTable().find(to!S(functionType), evaluateFct);
 
             if (evaluateFct is null)
-                throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, to!S(functionType));
+                throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), to!S(functionType));
         }
         else
         {
@@ -1640,7 +1640,7 @@ protected:
                 XPathFunctionTable!S.defaultFunctionTable().find(localName.idup, userDefinedevaluateFct);
 
             if (userDefinedevaluateFct is null)
-                throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, qualifiedName());
+                throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), qualifiedName());
 
             evaluateFct = userDefinedevaluateFct.evaluate;
         }
@@ -1652,7 +1652,7 @@ public:
         assert(aFunctionType != XPathFunctionType.userDefined);
 
         version (unittest) 
-        outputXmlTraceXPathParserF("%s.this(function: %s, argc: %d)", shortClassName, 
+        outputXmlTraceXPathParserF("%s.this(function: %s, argc: %d)", shortClassName(this), 
             aFunctionType, aArgumentList.length);        
 
         _parent = aParent;
@@ -1665,7 +1665,7 @@ public:
     this(XPathNode!S aParent, const(C)[] aPrefix, const(C)[] aLocalName, XPathNode!S[] aArgumentList)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s, argc: %d)", shortClassName, 
+        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s, argc: %d)", shortClassName(this), 
             aPrefix, aLocalName, aArgumentList.length);
 
         _parent = aParent;
@@ -1682,7 +1682,7 @@ public:
         assert(aFunctionType != XPathFunctionType.userDefined);
 
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(function: %s)", shortClassName, aFunctionType);
+        outputXmlTraceXPathParserF("%s.this(function: %s)", shortClassName(this), aFunctionType);
 
         _parent = aParent;
         _functionType = aFunctionType;
@@ -1695,7 +1695,7 @@ public:
         assert(aFunctionType != XPathFunctionType.userDefined);
 
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(function: %s, argn: %s)", shortClassName, getShortClassName!S(aArgument));
+        outputXmlTraceXPathParserF("%s.this(function: %s, argn: %s)", shortClassName(this), shortClassName(aArgument));
 
         _parent = aParent;
         _functionType = aFunctionType;
@@ -1709,7 +1709,7 @@ public:
         version (unittest)
         {
             outputXmlTraceXPathParserF("%s.evaluate(function: %s, returnType: %s, qName: %s, resNodes.length: %d, resValue.hasValue: %d)",
-                shortClassName, functionType, returnType, qualifiedName(), inputContext.resNodes.length, inputContext.resValue.hasValue);
+                shortClassName(this), functionType, returnType, qualifiedName(), inputContext.resNodes.length, inputContext.resValue.hasValue);
             inputContext.incNodeIndent;
             scope (exit)
                 inputContext.decNodeIndent;
@@ -1722,10 +1722,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.putAttribute(format("::name(%s:%s)", functionType, returnType), qualifiedName());
 
         if (argumentList.length > 0)
@@ -1783,7 +1783,7 @@ public:
     this(XPathNode!S aParent, XPathNode!S aGroupNode)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(group: %s)", shortClassName, getShortClassName!S(aGroupNode));
+        outputXmlTraceXPathParserF("%s.this(group: %s)", shortClassName(this), shortClassName(aGroupNode));
 
         _parent = aParent;
         _groupNode = aGroupNode;
@@ -1794,14 +1794,14 @@ public:
         version (unittest)
         {
             outputXmlTraceXPathParserF("%s%s.evaluate(group: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, getShortClassName!S(groupNode),
+                inputContext.indentString, shortClassName(this), shortClassName(groupNode),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
             scope (exit)
                 inputContext.decNodeIndent;
         }
 
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName, "evaluate()");
+        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
 
         //todo
     }
@@ -1810,10 +1810,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.incNodeLevel();
         groupNode.write(aWriter.putLF());
         aWriter.decNodeLevel();
@@ -1848,7 +1848,7 @@ public:
     this(XPathNode!S aParent, bool aValue)
     {
         version (unittest) 
-        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.boolean;
@@ -1858,7 +1858,7 @@ public:
     this(XPathNode!S aParent, double aValue)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.number;
@@ -1868,7 +1868,7 @@ public:
     this(XPathNode!S aParent, S aValue)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.text;
@@ -1878,7 +1878,7 @@ public:
     this(XPathNode!S aParent, const(C)[] aValue)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName, aValue);
+        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), aValue);
 
         _parent = aParent;
         _valueType = XPathResultType.text;
@@ -1936,7 +1936,7 @@ public:
     {
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluate(value: %s)", inputContext.indentString,
-                shortClassName, value.toString());
+                shortClassName(this), value.toString());
 
         outputContext.resValue = value;
     }
@@ -1945,10 +1945,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.putAttribute(format("::value(%s)", returnType), value.toString());
 
         return aWriter;
@@ -1982,11 +1982,11 @@ private void opCompare(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!
     version (unittest)
     {
         outputXmlTraceXPathParserF("%s%s.evaluate%s(operand1: %s, nodeListCount1: %d)",
-            inputContext.indentString, aOpNode.shortClassName, aOp,
-            getShortClassName!S(aOpNode.operand1), outputContext1.resNodes.length);
+            inputContext.indentString, shortClassName(aOpNode), aOp,
+            shortClassName(aOpNode.operand1), outputContext1.resNodes.length);
         outputXmlTraceXPathParserF("%s%s.evaluate%s(operand2: %s, nodeListCount2: %d)",
-            inputContext.indentString, aOpNode.shortClassName, aOp,
-            getShortClassName!S(aOpNode.operand2), outputContext2.resNodes.length);
+            inputContext.indentString, shortClassName(aOpNode), aOp,
+            shortClassName(aOpNode.operand2), outputContext2.resNodes.length);
     }
 
     bool result;
@@ -2033,7 +2033,7 @@ private void opCompare(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!
             version (none)
             version (unittest)
             outputXmlTraceXPathParserF("%s%s.evaluate%s(name: %s, value: %s, v1: %s)", 
-                inputContext.indentString, aOpNode.shortClassName, aOp,
+                inputContext.indentString, shortClassName(aOpNode), aOp,
                 e2.name, e2.toText(), v1.toString());
 
             if (mixin("v1 " ~ aOp ~ " v2"))
@@ -2228,7 +2228,7 @@ public:
     {
         version (unittest) 
         outputXmlTraceXPathParserF("%s.this(opType: %s, operand1: %s, operand2: %s)",
-            shortClassName, aOpType, getShortClassName!S(aOperand1), getShortClassName!S(aOperand2));
+            shortClassName(this), aOpType, shortClassName(aOperand1), shortClassName(aOperand2));
 
         _parent = aParent;
         _opType = aOpType;
@@ -2243,7 +2243,7 @@ public:
         version (unittest)
         {
             outputXmlTraceXPathParserF("%s%s.evaluate(opType: %s, operand1: %s, operand2: %s, nodeListCount: %d)",
-                inputContext.indentString, shortClassName, opType, getShortClassName!S(operand1), getShortClassName!S(operand2),
+                inputContext.indentString, shortClassName(this), opType, shortClassName(operand1), shortClassName(operand2),
                 inputContext.resNodes.length);
             inputContext.incNodeIndent;
             scope (exit)
@@ -2257,10 +2257,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write(%s)", shortClassName, opType);
+        outputXmlTraceXPathParserF("%s.write(%s)", shortClassName(this), opType);
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.putAttribute("::opType", to!S(opType));
         aWriter.incNodeLevel();
         operand1.write(aWriter.putLF());
@@ -2310,7 +2310,7 @@ public:
     this(XPathNode!S aParent)
     {
         version (unittest) 
-        outputXmlTraceXPathParser(shortClassName, ".this()");
+        outputXmlTraceXPathParser(shortClassName(this), ".this()");
 
         _parent = aParent;
     }
@@ -2318,7 +2318,7 @@ public:
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s%s.evaluate()", inputContext.indentString, shortClassName);
+        outputXmlTraceXPathParserF("%s%s.evaluate()", inputContext.indentString, shortClassName(this));
 
         outputContext.resNodes.insertBack(inputContext.xpathDocumentElement());
     }
@@ -2327,10 +2327,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
 
         return aWriter;
     }
@@ -2353,7 +2353,7 @@ public:
     this(XPathNode!S aParent, const(C)[] aPrefix, const(C)[] aLocalName)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s)", shortClassName, aPrefix, aLocalName);
+        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s)", shortClassName(this), aPrefix, aLocalName);
 
         _parent = aParent;
         _prefix = prefix;
@@ -2364,7 +2364,7 @@ public:
     {
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluate(prefix: %s, localName: %s)",
-                inputContext.indentString, shortClassName, prefix, localName);
+                inputContext.indentString, shortClassName(this), prefix, localName);
 
         Variant* result = qualifiedName() in inputContext.variables;
         if (result is null && prefix.length > 0)
@@ -2380,10 +2380,10 @@ public:
     {
         version (none)
         version (unittest)
-        outputXmlTraceXPathParserF("%s.write", this.shortClassName);
+        outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className);
+        aWriter.put(className(this));
         aWriter.putAttribute("::name", qualifiedName);
 
         return aWriter;
@@ -3048,7 +3048,7 @@ private:
         final string traceString(string aMethod, XPathNode!S aInput)
         {
             return format("%s%s(input: %s, scannerName: %s)", indentString(), aMethod,
-                getShortClassName!S(aInput), scanner.name);
+                shortClassName(aInput), scanner.name);
         }
     }
 

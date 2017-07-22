@@ -15,21 +15,27 @@ import std.meta : allSatisfy;
 import std.traits : EnumMembers, OriginalType;
 import std.typecons : isBitFlagEnum; 
 
-private struct BitFlagNegations(E)
+private struct EnumBitFlagNegations(E)
 if (isBitFlagEnum!(E))
 {
 nothrow @safe:
 private:
     alias EType = OriginalType!E;
 
-    EType values;
+    EType _values;
 
 public:
     @disable this();
 
     this(EType aValues)
     {
-        values = aValues;
+        _values = aValues;
+    }
+
+@property:
+    EType values() const
+    {
+        return _values;
     }
 }
 
@@ -41,51 +47,51 @@ private:
     enum isBaseEnumType(T) = is(E == T);
     alias EType = OriginalType!E;
 
-    EType values;
+    EType _values;
 
 public:
     this(E aValue)
     {
-        values = aValue;
+        _values = aValue;
     }
 
     this(T...)(T aValues)
     if (allSatisfy!(isBaseEnumType, T))
     {
-        values = 0;
+        _values = 0;
         foreach (E e; aValues)
-            values |= e;
+            _values |= e;
     }
 
     bool opCast(B: bool)() const
     {
-        return values != 0;
+        return _values != 0;
     }
 
     EType opCast(B)() const
     if (isImplicitlyConvertible!(EType, B))
     {
-        return values;
+        return _values;
     }
 
-    BitFlagNegations opUnary(string op)() const
+    EnumBitFlagNegations opUnary(string op)() const
     if (op == "~")
     {
-        return BitFlagNegations(~values);
+        return EnumBitFlagNegations(~_values);
     }
 
     auto ref opAssign(E aValue)
     {
-        values = aValue;
+        _values = aValue;
         return this;
     }
 
     auto ref opAssign(T...)(T aValues)
     if (allSatisfy!(isBaseEnumType, T))
     {
-        values = 0;
+        _values = 0;
         foreach (E e; aValues)
-            values |= e;
+            _values |= e;
         return this;
     }
 
@@ -93,11 +99,11 @@ public:
     if (op == "^" || op == "|" || op == "&")
     {
         static if (op == "^")
-            values &= ~aValue;
+            _values &= ~aValue;
         else static if (op == "|")
-            values |= aValue;
+            _values |= aValue;
         else
-            values &= aValue;
+            _values &= aValue;
 
         return this;
     }
@@ -106,18 +112,18 @@ public:
     if (op == "^" || op == "|" || op == "&")
     {
         static if (op == "^")
-            values &= ~aValues.values;
+            _values &= ~aValues.values;
         else static if (op == "|")
-            values |= aValues.values;
+            _values |= aValues.values;
         else
-            values &= aValues.values;
+            _values &= aValues.values;
 
         return this;
     }
 
-    auto ref opOpAssign(string op: "&")(BitFlagNegations aValues)
+    auto ref opOpAssign(string op: "&")(EnumBitFlagNegations aValues)
     {
-        values &= aValues.values;
+        _values &= aValues.values;
 
         return this;
     }
@@ -140,7 +146,7 @@ public:
         return result;
     }
 
-    auto opBinary(string op: "&")(BitFlagNegations aValues) const
+    auto opBinary(string op: "&")(EnumBitFlagNegations aValues) const
     {
         BitFlags result = this;
         result.opOpAssign!op(aValues);
@@ -169,7 +175,7 @@ public:
     {
         assert(aValue != 0);
 
-        return ((values & aValue) == 0);
+        return ((_values & aValue) == 0);
     }
 
     pragma(inline, true)
@@ -177,7 +183,7 @@ public:
     {
         assert(aValue != 0);
 
-        return ((values & aValue) == aValue);
+        return ((_values & aValue) == aValue);
     }
 
     pragma(inline, true)
@@ -185,7 +191,13 @@ public:
     {
         assert(aValue != 0);
 
-        return ((values & aValue) != 0);
+        return ((_values & aValue) != 0);
+    }
+
+@property:
+    EType values()
+    {
+        return _values;
     }
 }
 
@@ -202,37 +214,67 @@ public:
 private:
     enum isEntryType(T) = is(Entry == T);
     enum size = EnumMembers!E.length;
-    V[size] values;
+    V[size] _values;
 
 public:
     this(T...)(T aValues)
     if (allSatisfy!(isEntryType, T))
     {
         foreach (ref Entry i; aValues)
-            values[i.e] = i.v;
+            _values[i.e] = i.v;
     }
     
     V opIndex(E aEnum) const
     { 
-        return values[aEnum]; 
+        return _values[aEnum]; 
     }
 
     V opIndexAssign(V aValue, E aEnum)
     {
-        return values[aEnum] = aValue;
+        return _values[aEnum] = aValue;
     }
 
     V opDispatch(string aEnumName)() const
     {
         import std.conv : to;
 
-        return this[aEnumName.to!E];
+        immutable e = aEnumName.to!E;
+        return this[e];
     }
 
     V opDispatch(string aEnumName)(V aValue)
     {
         import std.conv : to;
 
-        return this[aEnumName.to!E] = aValue;
+        immutable e = aEnumName.to!E;
+        return this[e] = aValue;
     }
+
+@property:
+    size_t length() const
+    {
+        return size;
+    }
+}
+
+unittest // EnumArray
+{
+    enum EnumTest
+    {
+        one,
+        two,
+        max
+    }
+    
+    alias EnumTestTable = EnumArray!(EnumTest, int); 
+
+    EnumTestTable testTable = EnumTestTable(
+        EnumTestTable.Entry(EnumTest.one, 1),
+        EnumTestTable.Entry(EnumTest.two, 2),
+        EnumTestTable.Entry(EnumTest.max, int.max)
+    );
+
+    assert(testTable[EnumTest.one] == 1);
+    assert(testTable[EnumTest.two] == 2);
+    assert(testTable[EnumTest.max] == int.max);
 }
