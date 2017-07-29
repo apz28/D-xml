@@ -52,6 +52,7 @@
   <otherDMD>0</otherDMD>
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
+  <addDepImp>0</addDepImp>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
   <fileImppath />
@@ -155,6 +156,7 @@ del *.lst</postBuildCommand>
   <otherDMD>0</otherDMD>
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
+  <addDepImp>0</addDepImp>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
   <fileImppath />
@@ -218,6 +220,7 @@ del *.lst</postBuildCommand>
   <File path="..\..\xml_source\xml_parser.d" />
   <File path="..\..\xml_source\xml_reader.d" />
   <File path="..\..\xml_source\xml_string.d" />
+  <File path="..\..\xml_source\xml_unittest.d" />
   <File path="..\..\xml_source\xml_util.d" />
   <File path="..\..\xml_source\xml_writer.d" />
   <File path="..\..\xml_source\xml_xpath.d" />
