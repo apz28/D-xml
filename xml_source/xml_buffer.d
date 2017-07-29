@@ -61,7 +61,7 @@ protected:
     Appender!(C[]) _buffer;
     XmlEncodeMode _decodeOrEncodeResultMode = XmlEncodeMode.checked;
 
-    pragma(inline, true)
+    pragma (inline, true)
     final void reserve(size_t count)
     {
         auto c = length + count;
@@ -105,7 +105,7 @@ public:
         Example:
             writeln(decode("a &gt; b")); // writes "a > b"
     */
-    final S decode(S s)
+    final const(C)[] decode(const(C)[] s)
     {
         return decode(s, XmlEntityTable!S.defaultEntityTable());
     }
@@ -127,7 +127,7 @@ public:
         Example:
             writeln(decode("a &gt; b")); // writes "a > b"
     */
-    final S decode(S s, in XmlEntityTable!S entityTable)
+    final const(C)[] decode(const(C)[] s, in XmlEntityTable!S entityTable)
     {
         import std.string : startsWith;
 
@@ -137,7 +137,7 @@ public:
         version (unittest)
         writefln("decode(%s)", s);
 
-        S refChars;
+        const(C)[] refChars;
         size_t i, lastI, mark;
         for (; i < s.length;)
         {
@@ -183,7 +183,7 @@ public:
             if (mark != 1 || refChars.length <= 2)
             {
                 if (decodeMode == XmlDecodeMode.strict)
-                    throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString(refChars, 20));
+                    throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString!S(refChars, 20));
 
                 if (mark == 0)
                 {
@@ -208,7 +208,7 @@ public:
                     if (!convertToChar!S(refChars[2 .. $ - 1], c))
                     {
                         if (decodeMode == XmlDecodeMode.strict)
-                            throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString(refChars, 20));
+                            throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString!S(refChars, 20));
 
                         put(refChars);
                     }
@@ -217,13 +217,13 @@ public:
                 }
                 else
                 {
-                    S r;
+                    const(C)[] r;
                     if (entityTable.find(refChars, r))
                         put(r);
                     else
                     {
                         if (decodeMode == XmlDecodeMode.strict)
-                            throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString(refChars, 20));
+                            throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString!S(refChars, 20));
 
                         put(refChars);
                     }
@@ -293,7 +293,7 @@ public:
         Example:    
             writeln(encode("a > b")); // writes "a &gt; b"    
     */
-    final S encode(S s)
+    final const(C)[] encode(const(C)[] s)
     {
         version (none)
         version (unittest)
@@ -303,7 +303,7 @@ public:
                 writefln("encode() - %s", toString());
         }
 
-        S r;
+        const(C)[] r;
         size_t lastI;
         foreach (int i, c; s)
         {
@@ -359,7 +359,7 @@ public:
         Params:
             c = character to be appended at the end
     */
-    pragma(inline, true)
+    pragma (inline, true)
     final void put(C c)
     {
         reserve(1);
@@ -415,23 +415,12 @@ public:
         }       
     }
 
-    final bool rightEqual(const(C)[] s) const
+    final bool rightEqual(const(C)[] subString) const
     {
-        auto i = length;
-        auto j = s.length;
-        if (i < j)
-            return false;
-
-        for (; j > 0; --i, --j)
-        {
-            if (_buffer.data[i - 1] != s[j - 1])
-                return false;
-        }
-
-        return true;
+        return equalRight!S(_buffer.data, subString);
     }
 
-    final S rightString(size_t count) const
+    final const(C)[] rightString(size_t count) const
     {
         auto len = length;
         if (count >= len)
@@ -445,7 +434,7 @@ public:
         return _buffer.data.idup;
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     final S toStringAndClear()
     {
         auto s = toString();
@@ -510,7 +499,7 @@ public:
         dlinkInsertEnd(last, b.clear());
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     final S getAndRelease(XmlBuffer!(S, checkEncoded) b)
     {
         S r = b.toString();
@@ -526,7 +515,7 @@ unittest  // XmlBuffer.decode
 
     outputXmlTraceProgress("unittest XmlBuffer.decode");
 
-    string s;
+    const(char)[] s;
     auto buffer = new XmlBuffer!(string, No.checkEncoded)();
 
     // Assert that things that should work, do
@@ -565,7 +554,7 @@ unittest  // XmlBuffer.encode
 {
     outputXmlTraceProgress("unittest XmlBuffer.encode");
 
-    string s;
+    const(XmlChar!string)[] s;
     auto buffer = new XmlBuffer!(string, No.checkEncoded)();
 
     s = "hello";

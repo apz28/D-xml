@@ -14,6 +14,7 @@ module pham.xml_parser;
 import std.string : indexOf;
 import std.typecons : No, Yes;
 import std.range.primitives : back, empty, front, popFront, popBack;
+import std.conv : to;
 
 import pham.xml_msg;
 import pham.xml_exception;
@@ -27,6 +28,9 @@ import pham.xml_new;
 struct XmlParser(S)
 if (isXmlString!S)
 {
+public:
+    alias C = XmlChar!S;
+
 private:
     alias ParseNameEvent = void delegate(ref ParseContext!S context);
 
@@ -35,7 +39,6 @@ private:
 
     XmlDocument!S document;
     XmlReader!S reader;
-    XmlBuffer!(S, No.checkEncoded) asIsBuffer, nameBuffer;
     XmlBuffer!(S, Yes.checkEncoded) textBuffer;
     XmlNode!S[] nodeStack;
 
@@ -91,40 +94,52 @@ private:
         return c;
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     XmlNode!S peekNode()
+    in
     {
         assert(!nodeStack.empty);
-
+    }
+    body
+    {
         return nodeStack.back;
     }
 
     XmlNode!S popNode()
+    in
     {
         assert(!nodeStack.empty);
-
+    }
+    body
+    {       
         auto n = nodeStack.back;
         nodeStack.popBack();
         return n;
     }
 
     XmlNode!S pushNode(XmlNode!S n)
+    in
+    {
+        assert(n !is null);
+    }
+    body
     {
         nodeStack ~= n;
         return n;
     }
 
-    void parseCDataSection(ref ParseContext!S tagName)
+    void parseCDATA(ref ParseContext!S tagName)
     {
         version (unittest)
         {
-            outputXmlTraceParserF("%sparseCDataSection.%s", indentString(), tagName.s);
+            outputXmlTraceParserF("%sparseCDATA.%s", indentString(), tagName.s);
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
         }
 
-        if (!reader.readUntilAdv!false(asIsBuffer, "]]>"))
+        const(C)[] data;
+        if (!reader.readUntilMarker(data, "]]>"))
         {
             if (reader.empty)
                 throw new XmlParserException(Message.eExpectedStringButEos, "]]>");
@@ -132,10 +147,8 @@ private:
                 throw new XmlParserException(reader.sourceLoc, Message.eExpectedStringButNotFound, "]]>");
         }
 
-        auto data = asIsBuffer.dropBack(3).toStringAndClear();
-
         auto parentNode = peekNode();
-        auto node = parentNode.appendChild(document.createCDataSection(data));
+        auto node = parentNode.appendChild(document.createCDATA(data));
         if (useSaxOtherNode && !options.onSaxOtherNode(node))
             parentNode.removeChild(node);
     }
@@ -150,7 +163,8 @@ private:
                 --nodeIndent;
         }
 
-        if (!reader.readUntilAdv!false(asIsBuffer, "-->"))
+        const(C)[] data;
+        if (!reader.readUntilMarker(data, "-->"))
         {
             if (reader.empty)
                 throw new XmlParserException(Message.eExpectedStringButEos, "-->");
@@ -158,10 +172,8 @@ private:
                 throw new XmlParserException(reader.sourceLoc, Message.eExpectedStringButNotFound, "-->");
         }
 
-        auto text = asIsBuffer.dropBack(3).toStringAndClear();
-
         auto parentNode = peekNode();
-        auto node = parentNode.appendChild(document.createComment(text));
+        auto node = parentNode.appendChild(document.createComment(data));
         if (useSaxOtherNode && !options.onSaxOtherNode(node))
             parentNode.removeChild(node);
     }
@@ -181,7 +193,7 @@ private:
 
         if (reader.skipSpaces().isDeclarationNameStart())
         {
-            ParseContext!S attributeName;
+            ParseContext!S attributeName = void;
             do
             {
                 parseAttributeDeclaration(node, attributeName);
@@ -207,7 +219,7 @@ private:
         }
 
         // Name
-        auto name = reader.readDeclarationAttributeName(nameBuffer, contextName);
+        auto name = reader.readDeclarationAttributeName(contextName);
         if (options.validate)
         {
             if (!isName!(S, No.allowEmpty)(name))
@@ -240,20 +252,20 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
         XmlNode!S documentTypeNode;
 
-        auto name = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+        auto name = reader.skipSpaces().readAnyName(localContext);
 
         auto parentNode = peekNode();
 
         if (reader.skipSpaces().isAnyFrontBut('['))
         {
-            S systemOrPublic;
+            const(C)[] systemOrPublic;
             XmlString!S publicId, text;
             parseExternalId(systemOrPublic, publicId, text, false);
             documentTypeNode = pushNode(parentNode.appendChild(document.createDocumentType(name,
-                    systemOrPublic, publicId, text)));
+                systemOrPublic, publicId, text)));
         }
 
         if (reader.skipSpaces().moveFrontIf('['))
@@ -271,7 +283,7 @@ private:
                         parseElement();
                         break;
                     case '%':
-                        auto entityReferenceName = reader.readAnyName(nameBuffer, localContext);
+                        auto entityReferenceName = reader.readAnyName(localContext);
                         auto node = documentTypeNode.appendChild(document.createText(entityReferenceName));
                         if (useSaxOtherNode && !options.onSaxOtherNode(node))
                             documentTypeNode.removeChild(node);
@@ -305,9 +317,9 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
 
-        auto name = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+        auto name = reader.skipSpaces().readAnyName(localContext);
 
         auto parentNode = peekNode();
         auto node = cast(XmlDocumentTypeAttributeList!S) parentNode.appendChild(document.createDocumentTypeAttributeList(name));
@@ -331,33 +343,33 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
         XmlString!S defaultText;
-        S type, defaultType;
-        S[] typeItems;
+        const(C)[] type, defaultType;
+        const(C)[][] typeItems;
 
-        auto name = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+        auto name = reader.skipSpaces().readAnyName(localContext);
 
         // EnumerateType
         if (reader.skipSpaces().moveFrontIf('('))
         {
             while (reader.skipSpaces().isAnyFrontBut(')'))
             {
-                typeItems ~= reader.readDocumentTypeAttributeListChoiceName(nameBuffer, localContext);
+                typeItems ~= reader.readDocumentTypeAttributeListChoiceName(localContext);
                 reader.skipSpaces().moveFrontIf('|');
             }
             expectChar!(0)(')');
         }
         else
         {
-            type = reader.readAnyName(nameBuffer, localContext);
+            type = reader.readAnyName(localContext);
 
             if (type == XmlConst.notation)
             {
                 expectChar!(skipSpaceBefore)('(');
                 while (reader.skipSpaces().isAnyFrontBut(')'))
                 {
-                    typeItems ~= reader.readDocumentTypeAttributeListChoiceName(nameBuffer, localContext);
+                    typeItems ~= reader.readDocumentTypeAttributeListChoiceName(localContext);
                     reader.skipSpaces().moveFrontIf('|');
                 }
                 expectChar!(0)(')');
@@ -366,7 +378,7 @@ private:
 
         if (reader.skipSpaces().frontIf == '#')
         {
-            defaultType = reader.readAnyName(nameBuffer, localContext);
+            defaultType = reader.readAnyName(localContext);
 
             if (defaultType != XmlConst.fixed  &&
                 defaultType != XmlConst.implied &&
@@ -394,9 +406,9 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
 
-        auto name = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+        auto name = reader.skipSpaces().readAnyName(localContext);
 
         auto parentNode = peekNode();
         auto node = document.createDocumentTypeElement(name);
@@ -408,7 +420,7 @@ private:
         }
         else
         {
-            auto choice = reader.readAnyName(nameBuffer, localContext);
+            auto choice = reader.readAnyName(localContext);
 
             if (choice != XmlConst.any && choice != XmlConst.empty)
                 throw new XmlParserException(localContext.loc, Message.eExpectedOneOfStringsButString,
@@ -433,7 +445,7 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
         XmlDocumentTypeElementItem!S last;
         bool done;
 
@@ -463,7 +475,7 @@ private:
                     done = true;
                     break;
                 default:
-                    auto choice = reader.readDocumentTypeElementChoiceName(nameBuffer, localContext);
+                    auto choice = reader.readDocumentTypeElementChoiceName(localContext);
                     last = parent.appendChoice(choice);
                     break;
             }
@@ -495,13 +507,13 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S tagName;
+        ParseContext!S tagName = void;
 
         auto c = reader.front;
         if (c == '?')
         {
             reader.popFront();
-            if (reader.readElementPName(nameBuffer, tagName) == "xml")
+            if (reader.readElementPName(tagName) == "xml")
                 parseDeclaration(tagName);
             else
                 parseProcessingInstruction(tagName);
@@ -509,11 +521,11 @@ private:
         else if (c == '!')
         {
             reader.popFront();
-            reader.readElementEName(nameBuffer, tagName);
+            reader.readElementEName(tagName);
             if (tagName.s == "--")
                 parseComment(tagName);
             else if (tagName.s == "[CDATA[")
-                parseCDataSection(tagName);
+                parseCDATA(tagName);
             else if (tagName.s == "DOCTYPE")
                 parseDocumentType(tagName);
             else if (tagName.s == "ENTITY")
@@ -529,7 +541,7 @@ private:
         }
         else
         {
-            reader.readElementXName(nameBuffer, tagName);
+            reader.readElementXName(tagName);
             parseElementX(tagName);
         }
     }
@@ -544,9 +556,9 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
         XmlString!S publicId, text;
-        S systemOrPublic, notationName;
+        const(C)[] systemOrPublic, notationName;
         bool reference;
 
         if (reader.skipSpaces().moveFrontIf('%'))
@@ -555,7 +567,7 @@ private:
             reader.skipSpaces();
         }
 
-        auto name = reader.readAnyName(nameBuffer, localContext);
+        auto name = reader.readAnyName(localContext);
 
         if ("\"'".indexOf(reader.skipSpaces().frontIf()) >= 0)
         {
@@ -567,12 +579,12 @@ private:
 
             if (!reference && reader.skipSpaces().isAnyFrontBut('>'))
             {
-                S nData = reader.readAnyName(nameBuffer, localContext);
+                const(C)[] nData = reader.readAnyName(localContext);
                 if (nData != XmlConst.nData)
                     throw new XmlParserException(localContext.loc,
                         Message.eExpectedStringButString, XmlConst.nData, nData);
 
-                notationName = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+                notationName = reader.skipSpaces().readAnyName(localContext);
             }
         }
 
@@ -621,7 +633,7 @@ private:
 
         if (reader.skipSpaces().isElementAttributeNameStart())
         {
-            ParseContext!S attributeName;
+            ParseContext!S attributeName = void;
             do
             {
                 parseElementXAttribute(element, attributeName);
@@ -668,7 +680,7 @@ private:
         }
 
         // Name
-        auto name = reader.readElementXAttributeName(nameBuffer, contextName);
+        auto name = reader.readElementXAttributeName(contextName);
         if (options.validate)
         {
             if (!isName!(S, No.allowEmpty)(name))
@@ -691,13 +703,13 @@ private:
             parentNode.removeAttribute(attribute);
     }
 
-    void parseElementXEnd(S beginTagName)
+    void parseElementXEnd(const(C)[] beginTagName)
     {
         version (unittest)
         outputXmlTraceParserF("%sparseElementXEnd.%s", indentString(), beginTagName);
 
-        ParseContext!S endTagName;
-        if (reader.readElementXName(nameBuffer, endTagName) != beginTagName)
+        ParseContext!S endTagName = void;
+        if (reader.readElementXName(endTagName) != beginTagName)
             throw new XmlParserException(endTagName.loc, Message.eExpectedEndName, beginTagName, endTagName.s);
         expectChar!(skipSpaceBefore)('>');
 
@@ -711,12 +723,12 @@ private:
         version (unittest)
         outputXmlTraceParserF0("%sparseElementXText: ", indentString());
 
-        XmlString!S text;
-        bool allWhitespaces;
-        reader.readElementXText(textBuffer, text, allWhitespaces);
+        XmlString!S text = void;
+        bool allWhitespaces = void;
+        reader.readElementXText(text, allWhitespaces);
 
         version (unittest)
-        outputXmlTraceParserF("'%s'", text.toString().leftStringIndicator(30));
+        outputXmlTraceParserF("'%s'", text.toString().leftStringIndicator!S(30));
 
         XmlNode!S node;
         if (allWhitespaces)
@@ -733,15 +745,15 @@ private:
             parentNode.removeChild(node);
     }
 
-    void parseExternalId(ref S systemOrPublic, ref XmlString!S publicId,
+    void parseExternalId(ref const(C)[] systemOrPublic, ref XmlString!S publicId,
         ref XmlString!S text, bool optionalText)
     {
         version (unittest)
         outputXmlTraceParserF("%sparseExternalId", indentString());
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
 
-        systemOrPublic = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+        systemOrPublic = reader.skipSpaces().readAnyName(localContext);
         reader.skipSpaces();
 
         if (systemOrPublic == XmlConst.system)
@@ -756,7 +768,7 @@ private:
         }
         else
             throw new XmlParserException(localContext.loc, Message.eExpectedOneOfStringsButString,
-                    XmlConst.public_ ~ " or " ~ XmlConst.system, systemOrPublic);
+                XmlConst.public_ ~ " or " ~ XmlConst.system, systemOrPublic);
     }
 
     void parseNotation(ref ParseContext!S tagName)
@@ -769,11 +781,11 @@ private:
                 --nodeIndent;
         }
 
-        ParseContext!S localContext;
+        ParseContext!S localContext = void;
         XmlString!S publicId, text;
-        S systemOrPublic;
+        const(C)[] systemOrPublic;
 
-        auto name = reader.skipSpaces().readAnyName(nameBuffer, localContext);
+        auto name = reader.skipSpaces().readAnyName(localContext);
 
         parseExternalId(systemOrPublic, publicId, text, true);
 
@@ -800,7 +812,8 @@ private:
         if (options.validate && !isName!(S, No.allowEmpty)(name))
             throw new XmlParserException(tagName.loc, Message.eInvalidName, name);
 
-        if (!reader.readUntilAdv!true(textBuffer, "?>"))
+        XmlString!S data;
+        if (!reader.readUntilText!true(data, "?>"))
         {
             if (reader.empty)
                 throw new XmlParserException(Message.eExpectedStringButEos, "?>");
@@ -808,10 +821,8 @@ private:
                 throw new XmlParserException(reader.sourceLoc, Message.eExpectedStringButNotFound, "?>");
         }
 
-        auto text = textBuffer.dropBack(2).toStringAndClear();
-
         auto parentNode = peekNode();
-        auto node = parentNode.appendChild(document.createProcessingInstruction(name, text));
+        auto node = parentNode.appendChild(document.createProcessingInstruction(name, data));
         if (useSaxOtherNode && !options.onSaxOtherNode(node))
             parentNode.removeChild(node);
     }
@@ -822,13 +833,14 @@ private:
         outputXmlTraceParserF0("%sparseQuotedValue: ", indentString());       
 
         auto q = expectChar!(0)("\"'");
-        if (!reader.readUntilAdv!false(textBuffer, q, false))
+        XmlString!S data;
+        if (!reader.readUntilText!false(data, to!S(q)))
             expectChar!(0)(q);
 
         version (unittest)
-        outputXmlTraceParserF("'%s'", textBuffer.toString().leftStringIndicator(30));
+        outputXmlTraceParserF("'%s'", data.toString().leftStringIndicator!S(30));
 
-        return textBuffer.toXmlStringAndClear();
+        return data;
     }
 
     void parseSpaces()
@@ -836,7 +848,7 @@ private:
         version (unittest)
         outputXmlTraceParserF("%sparseSpaces", indentString());
 
-        auto s = reader.readSpaces(asIsBuffer);
+        auto s = reader.readSpaces();
         if (options.preserveWhitespace)
         {
             if (nodeStack.length == 1)
@@ -868,8 +880,6 @@ public:
         useSaxElementEnd = options.useSax && options.onSaxElementNodeEnd !is null;
         useSaxOtherNode = options.useSax && options.onSaxOtherNode !is null;
 
-        asIsBuffer = new XmlBuffer!(S, No.checkEncoded);
-        nameBuffer = new XmlBuffer!(S, No.checkEncoded);
         textBuffer = new XmlBuffer!(S, Yes.checkEncoded);
 
         nodeStack.reserve(defaultXmlLevels);
@@ -940,47 +950,29 @@ unittest  // XmlParser.invalid construct
     parseError("<!xyz>");
 }
 
-unittest  // XmlParser 
+unittest  // XmlParser.DOCTYPE
 {
-    outputXmlTraceProgress("unittest XmlParser");
+    outputXmlTraceProgress("unittest XmlParser.DOCTYPE");
 
-    static immutable string xml = q"XML
-    <?xml version="1.0" encoding="UTF-8"?>
-    <root>
-        <withAttributeOnly att1='' att2=""/>
-        <withAttributeOnly2 att1="1" att2="abc"/>
-        <attributeWithNP xmlns:myns="something"/>
-        <withAttributeAndChild att1="&lt;&gt;&amp;&apos;&quot;" att2='with double quote ""'>
-            <child/>
-            <child></child>
-        </withAttributeAndChild>
-        <childWithText>abcd</childWithText>
-        <childWithText2>
-            line1
-            line2
-        </childWithText2>
-        <myNS:nodeWithNP/>
-        <!-- This is a -- comment -->
-        <![CDATA[ dataSection! ]]>
-    </root>
+    static immutable string xml =
+q"XML
+<!DOCTYPE myDoc SYSTEM "http://myurl.net/folder" [
+  <!ELEMENT anyElement ANY>
+  <!ENTITY replaceText "replacement text">
+  <!ATTLIST requireDataFoo foo CDATA #REQUIRED>
+]>
 XML";
 
     auto doc = new XmlDocument!string().load(xml);
 }
 
-unittest  // XmlParser.DOCTYPE
+unittest  // XmlParser 
 {
-    outputXmlTraceProgress("unittest XmlParser.DOCTYPE");
+    import pham.xml_unittest;
 
-    static immutable string xml = q"XML
-    <!DOCTYPE myDoc SYSTEM "http://myurl.net/folder" [
-        <!ELEMENT anyElement ANY>
-        <!ENTITY replaceText "replacement text">
-        <!ATTLIST requireDataFoo foo CDATA #REQUIRED>
-    ]>
-XML";
+    outputXmlTraceProgress("unittest XmlParser");
 
-    auto doc = new XmlDocument!string().load(xml);
+    auto doc = new XmlDocument!string().load(parserXml);
 }
 
 unittest  // XmlParser.navigation 
@@ -990,7 +982,8 @@ unittest  // XmlParser.navigation
 
     outputXmlTraceProgress("unittest XmlParser.navigation");
 
-    static immutable string xml = q"XML
+    static immutable string xml =
+q"XML
     <?xml version="1.0" encoding="UTF-8"?>
     <root>
         <withAttributeOnly att=""/>
@@ -1215,7 +1208,7 @@ XML";
     }
 
     assert(!L.empty);
-    assert(L.front.nodeType == XmlNodeType.cDataSection, to!string(L.front.nodeType));
+    assert(L.front.nodeType == XmlNodeType.CDATA, to!string(L.front.nodeType));
     assert(!L.front.hasAttributes);
     assert(!L.front.hasChildNodes);
     assert(L.front.value = " dataSection! ", L.front.value);
@@ -1380,7 +1373,7 @@ XML";
     }
 
     assert(!L.empty);
-    assert(L.front.nodeType == XmlNodeType.cDataSection, to!string(L.front.nodeType));
+    assert(L.front.nodeType == XmlNodeType.CDATA, to!string(L.front.nodeType));
     assert(!L.front.hasAttributes);
     assert(!L.front.hasChildNodes);
     assert(L.front.value = " dataSection! ", L.front.value);
@@ -1398,31 +1391,10 @@ XML";
 
 unittest  // XmlParser.SAX
 {
+    import pham.xml_unittest;
+
     outputXmlTraceProgress("unittest XmlParser.SAX");
 
-    static immutable string xml = q"XML
-<?xml version="1.0"?>
-<!-- A fragment of a book store inventory database -->
-<bookstore xmlns:bk="urn:samples">
-  <book genre="novel" publicationdate="1997" bk:ISBN="1-861001-57-8">
-    <title>Pride And Prejudice</title>
-    <author>
-      <first-name>Jane</first-name>
-      <last-name>Austen</last-name>
-    </author>
-    <price>24.95</price>
-  </book>
-  <book genre="novel" publicationdate="1992" bk:ISBN="1-861002-30-1">
-    <title>The Handmaid's Tale</title>
-    <author>
-      <first-name>Margaret</first-name>
-      <last-name>Atwood</last-name>
-    </author>
-    <price>29.95</price>
-  </book>
-</bookstore>
-XML";
-    
     static bool processAttribute(XmlAttribute!string attribute)
     {
         // return true to keep the attribute, however if its parent node is discarded,
@@ -1464,7 +1436,7 @@ XML";
     doc.parseOptions.onSaxElementNodeEnd = &processElementEnd;
     doc.parseOptions.onSaxOtherNode = &processOtherNode;
     
-    doc.load(xml);
+    doc.load(parserSaxXml);
 
     assert(doc.outerXml() == "<bookstore><book><title>Pride And Prejudice</title></book><book><title>The Handmaid's Tale</title></book></bookstore>");
 }

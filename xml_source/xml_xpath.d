@@ -190,7 +190,7 @@ immutable ToResultTypeTable toResultTypeTable = ToResultTypeTable(
     ToResultTypeTable.Entry(XPathFunctionType.userDefined, XPathResultType.any)
 );
 
-pragma(inline, true)
+pragma (inline, true)
 XPathResultType toResultType(XPathFunctionType aFunctionType) pure nothrow @safe
 {
     return toResultTypeTable[aFunctionType];
@@ -215,7 +215,7 @@ immutable InvertedOpTable invertedOpTable = InvertedOpTable(
     InvertedOpTable.Entry(XPathOp.union_, XPathOp.error)
 );
 
-pragma(inline, true)
+pragma (inline, true)
 XPathOp invertedOp(XPathOp op) pure nothrow @safe
 {
     return invertedOpTable[op];
@@ -235,7 +235,7 @@ immutable ToXmlNodeTypeTable toXmlNodeTypeTable = ToXmlNodeTypeTable(
     ToXmlNodeTypeTable.Entry(XPathNodeType.whitespace, XmlNodeType.whitespace)
 ); 
 
-pragma(inline, true)
+pragma (inline, true)
 XmlNodeType toXmlNodeType(XPathNodeType aNodeType) pure nothrow @safe
 {
     return toXmlNodeTypeTable[aNodeType];
@@ -247,7 +247,7 @@ private bool toBoolean(double value) pure nothrow @safe
     return (!isNaN(value) && value != 0);
 }
 
-private bool toBoolean(S)(const S value) pure nothrow @safe
+private bool toBoolean(S)(const(XmlChar!S)[] value) pure nothrow @safe
 if (isXmlString!S)
 {
     return (value == "1" || value == XmlConst.sTrue || value == XmlConst.yes);
@@ -261,7 +261,7 @@ private double toNumber(bool value) pure nothrow @safe
         return 0.0;
 }
 
-private double toNumber(S)(S value) pure @safe
+private double toNumber(S)(const(XmlChar!S)[] value) pure @safe
 if (isXmlString!S)
 {
     import std.string : strip;
@@ -273,7 +273,7 @@ if (isXmlString!S)
         return to!double(value);
 }
 
-private S toText(S)(bool value) pure nothrow @safe
+private const(XmlChar!S)[] toText(S)(bool value) pure nothrow @safe
 if (isXmlString!S)
 {
     if (value)
@@ -282,7 +282,7 @@ if (isXmlString!S)
         return XmlConst.sFalse;
 }
 
-private S toText(S)(double value) @safe
+private const(XmlChar!S)[] toText(S)(double value) @safe
 if (isXmlString!S)
 {
     import std.math : isInfinity, signbit;
@@ -300,7 +300,7 @@ if (isXmlString!S)
         return to!S(value);
 }
 
-private S toText(S)(XmlNode!S aNode)
+private const(XmlChar!S)[] toText(S)(XmlNode!S aNode)
 if (isXmlString!S)
 {
     if (aNode.hasValue(No.checkContent))
@@ -495,7 +495,7 @@ protected:
 
     const(C)[] _localName;
     const(C)[] _prefix;
-    S _qualifiedName;
+    const(C)[] _qualifiedName;
     XPathNode!S _parent;
 
     final void evaluateError(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -505,7 +505,7 @@ protected:
 
 public:
     T get(T)(ref XPathContext!S inputContext)
-    if (is(T == S) || is(T == double) || is(T == bool))
+    if (is(T == const(C)[]) || is(T == double) || is(T == bool))
     {
         XPathContext!S tempOutputContext = inputContext.createOutputContext();
         evaluate(inputContext, tempOutputContext);
@@ -525,7 +525,7 @@ public:
             else
             {
                 normalizeValueToText!S(tempOutputContext.resValue);
-                return tempOutputContext.resValue.get!S;
+                return tempOutputContext.resValue.get!(const(C)[]);
             }
         }
         else
@@ -549,10 +549,10 @@ public:
         }
     }
 
-    final S qualifiedName()
+    final const(C)[] qualifiedName()
     {
-        if (_qualifiedName is null)
-            _qualifiedName = combineName!S(_prefix.idup, _localName.idup);
+        if (_qualifiedName.ptr is null)
+            _qualifiedName = combineName!S(_prefix, _localName);
 
         return _qualifiedName;
     }
@@ -1138,9 +1138,9 @@ private void fctCeiling(S)(XPathFunction!S context, ref XPathContext!S inputCont
 
 private void fctConcat(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    S s;
+    const(XmlChar!S)[] s;
     foreach (e; context.argumentList)
-        s ~= e.get!S(inputContext);
+        s ~= e.get!(const(XmlChar!S)[])(inputContext);
 
     outputContext.resValue = Variant(s);
 }
@@ -1149,8 +1149,8 @@ private void fctContains(S)(XPathFunction!S context, ref XPathContext!S inputCon
 {
     import std.string : indexOf;
 
-    S s1 = context.argumentList[0].get!S(inputContext);
-    S s2 = context.argumentList[1].get!S(inputContext);
+    const(XmlChar!S)[] s1 = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
+    const(XmlChar!S)[] s2 = context.argumentList[1].get!(const(XmlChar!S)[])(inputContext);
     bool result = s1.indexOf(s2) >= 0;
 
     outputContext.resValue = Variant(result);
@@ -1189,13 +1189,13 @@ private void fctId(S)(XPathFunction!S context, ref XPathContext!S inputContext, 
     import std.algorithm.searching : find;
     import std.array : empty, split;
 
-    S[] idTokens = context.argumentList[0].get!S(inputContext).split();
+    const(XmlChar!S)[][] idTokens = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext).split();
 
     bool hasId(XmlNode!S e)
     {
         if (auto a = e.findAttributeById())
         {
-            S av = a.value;
+            const(XmlChar!S)[] av = a.value;
             return !find(idTokens, av).empty;
         }
         else
@@ -1230,7 +1230,7 @@ private void fctLang(S)(XPathFunction!S context, ref XPathContext!S inputContext
 {
     import std.algorithm.searching : startsWith;
 
-    S lan = context.argumentList[0].get!S(inputContext);
+    const(XmlChar!S)[] lan = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
 
     bool hasLan(XmlNode!S e)
     {
@@ -1239,7 +1239,7 @@ private void fctLang(S)(XPathFunction!S context, ref XPathContext!S inputContext
         {
             if (auto a = e.findAttribute("xml:lang"))
             {
-                S av = a.value;
+                const(XmlChar!S)[] av = a.value;
                 r = av.startsWith(lan);
             }
             e = e.parentNode;
@@ -1272,7 +1272,7 @@ private void fctLast(S)(XPathFunction!S context, ref XPathContext!S inputContext
 
 private void fctLocalName(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    S result;
+    const(XmlChar!S)[] result;
     bool useDefault;
     if (context.argumentList.length > 0)
     {
@@ -1291,7 +1291,7 @@ private void fctLocalName(S)(XPathFunction!S context, ref XPathContext!S inputCo
 
 private void fctName(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    S result;
+    const(XmlChar!S)[] result;
     bool useDefault;
     if (context.argumentList.length > 0)
     {
@@ -1310,7 +1310,7 @@ private void fctName(S)(XPathFunction!S context, ref XPathContext!S inputContext
 
 private void fctNamespaceUri(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    S result;
+    const(XmlChar!S)[] result;
     bool useDefault;
     if (context.argumentList.length > 0)
     {
@@ -1351,7 +1351,12 @@ private void fctPosition(S)(XPathFunction!S context, ref XPathContext!S inputCon
 {
     double result; 
     if (!inputContext.resNodes.empty)
-        result = inputContext.filterNodes.position(inputContext.resNodes.front); 
+    {
+        result = inputContext.filterNodes.indexOf(inputContext.resNodes.front);
+        // Convert to based 1 if found
+        if (result >= 0)
+            ++result;
+    }
 
     outputContext.resValue = Variant(result);
 }
@@ -1369,8 +1374,8 @@ private void fctStartsWith(S)(XPathFunction!S context, ref XPathContext!S inputC
 {
     import std.algorithm.searching : startsWith;
 
-    S s1 = context.argumentList[0].get!S(inputContext);
-    S s2 = context.argumentList[1].get!S(inputContext);
+    const(XmlChar!S)[] s1 = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
+    const(XmlChar!S)[] s2 = context.argumentList[1].get!(const(XmlChar!S)[])(inputContext);
     bool result = s1.startsWith(s2);
 
     outputContext.resValue = Variant(result);
@@ -1381,9 +1386,9 @@ private void fctStringLength(S)(XPathFunction!S context, ref XPathContext!S inpu
     import std.uni : byGrapheme;
 
     double result = 0;
-    S s;
+    const(XmlChar!S)[] s;
     if (context.argumentList.length > 0)
-        s = context.argumentList[0].get!S(inputContext);
+        s = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
     else if (!inputContext.resNodes.empty)
         s = inputContext.resNodes.front.toText();
     foreach (e; s.byGrapheme)
@@ -1396,15 +1401,15 @@ private void fctSubstring(S)(XPathFunction!S context, ref XPathContext!S inputCo
 {
     import std.algorithm.comparison : min;
 
-    S result;
-    S s = context.argumentList[0].get!S(inputContext);
+    const(XmlChar!S)[] result;
+    const(XmlChar!S)[] s = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
     int pos = cast(int) context.argumentList[1].get!double(inputContext);
     int cnt = cast(int) context.argumentList[2].get!double(inputContext);
 
     // Based 1 in xpath, so convert to based 0
     --pos;
     if (cnt > 0 && pos >= 0 && pos < s.length)
-        result = rightString(s, min(cnt, s.length - pos));
+        result = rightString!S(s, min(cnt, s.length - pos));
     else
         result = "";
 
@@ -1415,8 +1420,8 @@ private void fctSubstringAfter(S)(XPathFunction!S context, ref XPathContext!S in
 {
     import std.algorithm.searching : findSplit;
 
-    S s = context.argumentList[0].get!S(inputContext);
-    S sub = context.argumentList[1].get!S(inputContext);
+    const(XmlChar!S)[] s = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
+    const(XmlChar!S)[] sub = context.argumentList[1].get!(const(XmlChar!S)[])(inputContext);
     auto searchResult = s.findSplit(sub);
 
     outputContext.resValue = Variant(searchResult[2]);
@@ -1426,8 +1431,8 @@ private void fctSubstringBefore(S)(XPathFunction!S context, ref XPathContext!S i
 {
     import std.algorithm.searching : findSplit;
 
-    S s = context.argumentList[0].get!S(inputContext);
-    S sub = context.argumentList[1].get!S(inputContext);
+    const(XmlChar!S)[] s = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
+    const(XmlChar!S)[] sub = context.argumentList[1].get!(const(XmlChar!S)[])(inputContext);
     auto searchResult = s.findSplit(sub);
 
     if (searchResult[1] == sub) 
@@ -1455,7 +1460,7 @@ private void fctSum(S)(XPathFunction!S context, ref XPathContext!S inputContext,
 
 private void fctText(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    S s = context.get!S(inputContext);
+    const(XmlChar!S)[] s = context.get!(const(XmlChar!S)[])(inputContext);
 
     outputContext.resValue = Variant(s);
 }
@@ -1469,14 +1474,14 @@ private void fctTranslate(S)(XPathFunction!S context, ref XPathContext!S inputCo
 class XPathUserDefinedFunctionEntry(S) : XmlObject!S 
 {
 private:
-    S _localName;
-    S _prefix;
-    S _qualifiedName;
+    const(C)[] _localName;
+    const(C)[] _prefix;
+    const(C)[] _qualifiedName;
     XPathFunctionTable!S.XPathFunctionEvaluate _evaluate;
     XPathResultType _resultType;
 
 public:
-    this(S aPrefix, S aLocalName, XPathResultType aResultType,
+    this(const(C)[] aPrefix, const(C)[] aLocalName, XPathResultType aResultType,
         XPathFunctionTable!S.XPathFunctionEvaluate aEvaluate)
     {
         _prefix = aPrefix;
@@ -1484,7 +1489,7 @@ public:
         _resultType = aResultType;
         _evaluate = aEvaluate;
 
-        _qualifiedName = combineName(_prefix, _localName);
+        _qualifiedName = combineName!S(_prefix, _localName);
     }
 
 @property:
@@ -1493,17 +1498,17 @@ public:
         return _evaluate;
     }
 
-    final S localName() const
+    final const(C)[] localName() const
     {
         return _localName;
     }
 
-    final S prefix() const
+    final const(C)[] prefix() const
     {
         return _prefix;
     }
 
-    final S qualifiedName() const
+    final const(C)[] qualifiedName() const
     {
         return _qualifiedName;
     }
@@ -1578,7 +1583,7 @@ public:
         return singleton!(XPathFunctionTable!S)(_defaultFunctionTable, &createDefaultFunctionTable);
     }
 
-    final bool find(S aName, ref XPathUserDefinedFunctionEntry!S fct) const
+    final bool find(const(C)[] aName, ref XPathUserDefinedFunctionEntry!S fct) const
     {
         const(XPathUserDefinedFunctionEntry!S)* r = aName in userDefinedFunctions;
 
@@ -1591,7 +1596,7 @@ public:
         }
     }
 
-    final bool find(S aName, ref XPathFunctionEvaluate fct) const
+    final bool find(const(C)[] aName, ref XPathFunctionEvaluate fct) const
     {
         const(XPathFunctionEvaluate)* r = aName in defaultFunctions;
 
@@ -2003,7 +2008,7 @@ private void opCompare(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!
         for (size_t i = 0; i < outputContext1.resNodes.length; ++i)
         {
             auto e1 = outputContext1.resNodes.item(i);
-            S s1 = e1.toText();
+            const(XmlChar!S)[] s1 = e1.toText();
             for (size_t j = 0; j < outputContext2.resNodes.length; ++j)
             {
                 auto e2 = outputContext2.resNodes.item(j);
@@ -2976,14 +2981,14 @@ public:
     XPathAxisType nameAxisType()
     {
         assert(kind == XPathScannerLexKind.axe);
-        assert(_name !is null);
+        assert(_name.ptr !is null);
 
         return XPathAxisTypeTable!S.defaultAxisTypeTable().get(name);
     }
 
     XPathNodeType nameNodeType()
     {
-        assert(_name !is null);
+        assert(_name.ptr !is null);
 
         auto n = name;
         return n == "comment" ? XPathNodeType.comment :
@@ -3015,7 +3020,7 @@ public:
     const(C)[] textValue()
     {
         assert(_kind == XPathScannerLexKind.text);
-        assert(_textValue !is null);
+        assert(_textValue.ptr !is null);
 
         return _textValue;
     }
@@ -3052,7 +3057,7 @@ private:
         }
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     void checkAndSkipToken(C t)
     {
         version (unittest)
@@ -3062,7 +3067,7 @@ private:
         nextLex();
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     void checkNodeSet(XPathResultType t)
     {
         version (unittest)
@@ -3074,7 +3079,7 @@ private:
                     scanner.currentIndex + 1, sourceText);
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     void checkToken(C t)
     {
         version (unittest)
@@ -3097,7 +3102,7 @@ private:
         return axis;
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     bool isOp(const(C)[] opName)
     {
         version (unittest)
@@ -3108,7 +3113,7 @@ private:
                 scanner.name == opName);
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     void nextLex()
     {
         scanner.nextLex();
@@ -3985,6 +3990,15 @@ public:
     }
 }
 
+/** Returns node-list of matching xpath expression
+
+    Params:
+        aSource = a context node to search from
+        xpath = a xpath expression string
+
+    Returns:
+        a node-list, XmlNodeList, of matching xpath expression        
+*/
 XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
 {
     XPathParser!S xpathParser = XPathParser!S(xpath);
@@ -4007,6 +4021,16 @@ XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
     return outputContext.resNodes;
 }
 
+/** Returns first node of matching xpath expression
+
+    Params:
+        aSource = a context node to search from
+        xpath = a xpath expression string
+
+    Returns:
+        a node, XmlNode, of matching xpath expression
+        or null if no matching found
+*/
 XmlNode!S selectSingleNode(S)(XmlNode!S aSource, S xpath)
 {
     XmlNodeList!S resultList = selectNodes(aSource, xpath);
@@ -4112,48 +4136,11 @@ unittest  // XPathParser
 
 unittest  // XPathParser.selectNodes
 {
+    import pham.xml_unittest;
+
     outputXmlTraceProgress("unittest XPathParser.selectNodes");
 
-    static immutable string xml = q"XML
-<?xml version="1.0"?>
-<!-- A fragment of a book store inventory database -->
-<bookstore xmlns:bk="urn:samples">
-  <book genre="novel" publicationdate="1997" bk:ISBN="1-861001-57-8">
-    <title>Pride And Prejudice</title>
-    <author>
-      <first-name>Jane</first-name>
-      <last-name>Austen</last-name>
-    </author>
-    <price>24.95</price>
-  </book>
-  <book genre="novel" publicationdate="1992" bk:ISBN="1-861002-30-1">
-    <title>The Handmaid's Tale</title>
-    <author>
-      <first-name>Margaret</first-name>
-      <last-name>Atwood</last-name>
-    </author>
-    <price>29.95</price>
-  </book>
-  <book genre="novel" publicationdate="1991" bk:ISBN="1-861001-57-6">
-    <title>Emma</title>
-    <author>
-      <first-name>Jane</first-name>
-      <last-name>Austen</last-name>
-    </author>
-    <price>19.95</price>
-  </book>
-  <book genre="novel" publicationdate="1982" bk:ISBN="1-861001-45-3">
-    <title>Sense and Sensibility</title>
-    <author>
-      <first-name>Jane</first-name>
-      <last-name>Austen</last-name>
-    </author>
-    <price>19.95</price>
-  </book>
-</bookstore>
-XML";
-
-    auto doc = new XmlDocument!string().load(xml);
+    auto doc = new XmlDocument!string().load(xpathXml);
     XmlNodeList!string nodeList;
     
     nodeList = doc.documentElement.selectNodes("descendant::book[author/last-name='Austen']");
@@ -4164,7 +4151,6 @@ XML";
     assert(nodeList.moveFront.name == "book");
     assert(nodeList.front.getAttribute("publicationdate") == "1982");
     assert(nodeList.moveFront.name == "book");
-
     
     //writeln("nodeList.length: ", nodeList.length);
     //foreach (e; nodeList)

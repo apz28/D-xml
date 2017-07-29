@@ -51,13 +51,13 @@ mixin template DLink()
         return newNode;
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     final bool dlinkHasPrev(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode)
     {
         return (checkNode !is lastNode._prev);
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     final bool dlinkHasNext(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode)
     {
         return (checkNode !is lastNode._next);

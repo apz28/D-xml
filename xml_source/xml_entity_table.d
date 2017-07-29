@@ -37,7 +37,7 @@ protected:
     }
 
 public:
-    S[S] data;
+    const(C)[][const(C)[]] data;
 
     this()
     {
@@ -58,9 +58,9 @@ public:
             true if encodedValue found in the table
             false otherwise
     */
-    final bool find(S encodedValue, ref S decodedValue) const
+    final bool find(const(C)[] encodedValue, ref const(C)[] decodedValue) const
     {
-        const S* r = encodedValue in data;
+        const const(C)[]* r = encodedValue in data;
 
         if (r is null)
             return false;
@@ -89,7 +89,7 @@ unittest // XmlEntityTable.defaultEntityTable
     auto table = XmlEntityTable!string.defaultEntityTable();
     assert(table !is null);
 
-    string s;
+    const(XmlChar!string)[] s;
 
     assert(table.find("&amp;", s));
     assert(s == "&");

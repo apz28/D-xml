@@ -20,23 +20,26 @@ import pham.xml_buffer;
 struct XmlString(S)
 if (isXmlString!S)
 {
+public:
+    alias C = XmlChar!S;
+
 private:
-    S data;
+    const(C)[] data;
     XmlEncodeMode mode;
 
 public:
-    this(S aStr)
+    this(const(C)[] aStr)
     {
         this(aStr, XmlEncodeMode.check);
     }
 
-    this(S aStr, XmlEncodeMode aMode)
+    this(const(C)[] aStr, XmlEncodeMode aMode)
     {
         data = aStr;
         mode = aMode;
     }
 
-    auto ref opAssign(S aValue)
+    auto ref opAssign(const(C)[] aValue)
     {
         data = aValue;
         if (mode != XmlEncodeMode.none)
@@ -45,13 +48,13 @@ public:
         return this;
     }
 
-    version(none)
+    version (none)
     S opCall()
     {
         return data;
     }
 
-    S decodeText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
+    const(C)[] decodeText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
     {
         assert(buffer !is null);
         assert(entityTable !is null);
@@ -60,7 +63,7 @@ public:
         return buffer.decode(data, entityTable);
     }
 
-    S encodeText(XmlBuffer!(S, No.checkEncoded) buffer)
+    const(C)[] encodeText(XmlBuffer!(S, No.checkEncoded) buffer)
     {
         assert(buffer !is null);
         assert(needEncode());
@@ -70,15 +73,15 @@ public:
 
     bool needDecode() const nothrow @safe
     {
-        return (data.length > 0 && (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check));
+        return data.length > 0 && (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check);
     }
 
     bool needEncode() const nothrow @safe
     {
-        return (data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check));
+        return data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
     }
 
-    S toString()
+    const(C)[] toString()
     {
         return data;
     }
@@ -89,7 +92,7 @@ public:
         return data.length;
     }
 
-    S value()
+    const(C)[] value()
     {
         if (needDecode())
         {
@@ -101,7 +104,7 @@ public:
         return data;
     }
 
-    S value(S newText)
+    const(C)[] value(const(C)[] newText)
     {
         data = newText;
         if (mode != XmlEncodeMode.none)
@@ -111,14 +114,15 @@ public:
     }
 }
 
-pragma(inline, true)
+version (none)
+pragma (inline, true)
 XmlString!S toXmlString(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
     auto m = buffer.decodeOrEncodeResultMode;
     return XmlString!S(buffer.toString(), m);
 }
 
-pragma(inline, true)
+pragma (inline, true)
 XmlString!S toXmlStringAndClear(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
     auto m = buffer.decodeOrEncodeResultMode;

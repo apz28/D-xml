@@ -170,7 +170,7 @@ public:
         return opOpAssign!"|"(aValue);
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     bool isOff(E aValue) const
     {
         assert(aValue != 0);
@@ -178,7 +178,7 @@ public:
         return ((_values & aValue) == 0);
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     bool isOn(E aValue) const
     {
         assert(aValue != 0);
@@ -186,7 +186,7 @@ public:
         return ((_values & aValue) == aValue);
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     bool isOnAny(E aValue) const
     {
         assert(aValue != 0);

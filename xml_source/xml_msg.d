@@ -57,7 +57,7 @@ struct Message
 
 struct XmlConst
 {
-    static immutable cDataSectionTagName = "#cdata-section";
+    static immutable CDATATagName = "#cdata-section";
     static immutable commentTagName = "#comment";
     static immutable declarationTagName = "xml";
     static immutable documentFragmentTagName = "#document-fragment";

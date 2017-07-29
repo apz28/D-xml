@@ -27,7 +27,7 @@ protected:
     size_t _onlyOneNodeText;
     bool _prettyOutput;
 
-    pragma(inline, true)
+    pragma (inline, true)
     final S indentString()
     {
         return stringOfChar!S(' ', _nodeLevel << 1);
@@ -70,7 +70,7 @@ public:
         }
     }
 
-    //pragma(inline, true)
+    //pragma (inline, true)
     final XmlWriter!S putLF()
     {
         version (none)
@@ -82,7 +82,7 @@ public:
         return this;
     }
 
-    pragma(inline, true)
+    pragma (inline, true)
     final void putIndent()
     {
         put(indentString());
@@ -125,7 +125,7 @@ public:
             putLF();
     }
 
-    final void putCDataSection(const(C)[] data)
+    final void putCDATA(const(C)[] data)
     {
         if (prettyOutput)
             putIndent();
