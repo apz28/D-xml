@@ -28,7 +28,8 @@ private struct TestItem
 {
 public:
     string inFileName, outFileName, errFileName;
-    string inXml, outXml, errXml;
+    string inXml;
+    const(char)[] outXml, errXml;
     Duration timeElapsedDuration;
     bool autoSaveOutXml, error, getOutXml, loadFromFile;
 
@@ -263,7 +264,7 @@ struct TestExecute
 {
 public:
     alias LoadEvent = Object function(string xml);
-    alias SaveEvent = string function(Object doc);
+    alias SaveEvent = const(char)[] function(Object doc);
 
 private:
     LoadEvent load;
@@ -461,7 +462,7 @@ public:
 }
 
 private enum defaultIteratedCount = 1000;
-private enum defaultXmlTestOkCount = 460;
+private enum defaultXmlTestOkCount = 459;
 private immutable string defaultXmlTestDirectory = ".\\xml_test";
 private immutable string defaultXmlTestFileName = ".\\xml_test\\book.xml";
 private immutable string defaultXmlTimingFile = ".\\xml_test\\book.xml";
