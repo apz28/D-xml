@@ -27,7 +27,7 @@ Object loadXmlFromFile(string fileName)
     return new XmlDocument!string().loadFromFile(fileName);
 }
 
-string saveXml(Object doc)
+const(char)[] saveXml(Object doc)
 {
     return (cast(XmlDocument!string) doc).outerXml(Yes.PrettyOutput);
 }
