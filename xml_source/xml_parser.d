@@ -39,10 +39,9 @@ private:
 
     XmlDocument!S document;
     XmlReader!S reader;
-    XmlBuffer!(S, Yes.checkEncoded) textBuffer;
     XmlNode!S[] nodeStack;
 
-    const XmlParseOptions!S options;
+    const(XmlParseOptions!S) options;
     bool useSaxAttribute;
     bool useSaxElementBegin;
     bool useSaxElementEnd;
@@ -273,25 +272,23 @@ private:
             if (documentTypeNode is null)
                 documentTypeNode = pushNode(parentNode.appendChild(document.createDocumentType(name)));
 
-            bool done;
-            while (!done && !reader.skipSpaces().empty)
+            while (true)
             {
-                switch (reader.front)
+                immutable f = reader.skipSpaces().front;
+                if (f == '<')
                 {
-                    case '<':
-                        reader.popFront();
-                        parseElement();
-                        break;
-                    case '%':
-                        auto entityReferenceName = reader.readAnyName(localContext);
-                        auto node = documentTypeNode.appendChild(document.createText(entityReferenceName));
-                        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-                            documentTypeNode.removeChild(node);
-                        break;
-                    default:
-                        done = true;
-                        break;
+                    reader.popFront();
+                    parseElement();
                 }
+                else if (f == '%')
+                {
+                    auto entityReferenceName = reader.readAnyName(localContext);
+                    auto node = documentTypeNode.appendChild(document.createText(entityReferenceName));
+                    if (useSaxOtherNode && !options.onSaxOtherNode(node))
+                        documentTypeNode.removeChild(node);
+                }
+                else
+                    break;
             }
 
             expectChar!(0)(']');            
@@ -376,7 +373,7 @@ private:
             }
         }
 
-        if (reader.skipSpaces().frontIf == '#')
+        if (reader.skipSpaces().front == '#')
         {
             defaultType = reader.readAnyName(localContext);
 
@@ -388,7 +385,7 @@ private:
                     defaultType);
         }
 
-        if ("\"'".indexOf(reader.skipSpaces().frontIf()) >= 0)
+        if ("\"'".indexOf(reader.skipSpaces().front) >= 0)
             defaultText = parseQuotedValue();
 
         auto defType = document.createAttributeListDefType(name, type, typeItems);
@@ -482,7 +479,7 @@ private:
         }
         expectChar!(skipSpaceBefore | skipSpaceAfter)(')');
 
-        switch (reader.frontIf)
+        switch (reader.front)
         {
             case '?':
             case '*':
@@ -509,7 +506,7 @@ private:
 
         ParseContext!S tagName = void;
 
-        auto c = reader.front;
+        immutable c = reader.front;
         if (c == '?')
         {
             reader.popFront();
@@ -521,23 +518,23 @@ private:
         else if (c == '!')
         {
             reader.popFront();
-            reader.readElementEName(tagName);
-            if (tagName.s == "--")
+            auto name = reader.readElementEName(tagName);
+            if (name == "--")
                 parseComment(tagName);
-            else if (tagName.s == "[CDATA[")
+            else if (name == "[CDATA[")
                 parseCDATA(tagName);
-            else if (tagName.s == "DOCTYPE")
+            else if (name == "DOCTYPE")
                 parseDocumentType(tagName);
-            else if (tagName.s == "ENTITY")
+            else if (name == "ENTITY")
                 parseEntity(tagName);
-            else if (tagName.s == "ATTLIST")
+            else if (name == "ATTLIST")
                 parseDocumentTypeAttributeList(tagName);
-            else if (tagName.s == "ELEMENT")
+            else if (name == "ELEMENT")
                 parseDocumentTypeElement(tagName);
-            else if (tagName.s == "NOTATION")
+            else if (name == "NOTATION")
                 parseNotation(tagName);
             else
-                throw new XmlParserException(tagName.loc, Message.eInvalidName, '!' ~ tagName.s);
+                throw new XmlParserException(tagName.loc, Message.eInvalidName, '!' ~ name);
         }
         else
         {
@@ -569,7 +566,7 @@ private:
 
         auto name = reader.readAnyName(localContext);
 
-        if ("\"'".indexOf(reader.skipSpaces().frontIf()) >= 0)
+        if ("\"'".indexOf(reader.skipSpaces().front) >= 0)
         {
             text = parseQuotedValue();
         }
@@ -872,15 +869,14 @@ public:
 
     this(XmlDocument!S aDocument, XmlReader!S aReader)
     {
-        reader = aReader;
         document = aDocument;
+        reader = aReader;
         options = aDocument.parseOptions;
+
         useSaxAttribute = options.useSax && options.onSaxAttributeNode !is null;
         useSaxElementBegin = options.useSax && options.onSaxElementNodeBegin !is null;
         useSaxElementEnd = options.useSax && options.onSaxElementNodeEnd !is null;
         useSaxOtherNode = options.useSax && options.onSaxOtherNode !is null;
-
-        textBuffer = new XmlBuffer!(S, Yes.checkEncoded);
 
         nodeStack.reserve(defaultXmlLevels);
         pushNode(document);

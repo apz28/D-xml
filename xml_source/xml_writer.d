@@ -113,13 +113,15 @@ public:
         if (prettyOutput)
             putIndent();
 
-        put("<!--");
-        if (text.length > 0 && !isSpace(text.front))
-            put(' ');
+        if (prettyOutput && text.length > 0 && !isSpace(text.front))
+            put("<!-- ");
+        else
+            put("<!--");
         put(text);
-        if (text.length > 0 && !isSpace(text.back))
-            put(' ');
-        put("-->");
+        if (prettyOutput && text.length > 0 && !isSpace(text.back))
+            put(" -->");
+        else
+            put("-->");
 
         if (prettyOutput)
             putLF();

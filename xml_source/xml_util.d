@@ -696,21 +696,21 @@ if (isXmlString!S)
         return s[0 .. count] ~ "...";
 }
 
-private bool lookup(const(int[][]) table, int c) pure nothrow @safe
+private bool lookup(const(int[][]) pairTable, int c) pure nothrow @safe
 in
 {
-    assert(table.length > 0);
+    assert(pairTable.length > 0);
 }
 body
 {
     int l;
-    int r = table.length - 1;
+    int r = pairTable.length - 1;
     while (l <= r)
     {
         int m = (l + r) >> 1;
-        if (c < table[m][0])
+        if (c < pairTable[m][0])
             r = m - 1;
-        else if (c > table[m][1])
+        else if (c > pairTable[m][1])
             l = m + 1;
         else
             return true;

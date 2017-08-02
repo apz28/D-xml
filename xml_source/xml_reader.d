@@ -58,7 +58,6 @@ if (isXmlString!S)
 
     const(C)[] s;
     XmlLoc loc;
-    XmlEncodeMode encodeMode;
 }
 
 abstract class XmlReader(S) : XmlObject!S
@@ -318,6 +317,7 @@ protected:
         current = 0;
         static if (!is(XmlChar!S == dchar) && !isBlockReader)
             currentCodes = null;
+
         empty; // Advance to next char
     }
 
@@ -335,104 +335,100 @@ protected:
     pragma (inline, true)
     static bool isDocumentTypeAttributeListChoice(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == '|' || c == '(' || c == ')' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == '|' || c == '(' || c == ')'
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isDeclarationAttributeNameSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == '?' || c == '=' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == '?' || c == '='
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isDocumentTypeElementChoice(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == ']' || c == '*' || c == '+' || c == '|'
-            || c == ',' || c == '(' || c == ')' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == ']' || c == '*' || c == '+'
+            || c == '|' || c == ',' || c == '(' || c == ')'
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isElementAttributeNameSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == '/' || c == '=' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == '/' || c == '='
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isElementENameSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == '!' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == '!' || c == '['
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isElementPNameSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == '?' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == '?'
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isElementXNameSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || c == '/' || isSpace(c);
+        return c == 0 || c == '<' || c == '>' || c == '/'
+            || isSpace(c);
     }
 
     pragma (inline, true)
     static bool isElementSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>';
+        return c == 0 || c == '<' || c == '>';
     }
 
     pragma (inline, true)
     static bool isElementTextSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<';
+        return c == 0 || c == '<';
     }
 
     pragma (inline, true)
     static bool isNameSeparator(dchar c) pure nothrow @safe
     {
-        return c == '<' || c == '>' || isSpace(c);
+        return c == 0 || c == '<' || c == '>'
+            || isSpace(c);
     }
 
 package:    
     pragma (inline, true)
-    final bool isAnyFrontBut(dchar c)
+    final bool isAnyFrontBut(dchar c) nothrow @safe
     {
-        return !empty && current != c;
+        return current != 0 && current != c;
     }
 
     pragma (inline, true)
     final bool isDeclarationNameStart()
     {
-        if (empty)
-            return false;
-        else
-        {
-            immutable c = current;
-            return !isDeclarationAttributeNameSeparator(c) && isNameStartC(c);
-        }
+        return !isDeclarationAttributeNameSeparator(current) && isNameStartC(current);
     }
 
     pragma (inline, true)
     final bool isElementAttributeNameStart()
     {
-        if (empty)
-            return false;
-        else
-        {
-            immutable c = current;
-            return !isElementAttributeNameSeparator(c) && isNameStartC(c);
-        }
+        return !isElementAttributeNameSeparator(current) && isNameStartC(current);
     }
 
     pragma (inline, true)
     final bool isElementTextStart()
     {
-        return !empty && !isElementSeparator(current);
+        return !isElementSeparator(current);
     }
 
     final dchar moveFrontIf(dchar aCheckNonSpaceChar)
     {
-        auto f = frontIf();
+        auto f = front();
         if (f == aCheckNonSpaceChar)
         {
             popFrontColumn();
@@ -442,12 +438,12 @@ package:
             return 0;
     }
 
-    final const(C)[] readAName(alias stopChar)(out ParseContext!S name)
+    final const(C)[] readNameImpl(alias stopChar)(out ParseContext!S name)
     {
         name.loc = loc;
         static if (isBlockReader)
         {
-            while (!empty && !stopChar(current))
+            while (!stopChar(current))
             {
                 readCurrent(nameBuffer);
                 popFrontColumn();
@@ -457,7 +453,7 @@ package:
         else
         {
             size_t pStart = pPos; 
-            while (!empty && !stopChar(current))
+            while (!stopChar(current))
                 popFrontColumn();
             name.s = s[pStart .. pPos];
         }
@@ -466,7 +462,7 @@ package:
             throw new XmlParserException(name.loc, Message.eBlankName);
 
         version (unittest)
-        outputXmlTraceParserF("readAName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+        outputXmlTraceParserF("readNameImpl: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
             name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
 
         return name.s;
@@ -474,7 +470,7 @@ package:
 
     final const(C)[] readAnyName(out ParseContext!S name)
     {
-        return readAName!isNameSeparator(name);
+        return readNameImpl!isNameSeparator(name);
     }
 
     static if (!isBlockReader)
@@ -493,37 +489,101 @@ package:
 
     final const(C)[] readDeclarationAttributeName(out ParseContext!S name)
     {
-        return readAName!isDeclarationAttributeNameSeparator(name);
+        return readNameImpl!isDeclarationAttributeNameSeparator(name);
     }
 
     final const(C)[] readDocumentTypeAttributeListChoiceName(out ParseContext!S name)
     {
-        return readAName!isDocumentTypeAttributeListChoice(name);
+        return readNameImpl!isDocumentTypeAttributeListChoice(name);
     }
 
     final const(C)[] readDocumentTypeElementChoiceName(out ParseContext!S name)
     {
-        return readAName!isDocumentTypeElementChoice(name);
+        return readNameImpl!isDocumentTypeElementChoice(name);
     }
 
     final const(C)[] readElementEName(out ParseContext!S name)
     {
-        return readAName!isElementENameSeparator(name);
+        name.loc = loc;
+        immutable first = current;
+        static if (isBlockReader)
+        {
+            // Potential comment or cdata section
+            if (first == '-' || first == '[')
+            {
+                readCurrent(nameBuffer);
+                popFrontColumn();
+            }
+
+            if (current == '-')
+            {
+                readCurrent(nameBuffer);
+                popFrontColumn();
+            }
+            else
+            {
+                while (!isElementENameSeparator(current))
+                {
+                    readCurrent(nameBuffer);
+                    popFrontColumn();
+                }
+
+                // Potential cdata section?
+                if (first == '[' && current == '[')
+                {
+                    readCurrent(nameBuffer);
+                    popFrontColumn();
+                }
+            }
+            
+            name.s = nameBuffer.toStringAndClear();
+        }
+        else
+        {
+            size_t pStart = pPos; 
+
+            // Potential comment or cdata section
+            if (first == '-' || first == '[')
+                popFrontColumn();
+
+            if (current == '-')
+                popFrontColumn();
+            else
+            {
+                while (!isElementENameSeparator(current))
+                    popFrontColumn();
+
+                // Potential cdata section?
+                if (first == '[' && current == '[')
+                    popFrontColumn();
+            }
+
+            name.s = s[pStart .. pPos];
+        }
+
+        if (name.s.length == 0)
+            throw new XmlParserException(name.loc, Message.eBlankName);
+
+        version (unittest)
+        outputXmlTraceParserF("readElementEName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
+            name.s, name.loc.sourceLine, name.loc.sourceColumn, loc.sourceLine, loc.sourceColumn);
+
+        return name.s;
     }
 
     final const(C)[] readElementPName(out ParseContext!S name)
     {
-        return readAName!isElementPNameSeparator(name);
+        return readNameImpl!isElementPNameSeparator(name);
     }
 
     final const(C)[] readElementXAttributeName(out ParseContext!S name)
     {
-        return readAName!isElementAttributeNameSeparator(name);
+        return readNameImpl!isElementAttributeNameSeparator(name);
     }
 
     final const(C)[] readElementXName(out ParseContext!S name)
     {
-        return readAName!isElementXNameSeparator(name);
+        return readNameImpl!isElementXNameSeparator(name);
     }
 
     final void readElementXText(out XmlString!S text, out bool allWhitespaces)
@@ -532,7 +592,7 @@ package:
 
         static if (isBlockReader)
         {
-            while (!empty && !isElementTextSeparator(current))
+            while (!isElementTextSeparator(current))
             {
                 if (allWhitespaces && !isSpace(current))
                     allWhitespaces = false;
@@ -546,7 +606,7 @@ package:
         {
             XmlEncodeMode encodedMode = XmlEncodeMode.checked;
             size_t pStart = pPos; 
-            while (!empty && !isElementTextSeparator(current))
+            while (!isElementTextSeparator(current))
             {
                 if (allWhitespaces && !isSpace(current))
                     allWhitespaces = false;
@@ -560,12 +620,6 @@ package:
     }
 
 public:
-    pragma (inline, true)
-    final dchar frontIf()
-    {
-        return empty ? 0 : front;
-    }
-
     pragma (inline, true)
     final dchar moveFront()
     {
@@ -583,6 +637,7 @@ public:
         current = 0;
         static if (!is(XmlChar!S == dchar) && !isBlockReader)
             currentCodes = null;
+
         empty; // Advance to next char
     }
 
@@ -590,7 +645,7 @@ public:
     {
         static if (isBlockReader)
         {
-            while (!empty && isSpace(current))
+            while (isSpace(current))
                 nameBuffer.put(moveFront());
 
             return nameBuffer.toStringAndClear();
@@ -598,7 +653,7 @@ public:
         else
         {
             size_t pStart = pPos; 
-            while (!empty && isSpace(current))
+            while (isSpace(current))
                 popFront();
 
             return s[pStart .. pPos];
@@ -630,14 +685,8 @@ public:
                 return false;
             }
 
-            while (!empty)
+            while (readUntilChar())
             {
-                if (!readUntilChar())
-                {
-                    nameBuffer.clear();
-                    return false;
-                }
-
                 if (nameBuffer.rightEqual(untilMarker))
                 {
                     data = nameBuffer.dropBack(untilMarker.length).toStringAndClear();
@@ -666,11 +715,8 @@ public:
             }
 
             size_t pStart = pPos;
-            while (!empty)
+            while (readUntilChar())
             {
-                if (!readUntilChar())
-                    return false;
-
                 if (equalRight!S(s[pStart .. pPos], untilMarker))
                 {
                     data = s[pStart .. pPos - untilMarker.length];
@@ -713,14 +759,8 @@ public:
                 return false;
             }
 
-            while (!empty)
+            while (readUntilChar())
             {
-                if (!readUntilChar())
-                {
-                    textBuffer.clear();
-                    return false;
-                }
-
                 if (textBuffer.rightEqual(untilMarker))
                 {
                     data = textBuffer.dropBack(untilMarker.length).toXmlStringAndClear();
@@ -768,11 +808,8 @@ public:
             }
 
             size_t pStart = pPos;
-            while (!empty)
+            while (readUntilChar())
             {
-                if (!readUntilChar())
-                    return false;
-
                 if (equalRight!S(s[pStart .. pPos], untilMarker))
                 {
                     data = XmlString!S(s[pStart .. pPos - untilMarker.length], encodedMode);
@@ -792,7 +829,7 @@ public:
 
     final auto skipSpaces()
     {
-        while (!empty && isSpace(current))
+        while (isSpace(current))
             popFront();
 
         return this;
@@ -824,10 +861,11 @@ public:
         sPos = pPos = 0;
         sLen = aStr.length;
         s = aStr;
+
+        empty; // Setup the first char to avoid duplicated check
     }
 
 @property:
-    pragma (inline, true)
     final override bool empty()
     {
         if (current == 0 && sPos < sLen)
@@ -874,6 +912,8 @@ public:
         fileHandle.open(aFileName);
         static if (isBlockReader)
             initBuffers();
+
+        empty; // Setup the first char to avoid duplicated check
     }
 
     ~this()
@@ -890,7 +930,6 @@ public:
     }
 
 @property:
-    pragma (inline, true)
     final override bool empty()
     {
         if (current == 0 && !eof)

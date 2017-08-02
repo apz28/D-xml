@@ -49,11 +49,8 @@ if (isXmlString!S)
     XmlSaxElementEndEvent onSaxElementNodeEnd;
     XmlSaxNodeEvent onSaxOtherNode;
 
-    // useSymbolTable should be off when useSax is set for faster performance
     EnumBitFlags!XmlParseOptionFlag flags = 
-        EnumBitFlags!XmlParseOptionFlag(
-            XmlParseOptionFlag.useSymbolTable |
-            XmlParseOptionFlag.validate);
+        EnumBitFlags!XmlParseOptionFlag(XmlParseOptionFlag.validate);
 
 @property:
     pragma (inline, true)
@@ -1996,6 +1993,12 @@ public:
         _qualifiedName = aName;
     }
 
+    this(XmlDocument!S aOwnerDocument, XmlName!S aName, const(C)[] aText)
+    {
+        this(aOwnerDocument, aName);
+        _text = XmlString!S(aText);
+    }
+
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
         aWriter.putAttribute(name, ownerDocument.getEncodeText(_text));
@@ -2506,9 +2509,19 @@ package:
     }
 
 public:
-    const(C)[] defaultUri;
-    XmlParseOptions!S parseOptions;
+    /** A function pointer that is used for name comparision. This is allowed to be used
+        to compare name without case-sensitive.
+        Default is case-sensitive comparision
+    */
     EqualName equalName;
+
+    /** Default namespace value of this document
+    */
+    const(C)[] defaultUri;
+
+    /** Parser options that control behavior while parsing
+    */
+    XmlParseOptions!S parseOptions;
 
     this()
     {
@@ -2516,6 +2529,12 @@ public:
         equalName = &equalCase!S;
         _qualifiedName = singleton!(XmlName!S)(_defaultQualifiedName, &createDefaultQualifiedName);
         _buffers = new XmlBufferList!(S, No.checkEncoded)();
+    }
+
+    this(XmlParseOptions!S aParseOptions)
+    {
+        this();
+        parseOptions = aParseOptions;
     }
 
     final override bool allowChild() const
@@ -2543,13 +2562,29 @@ public:
         }
     }
 
+    /** Load a string xml, aXmlText, and returns its' document
+
+        Params:
+            aXmlText = a xml string
+
+        Returns:
+            self document instance
+    */
     final XmlDocument!S load(const(C)[] aXmlText)
     {
         auto reader = new XmlStringReader!S(aXmlText);
         return load(reader);
     }
 
-    final XmlDocument!S load(XmlReader!S aReader)
+    /** Load a content xml from a xml reader, reader, and returns its' document
+
+        Params:
+            reader = a content xml reader
+
+        Returns:
+            self document instance
+    */
+    final XmlDocument!S load(XmlReader!S reader)
     {
         ++_loading;
         scope (exit)
@@ -2557,10 +2592,18 @@ public:
 
         removeAll();
 
-        auto parser = XmlParser!S(this, aReader);
+        auto parser = XmlParser!S(this, reader);
         return parser.parse();
     }
 
+    /** Load a content xml from a file-name, aFileName, and returns its' document
+
+        Params:
+            aFileName = a xml content file-name to be loaded from
+
+        Returns:
+            self document instance
+    */
     final XmlDocument!S loadFromFile(string aFileName)
     {
         auto reader = new XmlFileReader!S(aFileName);
@@ -2570,6 +2613,27 @@ public:
         return load(reader);
     }
 
+    static XmlDocument!S opCall(S aXmlText) 
+    {
+        auto doc = new XmlDocument!S();
+		return doc.load(aXmlText);
+	}
+
+    static XmlDocument!S opCall(S aXmlText, in XmlParseOptions!S aParseOptions) 
+    {
+        auto doc = new XmlDocument!S(aParseOptions);
+		return doc.load(aXmlText);
+	}
+
+    /** Write the document xml into a file-name, aFileName, and returns aFileName
+
+        Params:
+            aFileName = an actual file-name to be written to
+            aPrettyOutput = indicates if xml should be in nicer format
+
+        Returns:
+            aFileName
+    */
     final string saveToFile(string aFileName, Flag!"PrettyOutput" aPrettyOutput = No.PrettyOutput)
     {
         auto writer = new XmlFileWriter!S(aFileName, aPrettyOutput);
@@ -2585,11 +2649,9 @@ public:
         return new XmlAttribute!S(this, createName(aName));
     }
 
-    XmlAttribute!S createAttribute(const(C)[] aName, S aValue)
+    XmlAttribute!S createAttribute(const(C)[] aName, const(C)[] aValue)
     {
-        auto a = createAttribute(aName);
-        a.value = aValue;
-        return a;
+        return new XmlAttribute!S(this, createName(aName), aValue);
     }
 
     XmlAttribute!S createAttribute(const(C)[] aPrefix, const(C)[] aLocalName, const(C)[] aNamespaceUri)
@@ -3883,7 +3945,7 @@ unittest  // XmlDocument
 {
     import std.conv : to;
 
-    outputXmlTraceProgress("unittest XmlDocument");
+    outputXmlTraceProgress("");
     outputXmlTraceProgress("XmlNodeList.sizeof: " ~ to!string(XmlNodeList!string.sizeof));
     outputXmlTraceProgress("XmlAttribute.sizeof: " ~ to!string(XmlAttribute!string.classinfo.initializer.length));
     outputXmlTraceProgress("XmlCDATA.sizeof: " ~ to!string(XmlCDATA!string.classinfo.initializer.length));
@@ -3911,6 +3973,9 @@ unittest  // XmlDocument
     outputXmlTraceProgress("XmlString.sizeof: " ~ to!string(XmlString!string.sizeof));
     outputXmlTraceProgress("XmlBuffer.sizeof: " ~ to!string(XmlBuffer!(string, No.checkEncoded).classinfo.initializer.length));
     outputXmlTraceProgress("XmlBufferList.sizeof: " ~ to!string(XmlBufferList!(string, No.checkEncoded).classinfo.initializer.length));
+    outputXmlTraceProgress("");
+
+    outputXmlTraceProgress("unittest XmlDocument");
 
     auto doc = new XmlDocument!string();
     auto root = doc.appendChild(doc.createElement("root"));
@@ -3920,10 +3985,15 @@ unittest  // XmlDocument
     root.appendChild(doc.createElement("a2"))
         .appendAttribute(doc.createAttribute("a2", "&<>'\""));
     root.appendChild(doc.createElement("c"))
-        .appendChild(doc.createComment("comment"));
+        .appendChild(doc.createComment("--comment--"));
     root.appendChild(doc.createElement("t"))
         .appendChild(doc.createText("text"));
     root.appendChild(doc.createCDATA("data &<>"));
 
-    assert(doc.outerXml() == "<root><prefix:localname/><a a=\"value\"/><a2 a2=\"&amp;&lt;&gt;&apos;&quot;\"/><c><!-- comment --></c><t>text</t><![CDATA[data &<>]]></root>");
+    static immutable string res = "<root><prefix:localname/><a a=\"value\"/><a2 a2=\"&amp;&lt;&gt;&apos;&quot;\"/><c><!----comment----></c><t>text</t><![CDATA[data &<>]]></root>";
+
+    assert(doc.outerXml() == res);
+
+    doc = XmlDocument!string(res);
+    assert(doc.outerXml() == res);
 }
