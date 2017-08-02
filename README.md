@@ -7,7 +7,7 @@ This is my first package written in D. Just discovered D few months ago and this
 
 Some features in this implementation
 
-f1. Supports different encodings (char, wchar & dchar)
+f1. Supports different character encodings (char, wchar & dchar)
 
 f2. SAX parsing with parent node tracking
 
