@@ -19,12 +19,14 @@ import main_test;
 
 Object loadXml(string xml)
 {
-    return new XmlDocument!string().load(xml);
+    auto doc = new XmlDocument!string();
+    return doc.load(xml);
 }
 
 Object loadXmlFromFile(string fileName)
 {
-    return new XmlDocument!string().loadFromFile(fileName);
+    auto doc = new XmlDocument!string();
+    return doc.loadFromFile(fileName);
 }
 
 const(char)[] saveXml(Object doc)
