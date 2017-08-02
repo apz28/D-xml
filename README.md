@@ -19,7 +19,7 @@ f5. XPath (selectNodes, selectSingleNode)
 
 f6. Support custom entity
 
-f7. Compare to current phobo\std.xml -> less memory used and twice as fast with validation while parsing
+f7. Compare to current phobo\std.xml -> 5 times less memory used and 4 times as fast with validation while parsing
 
 
 Still lacking document but you can read it from below link if the function name matched
