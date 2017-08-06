@@ -11,6 +11,7 @@
 
 module pham.xml_util;
 
+import std.format : format;
 import std.traits : isFloatingPoint, isIntegral;
 import std.typecons : Flag;
 
@@ -189,7 +190,10 @@ if (isXmlString!S)
         if (name.length == 0)
             throw new XmlException(Message.eBlankName);
         else
-            throw new XmlException(Message.eInvalidName, name);
+        {
+            string msg = format(Message.eInvalidName, name);
+            throw new XmlException(msg);
+        }
     }
 }
 
@@ -694,6 +698,40 @@ if (isXmlString!S)
         return s;
     else
         return s[0 .. count] ~ "...";
+}
+
+/** Convert from one string type to another. If both types are the same, 
+    returns the original value
+
+    Params:
+        s = the string that needed to be converted
+
+    Returns:
+        new string type value of s
+*/
+toS toUTF(fromS, toS)(fromS s)
+if (isXmlString!fromS && isXmlString!toS)
+{
+    static if (is(fromS == toS))
+        return s;
+    else static if (is(toS == dstring))
+    {
+        import std.utf : toUTF32;
+
+        return toUTF32(s);
+    }
+    else static if (is(toS == wstring))
+    {
+        import std.utf : toUTF16;
+
+        return toUTF16(s);
+    }
+    else
+    {
+        import std.utf : toUTF8;
+
+        return toUTF8(s);
+    }
 }
 
 private bool lookup(const(int[][]) pairTable, int c) pure nothrow @safe

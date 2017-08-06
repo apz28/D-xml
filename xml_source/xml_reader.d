@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -111,7 +111,10 @@ protected:
                 if (errorKind == UnicodeErrorKind.eos)
                     throw new XmlConvertException(Message.eInvalidUtf16Sequence1);
                 else
-                    throw new XmlConvertException(Message.eInvalidUtf16Sequence2 ~ format(", code=%d", errorCode));
+                {
+                    string msg = Message.eInvalidUtf16Sequence2 ~ format(", code=%d", errorCode);
+                    throw new XmlConvertException(msg);
+                }
             }
 
             void nextBlockUtf16()
@@ -182,7 +185,10 @@ protected:
                 if (errorKind == UnicodeErrorKind.eos)
                     throw new XmlConvertException(Message.eInvalidUtf8Sequence1); 
                 else
-                    throw new XmlConvertException(Message.eInvalidUtf8Sequence2 ~ format(", code=%d", errorCode));
+                {
+                    string msg = Message.eInvalidUtf8Sequence2 ~ format(", code=%d", errorCode);
+                    throw new XmlConvertException(msg);
+                }
             }
 
             void nextBlockUtf8()
@@ -448,7 +454,7 @@ package:
                 readCurrent(nameBuffer);
                 popFrontColumn();
             }
-            name.s = nameBuffer.toStringAndClear();
+            name.s = nameBuffer.valueAndClear();
         }
         else
         {
@@ -459,7 +465,7 @@ package:
         }
 
         if (name.s.length == 0)
-            throw new XmlParserException(name.loc, Message.eBlankName);
+            throw new XmlParserException(Message.eBlankName, name.loc);
 
         version (unittest)
         outputXmlTraceParserF("readNameImpl: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
@@ -536,7 +542,7 @@ package:
                 }
             }
             
-            name.s = nameBuffer.toStringAndClear();
+            name.s = nameBuffer.valueAndClear();
         }
         else
         {
@@ -562,7 +568,7 @@ package:
         }
 
         if (name.s.length == 0)
-            throw new XmlParserException(name.loc, Message.eBlankName);
+            throw new XmlParserException(Message.eBlankName, name.loc);
 
         version (unittest)
         outputXmlTraceParserF("readElementEName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
@@ -648,7 +654,7 @@ public:
             while (isSpace(current))
                 nameBuffer.put(moveFront());
 
-            return nameBuffer.toStringAndClear();
+            return nameBuffer.valueAndClear();
         }
         else
         {
@@ -689,7 +695,7 @@ public:
             {
                 if (nameBuffer.rightEqual(untilMarker))
                 {
-                    data = nameBuffer.dropBack(untilMarker.length).toStringAndClear();
+                    data = nameBuffer.dropBack(untilMarker.length).valueAndClear();
                     return true;
                 }
             }

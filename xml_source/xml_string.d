@@ -54,7 +54,7 @@ public:
         return data;
     }
 
-    const(C)[] decodeText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
+    const(C)[] decodedText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
     {
         assert(buffer !is null);
         assert(entityTable !is null);
@@ -63,7 +63,7 @@ public:
         return buffer.decode(data, entityTable);
     }
 
-    const(C)[] encodeText(XmlBuffer!(S, No.checkEncoded) buffer)
+    const(C)[] encodedText(XmlBuffer!(S, No.checkEncoded) buffer)
     {
         assert(buffer !is null);
         assert(needEncode());
@@ -81,7 +81,7 @@ public:
         return data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
     }
 
-    const(C)[] toString()
+    const(C)[] asValue() const
     {
         return data;
     }
@@ -119,12 +119,12 @@ pragma (inline, true)
 XmlString!S toXmlString(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
     auto m = buffer.decodeOrEncodeResultMode;
-    return XmlString!S(buffer.toString(), m);
+    return XmlString!S(buffer.value(), m);
 }
 
 pragma (inline, true)
 XmlString!S toXmlStringAndClear(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
 {
     auto m = buffer.decodeOrEncodeResultMode;
-    return XmlString!S(buffer.toStringAndClear(), m);
+    return XmlString!S(buffer.valueAndClear(), m);
 }

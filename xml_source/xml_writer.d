@@ -11,9 +11,9 @@
 
 module pham.xml_writer;
 
-import std.typecons : Flag, No, Yes;
 import std.range.primitives : back, empty, front, popFront;
 import std.array : Appender;
+import std.typecons : Flag, No, Yes;
 
 import pham.xml_msg;
 import pham.xml_util;
@@ -127,7 +127,7 @@ public:
             putLF();
     }
 
-    final void putCDATA(const(C)[] data)
+    final void putCData(const(C)[] data)
     {
         if (prettyOutput)
             putIndent();
@@ -153,7 +153,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length > 0 && publicOrSystem == XmlConst.public_)
+            if (publicId.length > 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
             {
                 put(' ');
                 putWithQuote(publicId);
@@ -294,7 +294,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length != 0 && publicOrSystem == XmlConst.public_)
+            if (publicId.length != 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
             {
                 put(' ');
                 putWithQuote(publicId);
@@ -306,7 +306,7 @@ public:
 
         if (text.length > 0)
         {
-            if (notationName == XmlConst.nData)
+            if (notationName == toUTF!(string, S)(XmlConst.nData))
                 putWithPreSpace(text);
             else
             {
@@ -334,7 +334,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length != 0 && publicOrSystem == XmlConst.public_)
+            if (publicId.length != 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
             {
                 put(' ');
                 putWithQuote(publicId);
@@ -346,7 +346,7 @@ public:
 
         if (text.length > 0)
         {
-            if (notationName == XmlConst.nData)
+            if (notationName == toUTF!(string, S)(XmlConst.nData))
                 putWithPreSpace(text);
             else
             {
@@ -374,7 +374,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length > 0 && publicOrSystem == XmlConst.public_)
+            if (publicId.length > 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
             {
                 put(' ');
                 putWithQuote(publicId);

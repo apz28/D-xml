@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -11,16 +11,17 @@
 
 module pham.xml_new;
 
+import std.format : format;
 import std.typecons : Flag, No, Yes;
 
 import pham.xml_msg;
-public import pham.xml_exception;
+import pham.xml_exception;
 import pham.xml_enum;
 import pham.xml_util;
 import pham.xml_object;
-import pham.xml_entity_table;
 import pham.xml_buffer;
 import pham.xml_string;
+import pham.xml_entity_table;
 import pham.xml_reader;
 import pham.xml_writer;
 import pham.xml_parser;
@@ -83,7 +84,7 @@ if (isXmlString!S)
     $(XmlNodeType.element) An element. For example: <item></item> or <item/>
     $(XmlNodeType.attribute) An attribute. For example: id='123'
     $(XmlNodeType.text) The text content of a node
-    $(XmlNodeType.CDATA) A CDATA section. For example: <![CDATA[my escaped text]]>
+    $(XmlNodeType.CData) A CDATA section. For example: <![CDATA[my escaped text]]>
     $(XmlNodeType.entityReference) A reference to an entity. For example: &num;
     $(XmlNodeType.entity) An entity declaration. For example: <!ENTITY...>
     $(XmlNodeType.processingInstruction) A processing instruction. For example: <?pi test ?>
@@ -104,7 +105,7 @@ enum XmlNodeType
     element = 1,
     attribute = 2,
     text = 3,
-    CDATA = 4,
+    CData = 4,
     entityReference = 5,
     entity = 6,
     processingInstruction = 7,
@@ -181,11 +182,6 @@ protected:
         size_t childVersion;
     }
 
-    this(XmlDocument!S aOwnerDocument)
-    {
-        _ownerDocument = aOwnerDocument;
-    }
-
     mixin DLink;
 
     final void appendChildText(XmlStringWriter!S aWriter)
@@ -196,7 +192,7 @@ protected:
             {
                 switch (i.nodeType)
                 {
-                    case XmlNodeType.CDATA:
+                    case XmlNodeType.CData:
                     case XmlNodeType.significantWhitespace:
                     case XmlNodeType.text:
                     case XmlNodeType.whitespace:
@@ -214,35 +210,53 @@ protected:
     final void checkAttribute(XmlNode!S aAttribute, string aOp)
     {
         if (!allowAttribute())
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+        {
+            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            throw new XmlInvalidOperationException(msg);
+        }
 
         if (aAttribute !is null)
         {
             if (!isLoading())
             {
                 if (aAttribute.ownerDocument !is null && aAttribute.ownerDocument !is selfOwnerDocument)
-                    throw new XmlInvalidOperationException(Message.eNotAllowAppendDifDoc, "attribute");
+                {
+                    string msg = format(Message.eNotAllowAppendDifDoc, "attribute");
+                    throw new XmlInvalidOperationException(msg);
+                }
             }
 
             if (isLoading() && selfOwnerDocument().parseOptions.validate && findAttribute(aAttribute.name) !is null)
-                throw new XmlInvalidOperationException(Message.eAttributeDuplicated, aAttribute.name);
+            {
+                string msg = format(Message.eAttributeDuplicated, aAttribute.name);
+                throw new XmlInvalidOperationException(msg);
+            }
         }
     }
 
     final void checkChild(XmlNode!S aChild, string aOp)
     {
         if (!allowChild())
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+        {
+            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            throw new XmlInvalidOperationException(msg);
+        }
 
         if (aChild !is null)
         {
             if (!allowChildType(aChild.nodeType))
-                throw new XmlInvalidOperationException(Message.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
+            {
+                string msg = format(Message.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
+                throw new XmlInvalidOperationException(msg);
+            }
 
             if (!isLoading())
             {
                 if (aChild.ownerDocument !is null && aChild.ownerDocument !is selfOwnerDocument)
-                    throw new XmlInvalidOperationException(Message.eNotAllowAppendDifDoc, "child");
+                {
+                    string msg = format(Message.eNotAllowAppendDifDoc, "child");
+                    throw new XmlInvalidOperationException(msg);
+                }
 
                 if (aChild is this || isAncestorNode(aChild))
                     throw new XmlInvalidOperationException(Message.eNotAllowAppendSelf);
@@ -253,10 +267,16 @@ protected:
     final void checkParent(XmlNode!S aNode, bool aChild, string aOp)
     {
         if (aNode._parent !is this)
-            throw new XmlInvalidOperationException(Message.eInvalidOpFromWrongParent, shortClassName(this), aOp);
+        {
+            string msg = format(Message.eInvalidOpFromWrongParent, shortClassName(this), aOp);
+            throw new XmlInvalidOperationException(msg);
+        }
 
         if (aChild && aNode.nodeType == XmlNodeType.attribute)
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+        {
+            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            throw new XmlInvalidOperationException(msg);
+        }
     }
 
     final XmlNode!S findChild(XmlNodeType aNodeType)
@@ -294,7 +314,7 @@ protected:
     }
 
     /** Returns true if this node is a Text type node
-        CDATA, comment, significantWhitespace, text & whitespace
+        CData, comment, significantWhitespace, text & whitespace
     */
     bool isText() const
     {
@@ -490,13 +510,6 @@ public:
     }
 
 public:
-    version (none)  
-    ~this()
-    {
-        removeAll();
-        _ownerDocument = null;
-    }
-
     /** Returns true if aNode is an ancestor of this node;
         false otherwise
 
@@ -1187,7 +1200,7 @@ public:
         switch (nodeType)
         {
             case XmlNodeType.attribute:
-            case XmlNodeType.CDATA:
+            case XmlNodeType.CData:
             case XmlNodeType.comment:
             case XmlNodeType.processingInstruction:
             case XmlNodeType.text:
@@ -1235,7 +1248,7 @@ public:
         return (nodeType == XmlNodeType.attribute &&                
                 localName.length > 0 &&                
                 value.length > 0 &&
-                document.equalName(prefix, XmlConst.xmlns));
+                document.equalName(prefix, toUTF!(string, S)(XmlConst.xmlns)));
     }
 
     /** Returns true if aNode is the only child/attribute node (no sibling node)
@@ -1368,7 +1381,8 @@ public:
 
     const(C)[] prefix(const(C)[] newValue)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "prefix()");
+        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "prefix()");
+        throw new XmlInvalidOperationException(msg);
     }
 
     /** Returns its' previous sibling node
@@ -1398,7 +1412,8 @@ public:
 
     const(C)[] value(const(C)[] newValue)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "value()");
+        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "value()");
+        throw new XmlInvalidOperationException(msg);
     }
 }
 
@@ -1674,8 +1689,10 @@ public:
         outputXmlTraceParser("XmlNodeList.this(...)");
 
         if (aListType == XmlNodeListType.flat)
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate,
-                "XmlNodeList", "this(listType = XmlNodeListType.flat)");
+        {
+            string msg = format(Message.eInvalidOpDelegate, "XmlNodeList", "this(listType = XmlNodeListType.flat)");
+            throw new XmlInvalidOperationException(msg);
+        }
 
         _orgParent = aParent;
         _listType = aListType;
@@ -1719,8 +1736,10 @@ public:
     XmlNode!S insertBack(XmlNode!S aNode)
     {
         if (_listType != XmlNodeListType.flat)
-            throw new XmlInvalidOperationException(Message.eInvalidOpDelegate,
-                    "XmlNodeList", "insertBack(listType != XmlNodeListType.flat)");
+        {
+            string msg = format(Message.eInvalidOpDelegate, "XmlNodeList", "insertBack(listType != XmlNodeListType.flat)");
+            throw new XmlInvalidOperationException(msg);
+        }
 
         _flatList ~= aNode;
         return aNode;
@@ -1975,7 +1994,7 @@ package:
             checkName!(S, No.allowEmpty)(aName.localName);
         }
 
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = aName;
         _text = aText;
     }
@@ -1989,7 +2008,7 @@ public:
             checkName!(S, No.allowEmpty)(aName.localName);
         }
 
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = aName;
     }
 
@@ -2001,7 +2020,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putAttribute(name, ownerDocument.getEncodeText(_text));
+        aWriter.putAttribute(name, ownerDocument.getEncodedText(_text));
         return aWriter;
     }
 
@@ -2037,7 +2056,7 @@ public:
 
     final override const(C)[] value()
     {
-        return ownerDocument.getDecodeText(_text);
+        return ownerDocument.getDecodedText(_text);
     }
 
     final override const(C)[] value(const(C)[] newValue)
@@ -2047,16 +2066,16 @@ public:
     }
 }
 
-/** A xml CDATA node object
+/** A xml CData node object
 */
-class XmlCDATA(S) : XmlCharacterDataCustom!S
+class XmlCData(S) : XmlCharacterDataCustom!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.CDATATagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.CDataTagName));
     }
 
 public:
@@ -2068,14 +2087,14 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putCDATA(_text.value);
+        aWriter.putCData(_text.value);
         return aWriter;
     }
 
 @property:
     final override XmlNodeType nodeType() const
     {
-        return XmlNodeType.CDATA;
+        return XmlNodeType.CData;
     }
 }
 
@@ -2088,7 +2107,7 @@ protected:
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.commentTagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.commentTagName));
     }
 
 package:
@@ -2107,7 +2126,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putComment(ownerDocument.getEncodeText(_text));
+        aWriter.putComment(ownerDocument.getEncodedText(_text));
         return aWriter;
     }
 
@@ -2127,7 +2146,7 @@ protected:
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.declarationTagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.declarationTagName));
     }
 
 protected:
@@ -2144,14 +2163,17 @@ protected:
             splitNameValueD!S(e, '=', name, value);
 
             const equalName = document.equalName;
-            if (equalName(name, XmlConst.declarationVersionName))
+            if (equalCaseInsensitive!S(name, toUTF!(string, S)(XmlConst.declarationVersionName)))
                 versionStr = value;
-            else if (equalName(name, XmlConst.declarationEncodingName))
+            else if (equalCaseInsensitive!S(name, toUTF!(string, S)(XmlConst.declarationEncodingName)))
                 encoding = value;
-            else if (equalName(name, XmlConst.declarationStandaloneName))
+            else if (equalCaseInsensitive!S(name, toUTF!(string, S)(XmlConst.declarationStandaloneName)))
                 standalone = value;
             else
-                throw new XmlException(Message.eInvalidName, name);
+            {
+                string msg = format(Message.eInvalidName, name);
+                throw new XmlException(msg);
+            }
         }
     }
 
@@ -2164,23 +2186,23 @@ protected:
 
             const(C)[] s;
 
-            writer.putAttribute(XmlConst.declarationVersionName, versionStr);
+            writer.putAttribute(toUTF!(string, S)(XmlConst.declarationVersionName), versionStr);
 
             s = encoding;
             if (s.length > 0)
             {
                 writer.put(' ');
-                writer.putAttribute(XmlConst.declarationEncodingName, s);
+                writer.putAttribute(toUTF!(string, S)(XmlConst.declarationEncodingName), s);
             }
 
             s = standalone;
             if (s.length > 0)
             {
                 writer.put(' ');
-                writer.putAttribute(XmlConst.declarationStandaloneName, s);
+                writer.putAttribute(toUTF!(string, S)(XmlConst.declarationStandaloneName), s);
             }
 
-            _innerText = buffer.toString();
+            _innerText = buffer.valueAndClear();
             selfOwnerDocument.releaseBuffer(buffer);
         }
 
@@ -2189,21 +2211,28 @@ protected:
 
     final void checkStandalone(const(C)[] s)
     {
-        if ((s.length > 0) && (s != XmlConst.yes || s != XmlConst.no))
-            throw new XmlException(Message.eInvalidTypeValueOf2,
-                    XmlConst.declarationStandaloneName, XmlConst.yes, XmlConst.no, s);
+        if ((s.length > 0) && 
+            (s != toUTF!(string, S)(XmlConst.yes) || 
+             s != toUTF!(string, S)(XmlConst.no)))
+        {
+            string msg = format(Message.eInvalidTypeValueOf2, XmlConst.declarationStandaloneName, XmlConst.yes, XmlConst.no, s);
+            throw new XmlException(msg);
+        }
     }
 
     final void checkVersion(const(C)[] s) // rule 26
     {
         if (!isVersionStr!(S, Yes.allowEmpty)(s))
-            throw new XmlException(Message.eInvalidVersionStr, s);
+        {
+            string msg = format(Message.eInvalidVersionStr, s);
+            throw new XmlException(msg);
+        }
     }
 
 public:
     this(XmlDocument!S aOwnerDocument)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = singleton!(XmlName!S)(_defaultQualifiedName, &createDefaultQualifiedName);
     }
 
@@ -2247,16 +2276,16 @@ public:
 @property:
     final const(C)[] encoding()
     {
-        return getAttribute(XmlConst.declarationEncodingName);
+        return getAttribute(toUTF!(string, S)(XmlConst.declarationEncodingName));
     }
 
     final void encoding(const(C)[] newValue)
     {
         _innerText = null;
         if (newValue.length == 0)
-            removeAttribute(XmlConst.declarationEncodingName);
+            removeAttribute(toUTF!(string, S)(XmlConst.declarationEncodingName));
         else
-            setAttribute(XmlConst.declarationEncodingName, newValue);
+            setAttribute(toUTF!(string, S)(XmlConst.declarationEncodingName), newValue);
     }
 
     final override const(C)[] innerText()
@@ -2277,7 +2306,7 @@ public:
 
     final const(C)[] standalone()
     {
-        return getAttribute(XmlConst.declarationStandaloneName);
+        return getAttribute(toUTF!(string, S)(XmlConst.declarationStandaloneName));
     }
 
     final const(C)[] standalone(const(C)[] newValue)
@@ -2286,9 +2315,9 @@ public:
 
         _innerText = null;
         if (newValue.length == 0)
-            removeAttribute(XmlConst.declarationStandaloneName);
+            removeAttribute(toUTF!(string, S)(XmlConst.declarationStandaloneName));
         else
-            setAttribute(XmlConst.declarationStandaloneName, newValue);
+            setAttribute(toUTF!(string, S)(XmlConst.declarationStandaloneName), newValue);
         return newValue;
     }
 
@@ -2305,16 +2334,16 @@ public:
 
     final const(C)[] versionStr()
     {
-        return getAttribute(XmlConst.declarationVersionName);
+        return getAttribute(toUTF!(string, S)(XmlConst.declarationVersionName));
     }
 
     final const(C)[] versionStr(const(C)[] newValue)
     {
         _innerText = null;
         if (newValue.length == 0)
-            removeAttribute(XmlConst.declarationVersionName);
+            removeAttribute(toUTF!(string, S)(XmlConst.declarationVersionName));
         else
-            setAttribute(XmlConst.declarationVersionName, newValue);
+            setAttribute(toUTF!(string, S)(XmlConst.declarationVersionName), newValue);
         return newValue;
     }
 }
@@ -2331,7 +2360,7 @@ protected:
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.documentTagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.documentTagName));
     }
 
 protected:
@@ -2358,30 +2387,30 @@ protected:
         return _buffers.getAndRelease(b);
     }
 
-    final const(C)[] getDecodeText(ref XmlString!S s)
+    final const(C)[] getDecodedText(ref XmlString!S s)
     {
         if (s.needDecode())
         {
             auto buffer = acquireBuffer(XmlNodeType.text, s.length);
-            auto result = s.decodeText(buffer, decodeEntityTable());
+            auto result = s.decodedText(buffer, decodeEntityTable());
             releaseBuffer(buffer);
             return result;
         }
         else
-            return s.toString();
+            return s.asValue();
     }
 
-    final const(C)[] getEncodeText(ref XmlString!S s)
+    final const(C)[] getEncodedText(ref XmlString!S s)
     {
         if (s.needEncode())
         {
             auto buffer = acquireBuffer(XmlNodeType.text, s.length);
-            auto result = s.encodeText(buffer);
+            auto result = s.encodedText(buffer);
             releaseBuffer(buffer);
             return result;
         }
         else
-            return s.toString();
+            return s.asValue();
     }
 
     pragma (inline, true)
@@ -2525,8 +2554,8 @@ public:
 
     this()
     {
-        super(null);
         equalName = &equalCase!S;
+        _ownerDocument = null;
         _qualifiedName = singleton!(XmlName!S)(_defaultQualifiedName, &createDefaultQualifiedName);
         _buffers = new XmlBufferList!(S, No.checkEncoded)();
     }
@@ -2659,9 +2688,9 @@ public:
         return new XmlAttribute!S(this, createName(aPrefix, aLocalName, aNamespaceUri));
     }
 
-    XmlCDATA!S createCDATA(const(C)[] aData)
+    XmlCData!S createCData(const(C)[] aData)
     {
-        return new XmlCDATA!S(this, aData);
+        return new XmlCData!S(this, aData);
     }
 
     XmlComment!S createComment(const(C)[] aText)
@@ -2819,7 +2848,7 @@ public:
     {
         switch (aNodeType)
         {
-            case XmlNodeType.CDATA:
+            case XmlNodeType.CData:
             case XmlNodeType.Comment:
             case XmlNodeType.Element:
             case XmlNodeType.Entity:
@@ -2837,7 +2866,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "write()");
+        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "write()");
+        throw new XmlInvalidOperationException(msg);
         //todo
         //return writer;
     }
@@ -2861,7 +2891,7 @@ protected:
 public:
     this(XmlDocument!S aOwnerDocument, const(C)[] aName)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = new XmlName!S(aName);
     }
 
@@ -2915,7 +2945,7 @@ public:
             c = Yes.hasChild;
 
         aWriter.putDocumentTypeBegin(name, publicOrSystem,
-            ownerDocument.getEncodeText(_publicId), ownerDocument.getEncodeText(_text), c);
+            ownerDocument.getEncodedText(_publicId), ownerDocument.getEncodedText(_text), c);
         if (c)
             writeChildren(aWriter);
         aWriter.putDocumentTypeEnd(c);
@@ -2931,7 +2961,7 @@ public:
 
     final const(C)[] publicId()
     {
-        return ownerDocument.getDecodeText(_publicId);
+        return ownerDocument.getDecodedText(_publicId);
     }
 
     final const(C)[] publicId(const(C)[] newValue)
@@ -2949,8 +2979,8 @@ public:
     {
         const equalName = document.equalName;
         if (newValue.length == 0 ||
-            equalName(newValue, XmlConst.public_) ||
-            equalName(newValue, XmlConst.system))
+            newValue == toUTF!(string, S)(XmlConst.public_) ||
+            newValue == toUTF!(string, S)(XmlConst.system))
             return _publicOrSystem = newValue;
         else
             return null;
@@ -2958,7 +2988,7 @@ public:
 
     final override const(C)[] value()
     {
-        return ownerDocument.getDecodeText(_text);
+        return ownerDocument.getDecodedText(_text);
     }
 
     final override const(C)[] value(const(C)[] newValue)
@@ -2976,7 +3006,7 @@ protected:
 public:
     this(XmlDocument!S aOwnerDocument, const(C)[] aName)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = new XmlName!S(aName);
     }
 
@@ -3038,7 +3068,7 @@ public:
         if (_defaultDeclareText.length > 0)
         {
             aWriter.put(' ');
-            aWriter.putWithQuote(ownerDocument.getEncodeText(_defaultDeclareText));
+            aWriter.putWithQuote(ownerDocument.getEncodedText(_defaultDeclareText));
         }
 
         return aWriter;
@@ -3047,7 +3077,7 @@ public:
 @property:
     final const(C)[] defaultDeclareText()
     {
-        return ownerDocument.getDecodeText(_defaultDeclareText);
+        return ownerDocument.getDecodedText(_defaultDeclareText);
     }
 
     final const(C)[] defaultDeclareType()
@@ -3123,7 +3153,7 @@ protected:
 public:
     this(XmlDocument!S aOwnerDocument, const(C)[] aName)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = new XmlName!S(aName);
     }
 
@@ -3261,10 +3291,10 @@ public:
             checkName!(S, No.allowEmpty)(aName.localName);
         }
 
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = aName;
     }
-
+    
     final override bool allowAttribute() const
     {
         return true;
@@ -3279,7 +3309,7 @@ public:
     {
         switch (aNodeType)
         {
-            case XmlNodeType.CDATA:
+            case XmlNodeType.CData:
             case XmlNodeType.comment:
             case XmlNodeType.element:
             case XmlNodeType.entityReference:
@@ -3375,8 +3405,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putEntityGeneral(name, _publicOrSystem, ownerDocument.getEncodeText(_publicId),
-            _notationName, ownerDocument.getEncodeText(_text));
+        aWriter.putEntityGeneral(name, _publicOrSystem, ownerDocument.getEncodedText(_publicId),
+            _notationName, ownerDocument.getEncodedText(_text));
 
         return aWriter;
     }
@@ -3417,8 +3447,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putEntityReference(name, _publicOrSystem, ownerDocument.getEncodeText(_publicId),
-            _notationName, ownerDocument.getEncodeText(_text));
+        aWriter.putEntityReference(name, _publicOrSystem, ownerDocument.getEncodedText(_publicId),
+            _notationName, ownerDocument.getEncodedText(_text));
 
         return aWriter;
     }
@@ -3441,7 +3471,7 @@ protected:
 
     this(XmlDocument!S aOwnerDocument, const(C)[] aName)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = new XmlName!S(aName);
     }
 
@@ -3467,8 +3497,8 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putNotation(name, publicOrSystem, ownerDocument.getEncodeText(_publicId),
-            ownerDocument.getEncodeText(_text));
+        aWriter.putNotation(name, publicOrSystem, ownerDocument.getEncodedText(_publicId),
+            ownerDocument.getEncodedText(_text));
 
         return aWriter;
     }
@@ -3481,7 +3511,7 @@ public:
 
     final const(C)[] publicId()
     {
-        return ownerDocument.getDecodeText(_publicId);
+        return ownerDocument.getDecodedText(_publicId);
     }
 
     final const(C)[] publicOrSystem()
@@ -3491,7 +3521,7 @@ public:
 
     final override const(C)[] value()
     {
-        return ownerDocument.getDecodeText(_text);
+        return ownerDocument.getDecodedText(_text);
     }
 
     final override const(C)[] value(const(C)[] newValue)
@@ -3510,7 +3540,7 @@ protected:
 
     this(XmlDocument!S aOwnerDocument, const(C)[] aTarget)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = new XmlName!S(aTarget);
     }
 
@@ -3530,7 +3560,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.putProcessingInstruction(name, ownerDocument.getEncodeText(_text));
+        aWriter.putProcessingInstruction(name, ownerDocument.getEncodedText(_text));
 
         return aWriter;
     }
@@ -3558,7 +3588,7 @@ public:
 
     final override const(C)[] value()
     {
-        return ownerDocument.getDecodeText(_text); 
+        return ownerDocument.getDecodedText(_text); 
     }
 
     final override const(C)[] value(const(C)[] newValue)
@@ -3577,7 +3607,7 @@ protected:
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.significantWhitespaceTagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.significantWhitespaceTagName));
     }
 
 public:
@@ -3603,7 +3633,7 @@ protected:
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.textTagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.textTagName));
     }
 
 package:
@@ -3622,7 +3652,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        aWriter.put(ownerDocument.getEncodeText(_text));
+        aWriter.put(ownerDocument.getEncodedText(_text));
 
         return aWriter;
     }
@@ -3651,7 +3681,7 @@ protected:
 
     static XmlName!S createDefaultQualifiedName()
     {
-        return new XmlName!S(XmlConst.whitespaceTagName);
+        return new XmlName!S(toUTF!(string, S)(XmlConst.whitespaceTagName));
     }
 
 public:
@@ -3692,7 +3722,7 @@ protected:
 
     this(XmlDocument!S aOwnerDocument, XmlString!S aText)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _text = aText;
     }
 
@@ -3710,7 +3740,7 @@ public:
 
     override const(C)[] value()
     {
-        return ownerDocument.getDecodeText(_text);
+        return ownerDocument.getDecodedText(_text);
     }
 
     override const(C)[] value(const(C)[] newValue)
@@ -3760,7 +3790,7 @@ public:
 
     final override const(C)[] value()
     {
-        return _text.toString();
+        return _text.asValue();
     }
 
     final override const(C)[] value(const(C)[] newValue)
@@ -3782,7 +3812,7 @@ protected:
 
     this(XmlDocument!S aOwnerDocument, const(C)[] aName)
     {
-        super(aOwnerDocument);
+        _ownerDocument = aOwnerDocument;
         _qualifiedName = new XmlName!S(aName);
     }
 
@@ -3827,7 +3857,7 @@ public:
 
     final const(C)[] publicId()
     {
-        return ownerDocument.getDecodeText(_publicId);
+        return ownerDocument.getDecodedText(_publicId);
     }
 
     final const(C)[] publicOrSystem()
@@ -3837,7 +3867,7 @@ public:
 
     final override const(C)[] value()
     {
-        return ownerDocument.getDecodeText(_text);
+        return ownerDocument.getDecodedText(_text);
     }
 
     final override const(C)[] value(const(C)[] newValue)
@@ -3913,16 +3943,11 @@ public:
     {
         if (_namespaceUri.ptr is null)
         {
-            bool function(const(C)[] s1, const(C)[] s2) equalName;
-            if (ownerDocument is null)
-                equalName = &equalCase!S;
-            else
-                equalName = ownerDocument.equalName;
-
-            if (equalName(prefix, XmlConst.xmlns) || (prefix.length == 0 && equalName(localName, XmlConst.xmlns)))
-                _namespaceUri = XmlConst.xmlnsNS;
-            else if (equalName(prefix, XmlConst.xml))
-                _namespaceUri = XmlConst.xmlNS;
+            if ((toUTF!(string, S)(XmlConst.xmlns) == prefix) || 
+                (prefix.length == 0 && toUTF!(string, S)(XmlConst.xmlns) == localName))
+                _namespaceUri = toUTF!(string, S)(XmlConst.xmlnsNS);
+            else if (toUTF!(string, S)(XmlConst.xml) == prefix)
+                _namespaceUri = toUTF!(string, S)(XmlConst.xmlNS);
             else if (ownerDocument !is null)
                 _namespaceUri = ownerDocument.defaultUri;
             else
@@ -3941,14 +3966,14 @@ public:
     }
 }
 
-unittest  // XmlDocument
+unittest  // Display object sizeof
 {
     import std.conv : to;
 
     outputXmlTraceProgress("");
     outputXmlTraceProgress("XmlNodeList.sizeof: " ~ to!string(XmlNodeList!string.sizeof));
     outputXmlTraceProgress("XmlAttribute.sizeof: " ~ to!string(XmlAttribute!string.classinfo.initializer.length));
-    outputXmlTraceProgress("XmlCDATA.sizeof: " ~ to!string(XmlCDATA!string.classinfo.initializer.length));
+    outputXmlTraceProgress("XmlCData.sizeof: " ~ to!string(XmlCData!string.classinfo.initializer.length));
     outputXmlTraceProgress("XmlComment.sizeof: " ~ to!string(XmlComment!string.classinfo.initializer.length));
     outputXmlTraceProgress("XmlDeclaration.sizeof: " ~ to!string(XmlDeclaration!string.classinfo.initializer.length));
     outputXmlTraceProgress("XmlDocument.sizeof: " ~ to!string(XmlDocument!string.classinfo.initializer.length));
@@ -3974,7 +3999,10 @@ unittest  // XmlDocument
     outputXmlTraceProgress("XmlBuffer.sizeof: " ~ to!string(XmlBuffer!(string, No.checkEncoded).classinfo.initializer.length));
     outputXmlTraceProgress("XmlBufferList.sizeof: " ~ to!string(XmlBufferList!(string, No.checkEncoded).classinfo.initializer.length));
     outputXmlTraceProgress("");
+}
 
+unittest  // XmlDocument
+{
     outputXmlTraceProgress("unittest XmlDocument");
 
     auto doc = new XmlDocument!string();
@@ -3988,7 +4016,7 @@ unittest  // XmlDocument
         .appendChild(doc.createComment("--comment--"));
     root.appendChild(doc.createElement("t"))
         .appendChild(doc.createText("text"));
-    root.appendChild(doc.createCDATA("data &<>"));
+    root.appendChild(doc.createCData("data &<>"));
 
     static immutable string res = "<root><prefix:localname/><a a=\"value\"/><a2 a2=\"&amp;&lt;&gt;&apos;&quot;\"/><c><!----comment----></c><t>text</t><![CDATA[data &<>]]></root>";
 

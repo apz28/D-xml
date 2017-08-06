@@ -53,24 +53,13 @@ template XmlExceptionConstructors()
         super(aMsg, aNext);
     }
 
-    this(XmlLoc aLoc, string aMsg, Exception aNext = null)
+    this(string aMsg, XmlLoc aLoc, Exception aNext = null)
     {
         if (aLoc.isSpecified())
-            this(aMsg ~ format(Message.atLineInfo, aLoc.sourceLine, aLoc.sourceColumn), aNext);
-        else
-            this(aMsg, aNext);
+            aMsg = aMsg ~ format(Message.atLineInfo, aLoc.sourceLine, aLoc.sourceColumn);
 
+        this(aMsg, aNext);
         loc = aLoc;
-    }
-
-    this(C, Args...)(in C[] fmt, Args args)
-    {
-        this(format(fmt, args));
-    }
-
-    this(C, Args...)(XmlLoc aLoc, in C[] fmt, Args args)
-    {
-        this(aLoc, format(fmt, args));
     }
 }
 

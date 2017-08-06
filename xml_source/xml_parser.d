@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -11,10 +11,11 @@
 
 module pham.xml_parser;
 
-import std.string : indexOf;
-import std.typecons : No, Yes;
 import std.range.primitives : back, empty, front, popFront, popBack;
 import std.conv : to;
+import std.format : format;
+import std.string : indexOf;
+import std.typecons : No, Yes;
 
 import pham.xml_msg;
 import pham.xml_exception;
@@ -63,10 +64,16 @@ private:
             reader.skipSpaces();
 
         if (reader.empty)
-            throw new XmlParserException(Message.eExpectedCharButEos, c);
+        {
+            string msg = format(Message.eExpectedCharButEos, c);
+            throw new XmlParserException(msg);
+        }
 
         if (reader.moveFrontIf(c) != c)
-            throw new XmlParserException(reader.sourceLoc, Message.eExpectedCharButChar, c, reader.front);
+        {
+            string msg = format(Message.eExpectedCharButChar, c, reader.front);
+            throw new XmlParserException(msg, reader.sourceLoc);
+        }
 
         static if ((aSkipSpaces & skipSpaceAfter))
             reader.skipSpaces();
@@ -78,12 +85,18 @@ private:
             reader.skipSpaces();
 
         if (reader.empty)
-            throw new XmlParserException(Message.eExpectedOneOfCharsButEos, oneOfChars);
+        {
+            string msg = format(Message.eExpectedOneOfCharsButEos, oneOfChars);
+            throw new XmlParserException(msg);
+        }
 
         auto c = reader.front;
 
         if (oneOfChars.indexOf(c) < 0)
-            throw new XmlParserException(reader.sourceLoc, Message.eExpectedOneOfCharsButChar, oneOfChars, c);
+        {
+            string msg = format(Message.eExpectedOneOfCharsButChar, oneOfChars, c);
+            throw new XmlParserException(msg, reader.sourceLoc);
+        }
 
         reader.popFront();
 
@@ -127,11 +140,11 @@ private:
         return n;
     }
 
-    void parseCDATA(ref ParseContext!S tagName)
+    void parseCData(ref ParseContext!S tagName)
     {
         version (unittest)
         {
-            outputXmlTraceParserF("%sparseCDATA.%s", indentString(), tagName.s);
+            outputXmlTraceParserF("%sparseCData.%s", indentString(), tagName.s);
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
@@ -141,13 +154,19 @@ private:
         if (!reader.readUntilMarker(data, "]]>"))
         {
             if (reader.empty)
-                throw new XmlParserException(Message.eExpectedStringButEos, "]]>");
+            {
+                string msg = format(Message.eExpectedStringButEos, "]]>");
+                throw new XmlParserException(msg);
+            }
             else
-                throw new XmlParserException(reader.sourceLoc, Message.eExpectedStringButNotFound, "]]>");
+            {
+                string msg = format(Message.eExpectedStringButNotFound, "]]>");
+                throw new XmlParserException(msg, reader.sourceLoc);
+            }
         }
 
         auto parentNode = peekNode();
-        auto node = parentNode.appendChild(document.createCDATA(data));
+        auto node = parentNode.appendChild(document.createCData(data));
         if (useSaxOtherNode && !options.onSaxOtherNode(node))
             parentNode.removeChild(node);
     }
@@ -166,9 +185,15 @@ private:
         if (!reader.readUntilMarker(data, "-->"))
         {
             if (reader.empty)
-                throw new XmlParserException(Message.eExpectedStringButEos, "-->");
+            {
+                string msg = format(Message.eExpectedStringButEos, "-->");
+                throw new XmlParserException(msg);
+            }
             else
-                throw new XmlParserException(reader.sourceLoc, Message.eExpectedStringButNotFound, "-->");
+            {
+                string msg = format(Message.eExpectedStringButNotFound, "-->");
+                throw new XmlParserException(msg, reader.sourceLoc);
+            }
         }
 
         auto parentNode = peekNode();
@@ -222,9 +247,16 @@ private:
         if (options.validate)
         {
             if (!isName!(S, No.allowEmpty)(name))
-                throw new XmlParserException(contextName.loc, Message.eInvalidName, name);
+            {
+                string msg = format(Message.eInvalidName, name);
+                throw new XmlParserException(msg, contextName.loc);
+            }
+
             if (parentNode.findAttribute(name))
-                throw new XmlParserException(contextName.loc, Message.eAttributeDuplicated, name);
+            {
+                string msg = format(Message.eAttributeDuplicated, name);
+                throw new XmlParserException(msg, contextName.loc);
+            }
         }
 
         version (unittest)
@@ -361,7 +393,7 @@ private:
         {
             type = reader.readAnyName(localContext);
 
-            if (type == XmlConst.notation)
+            if (type == toUTF!(string, S)(XmlConst.notation))
             {
                 expectChar!(skipSpaceBefore)('(');
                 while (reader.skipSpaces().isAnyFrontBut(')'))
@@ -377,12 +409,15 @@ private:
         {
             defaultType = reader.readAnyName(localContext);
 
-            if (defaultType != XmlConst.fixed  &&
-                defaultType != XmlConst.implied &&
-                defaultType != XmlConst.required)
-                throw new XmlParserException(localContext.loc, Message.eExpectedOneOfStringsButString,
+            if (defaultType != toUTF!(string, S)(XmlConst.fixed)  &&
+                defaultType != toUTF!(string, S)(XmlConst.implied) &&
+                defaultType != toUTF!(string, S)(XmlConst.required))
+            {
+                string msg = format(Message.eExpectedOneOfStringsButString,
                     XmlConst.fixed ~ ", " ~ XmlConst.implied ~ " or " ~ XmlConst.required,
                     defaultType);
+                throw new XmlParserException(msg, localContext.loc);
+            }
         }
 
         if ("\"'".indexOf(reader.skipSpaces().front) >= 0)
@@ -419,9 +454,13 @@ private:
         {
             auto choice = reader.readAnyName(localContext);
 
-            if (choice != XmlConst.any && choice != XmlConst.empty)
-                throw new XmlParserException(localContext.loc, Message.eExpectedOneOfStringsButString,
+            if (choice != toUTF!(string, S)(XmlConst.any) && 
+                choice != toUTF!(string, S)(XmlConst.empty))
+            {
+                string msg = format(Message.eExpectedOneOfStringsButString,
                     XmlConst.any ~ " or " ~ XmlConst.empty, choice);
+                throw new XmlParserException(msg, localContext.loc);
+            }
 
             node.appendChoice(choice);
         }
@@ -460,7 +499,10 @@ private:
                     if (last !is null && last.multiIndicator == 0)
                         last.multiIndicator = cast(XmlChar!S) reader.moveFront();
                     else
-                        throw new XmlParserException(reader.sourceLoc, Message.eMultipleTextFound, reader.front);
+                    {
+                        string msg = format(Message.eMultipleTextFound, reader.front);
+                        throw new XmlParserException(msg, reader.sourceLoc);
+                    }
                     break;
                 case '|':
                 case ',':
@@ -487,7 +529,10 @@ private:
                 if (parent.multiIndicator == 0)
                     parent.multiIndicator = cast(XmlChar!S) reader.moveFront();
                 else
-                    throw new XmlParserException(reader.sourceLoc, Message.eMultipleTextFound, reader.front);
+                {
+                    string msg = format(Message.eMultipleTextFound, reader.front);
+                    throw new XmlParserException(msg, reader.sourceLoc);
+                }
                 break;
             default:
                 break;
@@ -522,7 +567,7 @@ private:
             if (name == "--")
                 parseComment(tagName);
             else if (name == "[CDATA[")
-                parseCDATA(tagName);
+                parseCData(tagName);
             else if (name == "DOCTYPE")
                 parseDocumentType(tagName);
             else if (name == "ENTITY")
@@ -534,7 +579,10 @@ private:
             else if (name == "NOTATION")
                 parseNotation(tagName);
             else
-                throw new XmlParserException(tagName.loc, Message.eInvalidName, '!' ~ name);
+            {
+                string msg = format(Message.eInvalidName, '!' ~ name);
+                throw new XmlParserException(msg, tagName.loc);
+            }
         }
         else
         {
@@ -577,10 +625,11 @@ private:
             if (!reference && reader.skipSpaces().isAnyFrontBut('>'))
             {
                 const(C)[] nData = reader.readAnyName(localContext);
-                if (nData != XmlConst.nData)
-                    throw new XmlParserException(localContext.loc,
-                        Message.eExpectedStringButString, XmlConst.nData, nData);
-
+                if (nData != toUTF!(string, S)(XmlConst.nData))
+                {
+                    string msg = format(Message.eExpectedStringButString, XmlConst.nData, nData);
+                    throw new XmlParserException(msg, localContext.loc);
+                }
                 notationName = reader.skipSpaces().readAnyName(localContext);
             }
         }
@@ -622,7 +671,10 @@ private:
 
         auto name = tagName.s;
         if (options.validate && !isName!(S, No.allowEmpty)(name))
-            throw new XmlParserException(tagName.loc, Message.eInvalidName, name);
+        {
+            string msg = format(Message.eInvalidName, name);
+            throw new XmlParserException(msg, tagName.loc);
+        }
 
         auto element = cast(XmlElement!S) pushNode(peekNode().appendChild(document.createElement(name)));
         if (useSaxElementBegin)
@@ -681,9 +733,16 @@ private:
         if (options.validate)
         {
             if (!isName!(S, No.allowEmpty)(name))
-                throw new XmlParserException(contextName.loc, Message.eInvalidName, name);
+            {
+                string msg = format(Message.eInvalidName, name);
+                throw new XmlParserException(msg, contextName.loc);
+            }
+
             if (parentNode.findAttribute(name))
-                throw new XmlParserException(contextName.loc, Message.eAttributeDuplicated, name);
+            {
+                string msg = format(Message.eAttributeDuplicated, name);
+                throw new XmlParserException(msg, contextName.loc);
+            }
         }
 
         version (unittest)
@@ -707,7 +766,10 @@ private:
 
         ParseContext!S endTagName = void;
         if (reader.readElementXName(endTagName) != beginTagName)
-            throw new XmlParserException(endTagName.loc, Message.eExpectedEndName, beginTagName, endTagName.s);
+        {
+            string msg = format(Message.eExpectedEndName, beginTagName, endTagName.s);
+            throw new XmlParserException(msg, endTagName.loc);
+        }
         expectChar!(skipSpaceBefore)('>');
 
         auto element = cast(XmlElement!S) popNode();
@@ -725,7 +787,7 @@ private:
         reader.readElementXText(text, allWhitespaces);
 
         version (unittest)
-        outputXmlTraceParserF("'%s'", text.toString().leftStringIndicator!S(30));
+        outputXmlTraceParserF("'%s'", text.asValue().leftStringIndicator!S(30));
 
         XmlNode!S node;
         if (allWhitespaces)
@@ -753,9 +815,9 @@ private:
         systemOrPublic = reader.skipSpaces().readAnyName(localContext);
         reader.skipSpaces();
 
-        if (systemOrPublic == XmlConst.system)
+        if (systemOrPublic == toUTF!(string, S)(XmlConst.system))
             text = parseQuotedValue();
-        else if (systemOrPublic == XmlConst.public_)
+        else if (systemOrPublic == toUTF!(string, S)(XmlConst.public_))
         {
             publicId = parseQuotedValue();
             reader.skipSpaces();
@@ -764,8 +826,11 @@ private:
                 text = parseQuotedValue();
         }
         else
-            throw new XmlParserException(localContext.loc, Message.eExpectedOneOfStringsButString,
+        {
+            string msg = format(Message.eExpectedOneOfStringsButString,
                 XmlConst.public_ ~ " or " ~ XmlConst.system, systemOrPublic);
+            throw new XmlParserException(msg, localContext.loc);
+        }
     }
 
     void parseNotation(ref ParseContext!S tagName)
@@ -807,15 +872,24 @@ private:
         // Name
         auto name = tagName.s;
         if (options.validate && !isName!(S, No.allowEmpty)(name))
-            throw new XmlParserException(tagName.loc, Message.eInvalidName, name);
+        {
+            string msg = format(Message.eInvalidName, name);
+            throw new XmlParserException(msg, tagName.loc);
+        }
 
         XmlString!S data;
         if (!reader.readUntilText!true(data, "?>"))
         {
             if (reader.empty)
-                throw new XmlParserException(Message.eExpectedStringButEos, "?>");
+            {
+                string msg = format(Message.eExpectedStringButEos, "?>");
+                throw new XmlParserException(msg);
+            }
             else
-                throw new XmlParserException(reader.sourceLoc, Message.eExpectedStringButNotFound, "?>");
+            {
+                string msg = format(Message.eExpectedStringButNotFound, "?>");
+                throw new XmlParserException(msg, reader.sourceLoc);
+            }
         }
 
         auto parentNode = peekNode();
@@ -835,7 +909,7 @@ private:
             expectChar!(0)(q);
 
         version (unittest)
-        outputXmlTraceParserF("'%s'", data.toString().leftStringIndicator!S(30));
+        outputXmlTraceParserF("'%s'", data.asValue().leftStringIndicator!S(30));
 
         return data;
     }
@@ -909,7 +983,7 @@ public:
             if (reader is null || isClassType!XmlParserException(e))
                 throw e;
             else
-                throw new XmlParserException(reader.sourceLoc, e.msg, e);
+                throw new XmlParserException(e.msg, reader.sourceLoc, e);
         }
 
         assert(nodeStack.length > 0);
@@ -1204,7 +1278,7 @@ XML";
     }
 
     assert(!L.empty);
-    assert(L.front.nodeType == XmlNodeType.CDATA, to!string(L.front.nodeType));
+    assert(L.front.nodeType == XmlNodeType.CData, to!string(L.front.nodeType));
     assert(!L.front.hasAttributes);
     assert(!L.front.hasChildNodes);
     assert(L.front.value = " dataSection! ", L.front.value);
@@ -1369,7 +1443,7 @@ XML";
     }
 
     assert(!L.empty);
-    assert(L.front.nodeType == XmlNodeType.CDATA, to!string(L.front.nodeType));
+    assert(L.front.nodeType == XmlNodeType.CData, to!string(L.front.nodeType));
     assert(!L.front.hasAttributes);
     assert(!L.front.hasChildNodes);
     assert(L.front.value = " dataSection! ", L.front.value);

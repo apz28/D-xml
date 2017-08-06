@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -12,7 +12,7 @@
 module pham.xml_xpath;
 
 import std.conv : to;
-import std.typecons : No, Yes;
+import std.typecons : Flag, No, Yes;
 import std.math : isNaN;
 import std.format : format;
 import std.variant;
@@ -247,10 +247,12 @@ private bool toBoolean(double value) pure nothrow @safe
     return (!isNaN(value) && value != 0);
 }
 
-private bool toBoolean(S)(const(XmlChar!S)[] value) pure nothrow @safe
+private bool toBoolean(S)(const(XmlChar!S)[] value) pure @safe
 if (isXmlString!S)
 {
-    return (value == "1" || value == XmlConst.sTrue || value == XmlConst.yes);
+    return (value == "1" || 
+        value == toUTF!(string, S)(XmlConst.true_) || 
+        value == toUTF!(string, S)(XmlConst.yes));
 }
 
 private double toNumber(bool value) pure nothrow @safe
@@ -273,13 +275,13 @@ if (isXmlString!S)
         return to!double(value);
 }
 
-private const(XmlChar!S)[] toText(S)(bool value) pure nothrow @safe
+private const(XmlChar!S)[] toText(S)(bool value) pure @safe
 if (isXmlString!S)
 {
     if (value)
-        return XmlConst.sTrue;
+        return toUTF!(string, S)(XmlConst.true_);
     else
-        return XmlConst.sFalse;
+        return toUTF!(string, S)(XmlConst.false_);
 }
 
 private const(XmlChar!S)[] toText(S)(double value) @safe
@@ -500,7 +502,8 @@ protected:
 
     final void evaluateError(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
+        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
+        throw new XmlInvalidOperationException(msg);
     }
 
 public:
@@ -557,11 +560,11 @@ public:
         return _qualifiedName;
     }
 
-    final override S toString()
+    final S outerXml(Flag!"PrettyOutput" aPrettyOutput = No.PrettyOutput)
     {
         auto buffer = new XmlBuffer!(S, No.checkEncoded)();
-        write(new XmlStringWriter!S(No.PrettyOutput, buffer));
-        return buffer.toString();
+        write(new XmlStringWriter!S(aPrettyOutput, buffer));
+        return buffer.value();
     }
 
     abstract void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext);
@@ -964,10 +967,10 @@ public:
         version (unittest) 
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
+        string n = format("::name(axisType=%s, nodeType=%s, abbreviated=%s)", axisType, nodeType, abbreviated);
         aWriter.putIndent();
-        aWriter.put(className(this));
-        aWriter.putAttribute(format("::name(axisType=%s, nodeType=%s, abbreviated=%s)",
-                axisType, nodeType, abbreviated), qualifiedName());
+        aWriter.put(toUTF!(string, S)(className(this)));
+        aWriter.putAttribute(toUTF!(string, S)(n), qualifiedName());
 
         if (input !is null)
         {
@@ -1089,7 +1092,7 @@ public:
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className(this));
+        aWriter.put(toUTF!(string, S)(className(this)));
         aWriter.incNodeLevel();
         input.write(aWriter.putLF());
         condition.write(aWriter.putLF());
@@ -1329,7 +1332,8 @@ private void fctNamespaceUri(S)(XPathFunction!S context, ref XPathContext!S inpu
 
 private void fctNormalize(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    throw new XmlInvalidOperationException(Message.eInvalidOpFunction, "normalize()");
+    string msg = format(Message.eInvalidOpFunction, "normalize()");
+    throw new XmlInvalidOperationException(msg);
     //todo
 }
 
@@ -1467,7 +1471,8 @@ private void fctText(S)(XPathFunction!S context, ref XPathContext!S inputContext
 
 private void fctTranslate(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    throw new XmlInvalidOperationException(Message.eInvalidOpFunction, "translate()");
+    string msg = format(Message.eInvalidOpFunction, "translate()");
+    throw new XmlInvalidOperationException(msg);
     //todo
 }
 
@@ -1636,7 +1641,10 @@ protected:
             XPathFunctionTable!S.defaultFunctionTable().find(to!S(functionType), evaluateFct);
 
             if (evaluateFct is null)
-                throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), to!S(functionType));
+            {
+                string msg = format(Message.eInvalidOpDelegate, shortClassName(this), to!S(functionType));
+                throw new XmlInvalidOperationException(msg);
+            }
         }
         else
         {
@@ -1645,7 +1653,10 @@ protected:
                 XPathFunctionTable!S.defaultFunctionTable().find(localName.idup, userDefinedevaluateFct);
 
             if (userDefinedevaluateFct is null)
-                throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), qualifiedName());
+            {
+                string msg = format(Message.eInvalidOpDelegate, shortClassName(this), qualifiedName());
+                throw new XmlInvalidOperationException(msg);
+            }
 
             evaluateFct = userDefinedevaluateFct.evaluate;
         }
@@ -1729,9 +1740,10 @@ public:
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
+        string n = format("::name(%s:%s)", functionType, returnType);
         aWriter.putIndent();
-        aWriter.put(className(this));
-        aWriter.putAttribute(format("::name(%s:%s)", functionType, returnType), qualifiedName());
+        aWriter.put(toUTF!(string, S)(className(this)));
+        aWriter.putAttribute(toUTF!(string, S)(n), qualifiedName());
 
         if (argumentList.length > 0)
         {
@@ -1806,7 +1818,8 @@ public:
                 inputContext.decNodeIndent;
         }
 
-        throw new XmlInvalidOperationException(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
+        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
+        throw new XmlInvalidOperationException(msg);
 
         //todo
     }
@@ -1818,7 +1831,7 @@ public:
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className(this));
+        aWriter.put(toUTF!(string, S)(className(this)));
         aWriter.incNodeLevel();
         groupNode.write(aWriter.putLF());
         aWriter.decNodeLevel();
@@ -1878,16 +1891,6 @@ public:
         _parent = aParent;
         _valueType = XPathResultType.text;
         _value = aValue;
-    }
-
-    this(XPathNode!S aParent, const(C)[] aValue)
-    {
-        version (unittest)
-        outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), aValue);
-
-        _parent = aParent;
-        _valueType = XPathResultType.text;
-        _value = aValue.idup;
     }
 
     override T get(T)(ref XPathContext!S inputContext)
@@ -1952,9 +1955,10 @@ public:
         version (unittest)
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
+        string n = format("::value(%s)", returnType);
         aWriter.putIndent();
-        aWriter.put(className(this));
-        aWriter.putAttribute(format("::value(%s)", returnType), value.toString());
+        aWriter.put(toUTF!(string, S)(className(this)));
+        aWriter.putAttribute(toUTF!(string, S)(n), toUTF!(string, S)(value.toString()));
 
         return aWriter;
     }
@@ -2265,7 +2269,7 @@ public:
         outputXmlTraceXPathParserF("%s.write(%s)", shortClassName(this), opType);
 
         aWriter.putIndent();
-        aWriter.put(className(this));
+        aWriter.put(toUTF!(string, S)(className(this)));
         aWriter.putAttribute("::opType", to!S(opType));
         aWriter.incNodeLevel();
         operand1.write(aWriter.putLF());
@@ -2335,7 +2339,7 @@ public:
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className(this));
+        aWriter.put(toUTF!(string, S)(className(this)));
 
         return aWriter;
     }
@@ -2376,7 +2380,10 @@ public:
           result = localName.idup in inputContext.variables;
 
         if (result is null)
-            throw new XmlInvalidOperationException(Message.eInvalidVariableName, qualifiedName());
+        {
+            string msg = format(Message.eInvalidVariableName, qualifiedName());
+            throw new XmlInvalidOperationException(msg);
+        }
         
         outputContext.resValue = *result;
     }
@@ -2388,7 +2395,7 @@ public:
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         aWriter.putIndent();
-        aWriter.put(className(this));
+        aWriter.put(toUTF!(string, S)(className(this)));
         aWriter.putAttribute("::name", qualifiedName);
 
         return aWriter;
@@ -2784,8 +2791,10 @@ public:
                             else if (isNameStartC(currentChar))
                                 _name = scanName();
                             else
-                                throw new XmlParserException(Message.eInvalidNameAtOf,
-                                        currentIndex + 1, sourceText);
+                            {
+                                string msg = format(Message.eInvalidNameAtOf, currentIndex + 1, sourceText);
+                                throw new XmlParserException(msg);
+                            }
                         }
                     }
                     else
@@ -2801,16 +2810,20 @@ public:
                                 _kind = XPathScannerLexKind.axe;
                             }
                             else
-                                throw new XmlParserException(Message.eInvalidNameAtOf,
-                                        currentIndex + 1, sourceText);
+                            {
+                                string msg = format(Message.eInvalidNameAtOf, currentIndex + 1, sourceText);
+                                throw new XmlParserException(msg);
+                            }
                         }
                     }
                     skipSpace();
                     _canBeFunction = (currentChar == '(');
                 }
                 else
-                    throw new XmlParserException(Message.eInvalidTokenAtOf,
-                            currentChar, currentIndex + 1, sourceText);
+                {
+                    string msg = format(Message.eInvalidTokenAtOf, currentChar, currentIndex + 1, sourceText);
+                    throw new XmlParserException(msg);
+                }
                 break;
         }
 
@@ -2898,7 +2911,10 @@ public:
         while (currentChar != quoteChar)
         {
             if (!nextChar())
-                throw new XmlParserException(Message.eExpectedCharButEos, quoteChar);
+            {
+                string msg = format(Message.eExpectedCharButEos, quoteChar);
+                throw new XmlParserException(msg);
+            }
             ++end;
         }
         assert(currentChar == quoteChar);
@@ -3075,8 +3091,10 @@ private:
             XPathResultType.nodeSet, XPathResultType.any);
 
         if (t != XPathResultType.nodeSet && t != XPathResultType.any)
-            throw new XmlParserException(Message.eNodeSetExpectedAtOf,
-                    scanner.currentIndex + 1, sourceText);
+        {   
+            string msg = format(Message.eNodeSetExpectedAtOf, scanner.currentIndex + 1, sourceText);
+            throw new XmlParserException(msg);
+        }
     }
 
     pragma (inline, true)
@@ -3086,8 +3104,10 @@ private:
         outputXmlTraceXPathParserF("%scheckToken('%c') ? '%c'", indentString(), t, scanner.kind);
 
         if (scanner.kind != t)
-            throw new XmlParserException(Message.eInvalidTokenAtOf,
-                scanner.currentChar, scanner.currentIndex + 1, sourceText);
+        {
+            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            throw new XmlParserException(msg);
+        }
     }
 
     XPathAxisType getAxisType()
@@ -3097,8 +3117,10 @@ private:
 
         auto axis = scanner.nameAxisType();
         if (axis == XPathAxisType.error)
-            throw new XmlParserException(Message.eInvalidTokenAtOf,
-                scanner.currentChar, scanner.currentIndex + 1, sourceText);
+        {
+            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            throw new XmlParserException(msg);
+        }
         return axis;
     }
 
@@ -3130,7 +3152,10 @@ private:
         }
 
         if (++parseDepth > maxParseDepth)
-            throw new XmlParserException(Message.eExpressionTooComplex, sourceText);
+        {
+            string msg = format(Message.eExpressionTooComplex, sourceText);
+            throw new XmlParserException(msg);
+        }
 
         XPathNode!S result = parseOrExpr(aInput);
         --parseDepth;
@@ -3320,7 +3345,7 @@ private:
 
         if (minus)
             return new XPathOperator!S(aInput, XPathOp.multiply,
-                    parseUnionExpr(aInput), new XPathOperand!S(aInput, -1.0));
+                parseUnionExpr(aInput), new XPathOperand!S(aInput, -1.0));
         else
             return parseUnionExpr(aInput);
     }
@@ -3621,8 +3646,10 @@ private:
                 nextLex();
                 break;
             default:
-                throw new XmlParserException(Message.eNodeSetExpectedAtOf,
-                        scanner.currentIndex + 1, sourceText);
+            {
+                string msg = format(Message.eNodeSetExpectedAtOf, scanner.currentIndex + 1, sourceText);
+                throw new XmlParserException(msg);
+            }
         }
 
         return new XPathAxis!S(aInput, axisType, aInput, nodeType, nodePrefix, nodeName);
@@ -3645,7 +3672,7 @@ private:
         switch (scanner.kind)
         {
             case XPathScannerLexKind.text:
-                result = new XPathOperand!S(aInput, scanner.textValue);
+                result = new XPathOperand!S(aInput, scanner.textValue.idup);
                 nextLex();
                 break;
             case XPathScannerLexKind.number:
@@ -3713,8 +3740,10 @@ private:
             if (pi !is null)
             {
                 if (argList.length < pi.minArgs)
-                    throw new XmlParserException(Message.eInvalidNumberArgsOf,
-                            argList.length, pi.minArgs, name, sourceText);
+                {
+                    string msg = format(Message.eInvalidNumberArgsOf, argList.length, pi.minArgs, name, sourceText);
+                    throw new XmlParserException(msg);
+                }
 
                 if (pi.functionType == XPathFunctionType.concat)
                 {
@@ -3728,8 +3757,10 @@ private:
                 {
                     auto argCount = argList.length;
                     if (argCount > pi.maxArgs)
-                        throw new XmlParserException(Message.eInvalidNumberArgsOf,
-                                argCount, pi.maxArgs, name, sourceText);
+                    {
+                        string msg = format(Message.eInvalidNumberArgsOf, argCount, pi.maxArgs, name, sourceText);
+                        throw new XmlParserException(msg);
+                    }
 
                     // argument we have the type specified (can be < pi.minArgs)
                     if (argCount > pi.argTypes.length)
@@ -3747,10 +3778,11 @@ private:
                                     break;
                                 case XPathResultType.nodeSet:
                                     if (!isClassType!(XPathVariable!S)(a) &&
-                                        !(isClassType!(XPathFunction!S)(a) &&
-                                        a.returnType == XPathResultType.any))
-                                        throw new XmlParserException(Message.eInvalidArgTypeOf,
-                                                i, name, sourceText);
+                                        !(isClassType!(XPathFunction!S)(a) && a.returnType == XPathResultType.any))
+                                    {
+                                        string msg = format(Message.eInvalidArgTypeOf, i, name, sourceText);
+                                        throw new XmlParserException(msg);
+                                    }
                                     break;
                                 case XPathResultType.number:
                                     argList[i] = new XPathFunction!S(aInput, XPathFunctionType.number, a);
@@ -3851,7 +3883,7 @@ private:
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.lParens);
                 checkToken(XPathScannerLexKind.text);
-                argList ~= new XPathOperand!S(aInput, scanner.textValue);
+                argList ~= new XPathOperand!S(aInput, scanner.textValue.idup);
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.rParens);
                 return new XPathFunction!S(aInput, pi.functionType, argList);
@@ -3862,11 +3894,11 @@ private:
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.lParens);
                 checkToken(XPathScannerLexKind.text);
-                argList ~= new XPathOperand!S(aInput, scanner.textValue);
+                argList ~= new XPathOperand!S(aInput, scanner.textValue.idup);
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.comma);
                 checkToken(XPathScannerLexKind.text);
-                argList ~= new XPathOperand!S(aInput, scanner.textValue);
+                argList ~= new XPathOperand!S(aInput, scanner.textValue.idup);
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.rParens);
                 return new XPathFunction!S(aInput, null, "key", argList);
@@ -3924,8 +3956,10 @@ private:
             case XPathScannerLexKind.axe: // AxisName '::'
                 axisType = getAxisType();
                 if (axisType != XPathAxisType.child && axisType != XPathAxisType.attribute)
-                    throw new XmlParserException(Message.eInvalidTokenAtOf,
-                            scanner.currentChar, scanner.currentIndex + 1, sourceText);
+                { 
+                    string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+                    throw new XmlParserException(msg);
+                }
                 nextLex();
                 break;
             default:
@@ -3961,8 +3995,10 @@ public:
 
         XPathNode!S result = parseExpression(null);
         if (scanner.kind != XPathScannerLexKind.eof)
-            throw new XmlParserException(Message.eInvalidTokenAtOf,
-                    scanner.currentChar, scanner.currentIndex + 1, sourceText);
+        {
+            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            throw new XmlParserException(msg);
+        }
         return result;
     }
 
@@ -3978,8 +4014,10 @@ public:
 
         XPathNode!S result = parsePattern(null);
         if (scanner.kind != XPathScannerLexKind.eof)
-            throw new XmlParserException(Message.eInvalidTokenAtOf,
-                    scanner.currentChar, scanner.currentIndex + 1, sourceText);
+        {
+            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            throw new XmlParserException(msg);
+        }
         return result;
     }
 
@@ -4007,7 +4045,7 @@ XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
     version (unittest)
     {
         outputXmlTraceXPathParser("\n", xpath);
-        outputXmlTraceXPathParser(xpathNode.toString(), "\n");
+        outputXmlTraceXPathParser(xpathNode.outerXml(), "\n");
     }
 
     XPathContext!S inputContext = XPathContext!S(aSource);
@@ -4057,7 +4095,7 @@ unittest  // XPathParser
     void toOutput(XPathNode!string r)
     {
         output ~= xpathParser.sourceText.idup;
-        output ~= r.toString();
+        output ~= r.outerXml();
         output ~= "\n";
     }
 
@@ -4141,9 +4179,8 @@ unittest  // XPathParser.selectNodes
     outputXmlTraceProgress("unittest XPathParser.selectNodes");
 
     auto doc = new XmlDocument!string().load(xpathXml);
-    XmlNodeList!string nodeList;
+    auto nodeList = doc.documentElement.selectNodes("descendant::book[author/last-name='Austen']");
     
-    nodeList = doc.documentElement.selectNodes("descendant::book[author/last-name='Austen']");
     assert(nodeList.length == 3);
     assert(nodeList.front.getAttribute("publicationdate") == "1997");
     assert(nodeList.moveFront.name == "book");

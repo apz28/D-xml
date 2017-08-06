@@ -57,7 +57,7 @@ struct Message
 
 struct XmlConst
 {
-    static immutable CDATATagName = "#cdata-section";
+    static immutable CDataTagName = "#cdata-section";
     static immutable commentTagName = "#comment";
     static immutable declarationTagName = "xml";
     static immutable documentFragmentTagName = "#document-fragment";
@@ -72,8 +72,8 @@ struct XmlConst
     static immutable declarationStandaloneName = "standalone";
     static immutable declarationVersionName = "version";
 
-    static immutable sTrue = "true";
-    static immutable sFalse = "false";
+    static immutable true_ = "true";
+    static immutable false_ = "false";
 
     static immutable yes = "yes";
     static immutable no = "no";

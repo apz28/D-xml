@@ -183,7 +183,11 @@ public:
             if (mark != 1 || refChars.length <= 2)
             {
                 if (decodeMode == XmlDecodeMode.strict)
-                    throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString!S(refChars, 20));
+                {
+                    auto msg = Message.eUnescapeAndChar ~ " " ~ 
+                        toUTF!(S, string)(leftString!S(refChars, 20).idup);
+                    throw new XmlConvertException(msg.idup, XmlLoc(0, i));
+                }
 
                 if (mark == 0)
                 {
@@ -208,7 +212,11 @@ public:
                     if (!convertToChar!S(refChars[2 .. $ - 1], c))
                     {
                         if (decodeMode == XmlDecodeMode.strict)
-                            throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString!S(refChars, 20));
+                        {
+                            auto Msg = Message.eUnescapeAndChar ~ " " ~ 
+                                toUTF!(S, string)(leftString!S(refChars, 20).idup);
+                            throw new XmlConvertException(Msg.idup, XmlLoc(0, i));
+                        }
 
                         put(refChars);
                     }
@@ -223,7 +231,11 @@ public:
                     else
                     {
                         if (decodeMode == XmlDecodeMode.strict)
-                            throw new XmlConvertException(XmlLoc(0, i), Message.eUnescapeAndChar ~ " " ~ leftString!S(refChars, 20));
+                        {
+                            auto msg = Message.eUnescapeAndChar ~ " " ~
+                                toUTF!(S, string)(leftString!S(refChars, 20).idup);
+                            throw new XmlConvertException(msg.idup, XmlLoc(0, i));
+                        }
 
                         put(refChars);
                     }
@@ -248,7 +260,7 @@ public:
         put(s[lastI .. $]);
         _decodeOrEncodeResultMode = XmlEncodeMode.decoded;
 
-        return toString();
+        return value();
     }
 
     /** Truncates this buffer, count of elements and returns itself. 
@@ -298,9 +310,9 @@ public:
         version (none)
         version (unittest)
         {
-            writefln("encode(%s) - %s", s, toString());
+            writefln("encode(%s) - %s", s, value());
             scope (exit)
-                writefln("encode() - %s", toString());
+                writefln("encode() - %s", value());
         }
 
         const(C)[] r;
@@ -351,7 +363,7 @@ public:
         put(s[lastI .. $]);
         _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
 
-        return toString();
+        return value();
     }
 
     /** Put a character, c, to the end of buffer
@@ -424,22 +436,21 @@ public:
     {
         auto len = length;
         if (count >= len)
-            return toString();
+            return value();
         else
             return _buffer.data[len - count .. len].idup;
     }
 
-    final override S toString() const
+    final S value() const
     {
         return _buffer.data.idup;
     }
 
-    pragma (inline, true)
-    final S toStringAndClear()
+    final S valueAndClear()
     {
-        auto s = toString();
+        auto result = _buffer.data.idup;
         clear();
-        return s;
+        return result;
     }
 
 @property:
@@ -502,10 +513,9 @@ public:
     pragma (inline, true)
     final S getAndRelease(XmlBuffer!(S, checkEncoded) b)
     {
-        S r = b.toString();
+        auto result = b.value();
         release(b);
-
-        return r;
+        return result;
     }
 }
 
