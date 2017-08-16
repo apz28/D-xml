@@ -247,12 +247,12 @@ private bool toBoolean(double value) pure nothrow @safe
     return (!isNaN(value) && value != 0);
 }
 
-private bool toBoolean(S)(const(XmlChar!S)[] value) pure @safe
+private bool toBoolean(S)(const(XmlChar!S)[] value) pure nothrow @safe
 if (isXmlString!S)
 {
     return (value == "1" || 
-        value == toUTF!(string, S)(XmlConst.true_) || 
-        value == toUTF!(string, S)(XmlConst.yes));
+        value == XmlConst!S.true_ || 
+        value == XmlConst!S.yes);
 }
 
 private double toNumber(bool value) pure nothrow @safe
@@ -275,13 +275,13 @@ if (isXmlString!S)
         return to!double(value);
 }
 
-private const(XmlChar!S)[] toText(S)(bool value) pure @safe
+private const(XmlChar!S)[] toText(S)(bool value) pure nothrow @safe
 if (isXmlString!S)
 {
     if (value)
-        return toUTF!(string, S)(XmlConst.true_);
+        return XmlConst!S.true_;
     else
-        return toUTF!(string, S)(XmlConst.false_);
+        return XmlConst!S.false_;
 }
 
 private const(XmlChar!S)[] toText(S)(double value) @safe
@@ -408,6 +408,9 @@ private void normalizeValues(S)(ref Variant value1, ref Variant value2)
 struct XPathContext(S)
 if (isXmlString!S)
 {
+public:
+    alias C = XmlChar!S;
+
 private:
     XmlNode!S _xpathNode;
     XmlElement!S _xpathDocumentElement;
@@ -440,7 +443,7 @@ public:
     Variant resValue;
 
     XmlNodeList!S filterNodes;
-    Variant[S] variables;
+    Variant[const(C)[]] variables;
 
     @disable this();
 
@@ -469,18 +472,18 @@ public:
         return result;
     }
 
-    XmlDocument!S xpathDocument()
+    XmlDocument!S xpathDocument() nothrow @safe
     {
         return xpathNode.document();
     }
 
 @property:
-    XmlNode!S xpathNode()
+    XmlNode!S xpathNode() nothrow @safe
     {
         return _xpathNode;
     }
 
-    XmlElement!S xpathDocumentElement()
+    XmlElement!S xpathDocumentElement() nothrow @safe
     {
         if (_xpathDocumentElement is null)
             _xpathDocumentElement = xpathDocument().documentElement();
@@ -1650,7 +1653,7 @@ protected:
         {
             XPathFunctionTable!S.defaultFunctionTable().find(qualifiedName(), userDefinedevaluateFct);
             if (userDefinedevaluateFct is null && prefix.length > 0)
-                XPathFunctionTable!S.defaultFunctionTable().find(localName.idup, userDefinedevaluateFct);
+                XPathFunctionTable!S.defaultFunctionTable().find(localName, userDefinedevaluateFct);
 
             if (userDefinedevaluateFct is null)
             {
@@ -1883,7 +1886,7 @@ public:
         _value = aValue;
     }
 
-    this(XPathNode!S aParent, S aValue)
+    this(XPathNode!S aParent, const(C)[] aValue)
     {
         version (unittest)
         outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), aValue);
@@ -2377,7 +2380,7 @@ public:
 
         Variant* result = qualifiedName() in inputContext.variables;
         if (result is null && prefix.length > 0)
-          result = localName.idup in inputContext.variables;
+          result = localName in inputContext.variables;
 
         if (result is null)
         {
@@ -2453,7 +2456,7 @@ protected:
     }
 
 public:
-    XPathAxisType[S] data;
+    XPathAxisType[const(C)[]] data;
 
     this()
     {
@@ -2467,7 +2470,7 @@ public:
 
     final XPathAxisType get(const(C)[] aName, XPathAxisType aDefault = XPathAxisType.error) const
     {
-        return data.get(aName.idup, aDefault);
+        return data.get(aName, aDefault);
     }
 
     final XPathAxisType get(S aName, XPathAxisType aDefault = XPathAxisType.error) const
@@ -2576,7 +2579,7 @@ protected:
     }
 
 public:
-    XPathParamInfo!S[S] data;
+    XPathParamInfo!S[const(C)[]] data;
 
     this()
     {
@@ -2589,11 +2592,6 @@ public:
     }
 
     final const(XPathParamInfo!S) find(const(C)[] aName) const
-    {
-        return data.get(aName.idup, null);
-    }
-
-    final const(XPathParamInfo!S) find(S aName) const
     {
         return data.get(aName, null);
     }
@@ -3672,7 +3670,7 @@ private:
         switch (scanner.kind)
         {
             case XPathScannerLexKind.text:
-                result = new XPathOperand!S(aInput, scanner.textValue.idup);
+                result = new XPathOperand!S(aInput, scanner.textValue);
                 nextLex();
                 break;
             case XPathScannerLexKind.number:
@@ -3688,7 +3686,7 @@ private:
             case XPathScannerLexKind.lParens:
                 nextLex();
                 result = parseExpression(aInput);
-                if (result.returnType != XPathAstType.constant)
+                if (result.astType != XPathAstType.constant)
                     result = new XPathGroup!S(result, result);
                 checkAndSkipToken(XPathScannerLexKind.rParens);
                 break;
@@ -3883,7 +3881,7 @@ private:
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.lParens);
                 checkToken(XPathScannerLexKind.text);
-                argList ~= new XPathOperand!S(aInput, scanner.textValue.idup);
+                argList ~= new XPathOperand!S(aInput, scanner.textValue);
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.rParens);
                 return new XPathFunction!S(aInput, pi.functionType, argList);
@@ -3894,11 +3892,11 @@ private:
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.lParens);
                 checkToken(XPathScannerLexKind.text);
-                argList ~= new XPathOperand!S(aInput, scanner.textValue.idup);
+                argList ~= new XPathOperand!S(aInput, scanner.textValue);
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.comma);
                 checkToken(XPathScannerLexKind.text);
-                argList ~= new XPathOperand!S(aInput, scanner.textValue.idup);
+                argList ~= new XPathOperand!S(aInput, scanner.textValue);
                 nextLex();
                 checkAndSkipToken(XPathScannerLexKind.rParens);
                 return new XPathFunction!S(aInput, null, "key", argList);
@@ -4028,12 +4026,10 @@ public:
     }
 }
 
-/** Returns node-list of matching xpath expression
-
+/** Returns node-list of matching xpath expression    
     Params:
         aSource = a context node to search from
         xpath = a xpath expression string
-
     Returns:
         a node-list, XmlNodeList, of matching xpath expression        
 */
@@ -4059,12 +4055,10 @@ XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
     return outputContext.resNodes;
 }
 
-/** Returns first node of matching xpath expression
-
+/** Returns first node of matching xpath expression    
     Params:
         aSource = a context node to search from
         xpath = a xpath expression string
-
     Returns:
         a node, XmlNode, of matching xpath expression
         or null if no matching found

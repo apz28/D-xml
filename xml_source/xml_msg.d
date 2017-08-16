@@ -3,7 +3,7 @@
  * License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors: An Pham
  *
- * Copyright An Pham 2016 - xxxx.
+ * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
@@ -55,44 +55,53 @@ struct Message
     static immutable atLineInfo = " at line %d position %d";
 }
 
-struct XmlConst
+/** Template trait to determine if S is an build in D string (string, wstring, dstring.)    
+    Params:
+        S = A type name.
+    Returns:
+        true if S is of a type string, wstring or dstring.
+*/
+enum bool isXmlString(S) = is(S == string) || is(S == wstring) || is(S == dstring);
+
+struct XmlConst(S)
+if (isXmlString!S)
 {
-    static immutable CDataTagName = "#cdata-section";
-    static immutable commentTagName = "#comment";
-    static immutable declarationTagName = "xml";
-    static immutable documentFragmentTagName = "#document-fragment";
-    static immutable documentTagName = "#document";
-    //static immutable entityTagName = "#entity";
-    //static immutable notationTagName = "#notation";
-    static immutable significantWhitespaceTagName = "#significant-whitespace";
-    static immutable textTagName = "#text";
-    static immutable whitespaceTagName = "#whitespace";
+    static immutable S CDataTagName = "#cdata-section";
+    static immutable S commentTagName = "#comment";
+    static immutable S declarationTagName = "xml";
+    static immutable S documentFragmentTagName = "#document-fragment";
+    static immutable S documentTagName = "#document";
+    //static immutable S entityTagName = "#entity";
+    //static immutable S notationTagName = "#notation";
+    static immutable S significantWhitespaceTagName = "#significant-whitespace";
+    static immutable S textTagName = "#text";
+    static immutable S whitespaceTagName = "#whitespace";
 
-    static immutable declarationEncodingName = "encoding";
-    static immutable declarationStandaloneName = "standalone";
-    static immutable declarationVersionName = "version";
+    static immutable S declarationEncodingName = "encoding";
+    static immutable S declarationStandaloneName = "standalone";
+    static immutable S declarationVersionName = "version";
 
-    static immutable true_ = "true";
-    static immutable false_ = "false";
+    static immutable S true_ = "true";
+    static immutable S false_ = "false";
 
-    static immutable yes = "yes";
-    static immutable no = "no";
+    static immutable S yes = "yes";
+    static immutable S no = "no";
 
-    static immutable any = "ANY";
-    static immutable empty = "EMPTY";
+    static immutable S any = "ANY";
+    static immutable S empty = "EMPTY";
 
-    static immutable fixed = "#FIXED";
-    static immutable implied = "#IMPLIED";
-    static immutable required = "#REQUIRED";
+    static immutable S fixed = "#FIXED";
+    static immutable S implied = "#IMPLIED";
+    static immutable S required = "#REQUIRED";
 
-    static immutable nData = "NDATA";
+    static immutable S nData = "NDATA";
 
-    static immutable notation = "NOTATION";
-    static immutable public_ = "PUBLIC";
-    static immutable system = "SYSTEM";
+    static immutable S notation = "NOTATION";
+    static immutable S public_ = "PUBLIC";
+    static immutable S system = "SYSTEM";
 
-    static immutable xml = "xml";
-    static immutable xmlNS = "http://www.w3.org/XML/1998/namespace";
-    static immutable xmlns = "xmlns";
-    static immutable xmlnsNS = "http://www.w3.org/2000/xmlns/";
+    static immutable S xml = "xml";
+    static immutable S xmlNS = "http://www.w3.org/XML/1998/namespace";
+    static immutable S xmlns = "xmlns";
+    static immutable S xmlnsNS = "http://www.w3.org/2000/xmlns/";
 }

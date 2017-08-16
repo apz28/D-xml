@@ -24,7 +24,8 @@ public import pham.xml_writer;
 public import pham.xml_xpath;
 
 
-// For utf8 encoded string
+/** For utf8 encoded string
+*/
 alias XmlAttributeA = XmlAttribute!string;
 alias XmlCDataA = XmlCData!string;
 alias XmlCommentA = XmlComment!string;
@@ -60,7 +61,8 @@ alias XmlStringWriterA = XmlStringWriter!string;
 alias selectNodesA = selectNodes!string;
 alias selectSingleNodeA = selectSingleNode!string;
 
-// For utf16 encoded string
+/** For utf16 encoded string
+*/
 alias XmlAttributeW = XmlAttribute!wstring;
 alias XmlCDataW = XmlCData!wstring;
 alias XmlCommentW = XmlComment!wstring;
@@ -96,7 +98,8 @@ alias XmlStringWriterW = XmlStringWriter!wstring;
 alias selectNodesW = selectNodes!wstring;
 alias selectSingleNodeW = selectSingleNode!wstring;
 
-// For utf32 encoded string
+/** For utf32 encoded string
+*/
 alias XmlAttributeD = XmlAttribute!dstring;
 alias XmlCDataD = XmlCData!dstring;
 alias XmlCommentD = XmlComment!dstring;

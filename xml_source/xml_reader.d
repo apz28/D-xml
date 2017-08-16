@@ -327,7 +327,7 @@ protected:
         empty; // Advance to next char
     }
 
-    final void updateLoc()
+    final void updateLoc() nothrow @safe
     {
         if (current == 0xD) // '\n'
         {
@@ -842,18 +842,22 @@ public:
     }
 
 @property:
-    /// return empty property of InputRange
+    /** empty property of InputRange
+    */
     abstract bool empty();
 
-    /// return front property of InputRange
+    /* front property of InputRange
+    */
     pragma (inline, true)
-    final dchar front() const
+    final dchar front() const nothrow @safe
     {
         return current;
     }
 
+    /* Returns current position (line & column) of processing input
+    */
     pragma (inline, true)
-    final XmlLoc sourceLoc() const
+    final XmlLoc sourceLoc() const nothrow @safe
     {
         return loc;
     }
@@ -868,7 +872,8 @@ public:
         sLen = aStr.length;
         s = aStr;
 
-        empty; // Setup the first char to avoid duplicated check
+        // Setup the first char to avoid duplicated check
+        empty; 
     }
 
 @property:

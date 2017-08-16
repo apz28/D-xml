@@ -11,6 +11,7 @@
 
 module pham.xml_object;
 
+import pham.xml_msg;
 import pham.xml_util;
 
 template isDLink(T)
@@ -26,11 +27,14 @@ mixin template DLink()
 {
     alias TLinkNode = typeof(this);
 
-    final TLinkNode dlinkInsertAfter(TLinkNode)(TLinkNode refNode, TLinkNode newNode)
+    final TLinkNode dlinkInsertAfter(TLinkNode)(TLinkNode refNode, TLinkNode newNode) nothrow @safe
+    in 
     {
         assert(refNode !is null);
         assert(refNode._next !is null);
-
+    }
+    body
+    {
         newNode._next = refNode._next;
         newNode._prev = refNode;
         refNode._next._prev = newNode;
@@ -38,7 +42,7 @@ mixin template DLink()
         return newNode;
     }
 
-    final TLinkNode dlinkInsertEnd(TLinkNode)(ref TLinkNode lastNode, TLinkNode newNode)
+    final TLinkNode dlinkInsertEnd(TLinkNode)(ref TLinkNode lastNode, TLinkNode newNode) nothrow @safe
     {
         if (lastNode is null)
         {
@@ -52,18 +56,18 @@ mixin template DLink()
     }
 
     pragma (inline, true)
-    final bool dlinkHasPrev(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode)
+    final bool dlinkHasPrev(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) nothrow @safe
     {
         return (checkNode !is lastNode._prev);
     }
 
     pragma (inline, true)
-    final bool dlinkHasNext(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode)
+    final bool dlinkHasNext(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) nothrow @safe
     {
         return (checkNode !is lastNode._next);
     }
 
-    final TLinkNode dlinkRemove(TLinkNode)(ref TLinkNode lastNode, TLinkNode oldNode)
+    final TLinkNode dlinkRemove(TLinkNode)(ref TLinkNode lastNode, TLinkNode oldNode) nothrow @safe
     {
         if (oldNode._next is oldNode)
             lastNode = null;
@@ -81,11 +85,9 @@ mixin template DLink()
 }
 
 /** Initialize parameter v if it is null in thread safe manner using pass in aInitiate function
-
     Params:
         v = variable to be initialized to object T if it is null
         aInitiate = a function that returns the newly created object as of T
-
     Returns:
         parameter v
 */
@@ -113,7 +115,6 @@ public:
 
 /** Returns the class-name of aObject.
     If it is null, returns "null"
-
     Params:
         aObject = the object to get the class-name from
 */
@@ -127,7 +128,6 @@ string className(Object aObject) pure nothrow @safe
 
 /** Returns the short class-name of aObject.
     If it is null, returns "null"
-
     Params:
         aObject = the object to get the class-name from
 */

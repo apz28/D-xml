@@ -153,7 +153,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length > 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
+            if (publicId.length > 0 && publicOrSystem == XmlConst!S.public_)
             {
                 put(' ');
                 putWithQuote(publicId);
@@ -294,7 +294,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length != 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
+            if (publicId.length != 0 && publicOrSystem == XmlConst!S.public_)
             {
                 put(' ');
                 putWithQuote(publicId);
@@ -306,7 +306,7 @@ public:
 
         if (text.length > 0)
         {
-            if (notationName == toUTF!(string, S)(XmlConst.nData))
+            if (notationName == XmlConst!S.nData)
                 putWithPreSpace(text);
             else
             {
@@ -334,7 +334,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length != 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
+            if (publicId.length != 0 && publicOrSystem == XmlConst!S.public_)
             {
                 put(' ');
                 putWithQuote(publicId);
@@ -346,7 +346,7 @@ public:
 
         if (text.length > 0)
         {
-            if (notationName == toUTF!(string, S)(XmlConst.nData))
+            if (notationName == XmlConst!S.nData)
                 putWithPreSpace(text);
             else
             {
@@ -374,7 +374,7 @@ public:
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length > 0 && publicOrSystem == toUTF!(string, S)(XmlConst.public_))
+            if (publicId.length > 0 && publicOrSystem == XmlConst!S.public_)
             {
                 put(' ');
                 putWithQuote(publicId);

@@ -11,6 +11,7 @@
 
 module pham.xml_entity_table;
 
+import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_object;
 
@@ -50,7 +51,6 @@ public:
     }
 
     /** Find an encodedValue and set the decodedValue if it finds a match
-
         Params:
             encodedValue = a string type XML encoded value to search for
             decodedValue = a corresponding XML decoded value if found
@@ -58,7 +58,7 @@ public:
             true if encodedValue found in the table
             false otherwise
     */
-    final bool find(const(C)[] encodedValue, ref const(C)[] decodedValue) const
+    final bool find(const(C)[] encodedValue, ref const(C)[] decodedValue) const nothrow @safe
     {
         const const(C)[]* r = encodedValue in data;
 
@@ -73,7 +73,7 @@ public:
 
     /** Reset the table with 5 standard reserved encoded XML characters
     */
-    final void reset()
+    final void reset() nothrow
     {
         data = null;
         initDefault();

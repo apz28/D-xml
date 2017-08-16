@@ -29,18 +29,18 @@ public:
         column = aColumn;
     }
 
-    bool isSpecified()
+    bool isSpecified() const nothrow @safe
     {
         return (line != 0 || column != 0);
     }
 
 @property:
-    size_t sourceColumn()
+    size_t sourceColumn() const nothrow @safe
     {
         return column + 1;
     }
 
-    size_t sourceLine()
+    size_t sourceLine() const nothrow @safe
     {
         return line + 1;
     }

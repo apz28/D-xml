@@ -23,7 +23,6 @@ import pham.xml_entity_table;
 enum XmlBufferDefaultCapacity = 1000;
 
 /** Mode to use for decoding.
-
     $(XmlDecodeMode.loose) Decode but ignore error
     $(XmlDecodeMode.strict) Decode and throw exception on error
 */
@@ -34,7 +33,6 @@ enum XmlDecodeMode
 }
 
 /** A state if a string if it has an reserved xml character
-
     $(XmlEncodeMode.check) A text need to be checked for reserved char
     $(XmlEncodeMode.checked) A text is already checked and it does not have reserved character
     $(XmlEncodeMode.decoded) A text has reserved character in decoded form
@@ -77,7 +75,7 @@ public:
         _buffer.reserve(aCapacity);
     }
 
-    final XmlBuffer clear()
+    final XmlBuffer clear() nothrow @safe
     {
         _buffer.clear();
         _decodeOrEncodeResultMode = XmlEncodeMode.checked;
@@ -272,14 +270,21 @@ public:
         Returns: 
             The itself   
     */
-    final XmlBuffer dropBack(size_t count)
+    final XmlBuffer dropBack(size_t count) nothrow @safe
     {
         auto len = length;
         if (len <= count)
             return clear();
         else
         {
-            _buffer.shrinkTo(len - count);
+            try
+            {
+                _buffer.shrinkTo(len - count);
+            }
+            catch (Exception e)
+            {
+                assert(0);
+            }
 
             return this;
         }
@@ -305,7 +310,7 @@ public:
         Example:    
             writeln(encode("a > b")); // writes "a &gt; b"    
     */
-    final const(C)[] encode(const(C)[] s)
+    final const(C)[] encode(const(C)[] s) nothrow @safe
     {
         version (none)
         version (unittest)
@@ -372,7 +377,7 @@ public:
             c = character to be appended at the end
     */
     pragma (inline, true)
-    final void put(C c)
+    final void put(C c) nothrow @safe
     {
         reserve(1);
         _buffer.put(c);
@@ -389,7 +394,7 @@ public:
             c = character to be appended at the end
     */
     static if (!is(C == dchar))
-    final void put(dchar c)
+    final void put(dchar c) nothrow @safe
     {
         import std.encoding : encode;
 
@@ -408,7 +413,7 @@ public:
         Params:
             s = array of characters to be appended at the end
     */
-    final void put(const(C)[] s)
+    final void put(const(C)[] s) nothrow @safe
     {
         reserve(s.length);
         _buffer.put(s);
@@ -427,12 +432,12 @@ public:
         }       
     }
 
-    final bool rightEqual(const(C)[] subString) const
+    final bool rightEqual(const(C)[] subString) const nothrow @safe
     {
         return equalRight!S(_buffer.data, subString);
     }
 
-    final const(C)[] rightString(size_t count) const
+    final const(C)[] rightString(size_t count) const nothrow @safe
     {
         auto len = length;
         if (count >= len)
@@ -441,12 +446,12 @@ public:
             return _buffer.data[len - count .. len].idup;
     }
 
-    final S value() const
+    final S value() const nothrow @safe
     {
         return _buffer.data.idup;
     }
 
-    final S valueAndClear()
+    final S valueAndClear() nothrow @safe
     {
         auto result = _buffer.data.idup;
         clear();
@@ -454,29 +459,29 @@ public:
     }
 
 @property:
-    final size_t capacity() const
+    final size_t capacity() const nothrow @safe
     {
         return _buffer.capacity;
     }
 
-    final size_t capacity(size_t newValue)
+    final size_t capacity(size_t newValue) nothrow @safe
     {
         if (newValue > _buffer.capacity)
             _buffer.reserve(newValue);
         return _buffer.capacity;
     }
 
-    final XmlEncodeMode decodeOrEncodeResultMode() const
+    final XmlEncodeMode decodeOrEncodeResultMode() const nothrow @safe
     {
         return _decodeOrEncodeResultMode;
     }
 
-    final bool empty() const
+    final bool empty() const nothrow @safe
     {
         return (length == 0);
     }
 
-    final size_t length() const
+    final size_t length() const nothrow @safe
     {
         return _buffer.data.length;
     }
@@ -491,7 +496,7 @@ protected:
     mixin DLink;
 
 public:
-    final XmlBuffer!(S, checkEncoded) acquire()
+    final XmlBuffer!(S, checkEncoded) acquire() nothrow @safe
     {
         if (last is null)
             return new XmlBuffer!(S, checkEncoded)();
@@ -499,19 +504,19 @@ public:
             return dlinkRemove(last, last);
     }
 
-    final void clear()
+    final void clear() nothrow @safe
     {
         while (last !is null)
             dlinkRemove(last, last);
     }
 
-    final void release(XmlBuffer!(S, checkEncoded) b)
+    final void release(XmlBuffer!(S, checkEncoded) b) nothrow @safe
     {
         dlinkInsertEnd(last, b.clear());
     }
 
     pragma (inline, true)
-    final S getAndRelease(XmlBuffer!(S, checkEncoded) b)
+    final S getAndRelease(XmlBuffer!(S, checkEncoded) b) nothrow @safe
     {
         auto result = b.value();
         release(b);

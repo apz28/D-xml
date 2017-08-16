@@ -393,7 +393,7 @@ private:
         {
             type = reader.readAnyName(localContext);
 
-            if (type == toUTF!(string, S)(XmlConst.notation))
+            if (type == XmlConst!S.notation)
             {
                 expectChar!(skipSpaceBefore)('(');
                 while (reader.skipSpaces().isAnyFrontBut(')'))
@@ -409,12 +409,12 @@ private:
         {
             defaultType = reader.readAnyName(localContext);
 
-            if (defaultType != toUTF!(string, S)(XmlConst.fixed)  &&
-                defaultType != toUTF!(string, S)(XmlConst.implied) &&
-                defaultType != toUTF!(string, S)(XmlConst.required))
+            if (defaultType != XmlConst!S.fixed  &&
+                defaultType != XmlConst!S.implied &&
+                defaultType != XmlConst!S.required)
             {
                 string msg = format(Message.eExpectedOneOfStringsButString,
-                    XmlConst.fixed ~ ", " ~ XmlConst.implied ~ " or " ~ XmlConst.required,
+                    XmlConst!string.fixed ~ ", " ~ XmlConst!string.implied ~ " or " ~ XmlConst!string.required,
                     defaultType);
                 throw new XmlParserException(msg, localContext.loc);
             }
@@ -454,11 +454,10 @@ private:
         {
             auto choice = reader.readAnyName(localContext);
 
-            if (choice != toUTF!(string, S)(XmlConst.any) && 
-                choice != toUTF!(string, S)(XmlConst.empty))
+            if (choice != XmlConst!S.any && choice != XmlConst!S.empty)
             {
                 string msg = format(Message.eExpectedOneOfStringsButString,
-                    XmlConst.any ~ " or " ~ XmlConst.empty, choice);
+                    XmlConst!string.any ~ " or " ~ XmlConst!string.empty, choice);
                 throw new XmlParserException(msg, localContext.loc);
             }
 
@@ -625,9 +624,9 @@ private:
             if (!reference && reader.skipSpaces().isAnyFrontBut('>'))
             {
                 const(C)[] nData = reader.readAnyName(localContext);
-                if (nData != toUTF!(string, S)(XmlConst.nData))
+                if (nData != XmlConst!S.nData)
                 {
-                    string msg = format(Message.eExpectedStringButString, XmlConst.nData, nData);
+                    string msg = format(Message.eExpectedStringButString, XmlConst!string.nData, nData);
                     throw new XmlParserException(msg, localContext.loc);
                 }
                 notationName = reader.skipSpaces().readAnyName(localContext);
@@ -815,9 +814,9 @@ private:
         systemOrPublic = reader.skipSpaces().readAnyName(localContext);
         reader.skipSpaces();
 
-        if (systemOrPublic == toUTF!(string, S)(XmlConst.system))
+        if (systemOrPublic == XmlConst!S.system)
             text = parseQuotedValue();
-        else if (systemOrPublic == toUTF!(string, S)(XmlConst.public_))
+        else if (systemOrPublic == XmlConst!S.public_)
         {
             publicId = parseQuotedValue();
             reader.skipSpaces();
@@ -828,7 +827,7 @@ private:
         else
         {
             string msg = format(Message.eExpectedOneOfStringsButString,
-                XmlConst.public_ ~ " or " ~ XmlConst.system, systemOrPublic);
+                XmlConst!string.public_ ~ " or " ~ XmlConst!string.system, systemOrPublic);
             throw new XmlParserException(msg, localContext.loc);
         }
     }

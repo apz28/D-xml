@@ -11,7 +11,8 @@
 
 module pham.xml_unittest;
 
-static immutable string xpathXml = q"XML
+static immutable string xpathXml =
+q"XML
 <?xml version="1.0"?>
 <!-- A fragment of a book store inventory database -->
 <bookstore xmlns:bk="urn:samples">
@@ -98,7 +99,8 @@ q"XML
 XML";
 
 // 4604 characters
-immutable string profileXml = q"XML
+immutable string profileXml =
+q"XML
 <?xml version="1.0"?>
 <catalog>
     <book id="bk101">

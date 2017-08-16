@@ -13,6 +13,7 @@ module pham.xml_string;
 
 import std.typecons : Flag, No, Yes;
 
+import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_entity_table;
 import pham.xml_buffer;
@@ -55,19 +56,25 @@ public:
     }
 
     const(C)[] decodedText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
+    in
     {
         assert(buffer !is null);
         assert(entityTable !is null);
         assert(needDecode());
-
+    }
+    body
+    {
         return buffer.decode(data, entityTable);
     }
 
     const(C)[] encodedText(XmlBuffer!(S, No.checkEncoded) buffer)
+    in
     {
         assert(buffer !is null);
         assert(needEncode());
-        
+    }
+    body
+    {
         return buffer.encode(data);
     }
 
@@ -81,7 +88,7 @@ public:
         return data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
     }
 
-    const(C)[] asValue() const
+    const(C)[] asValue() const nothrow @safe
     {
         return data;
     }
