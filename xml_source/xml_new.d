@@ -33,8 +33,7 @@ enum XmlParseOptionFlag
     none,
     preserveWhitespace = 1 << 0,
     useSax = 1 << 1,
-    useSymbolTable = 1 << 2,
-    validate = 1 << 3
+    validate = 1 << 2
 }
 
 struct XmlParseOptions(S)
@@ -64,12 +63,6 @@ if (isXmlString!S)
     bool useSax() const
     {
         return flags.isOn(XmlParseOptionFlag.useSax);
-    }
-
-    pragma (inline, true)
-    bool useSymbolTable() const
-    {
-        return flags.isOn(XmlParseOptionFlag.useSymbolTable);
     }
 
     pragma (inline, true)
@@ -206,63 +199,6 @@ protected:
         }
     }
 
-    final void checkAttribute(XmlNode!S aAttribute, string aOp)
-    {
-        if (!allowAttribute())
-        {
-            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
-            throw new XmlInvalidOperationException(msg);
-        }
-
-        if (aAttribute !is null)
-        {
-            if (!isLoading())
-            {
-                if (aAttribute.ownerDocument !is null && aAttribute.ownerDocument !is selfOwnerDocument)
-                {
-                    string msg = format(Message.eNotAllowAppendDifDoc, "attribute");
-                    throw new XmlInvalidOperationException(msg);
-                }
-            }
-
-            if (isLoading() && selfOwnerDocument().parseOptions.validate && findAttribute(aAttribute.name) !is null)
-            {
-                string msg = format(Message.eAttributeDuplicated, aAttribute.name);
-                throw new XmlInvalidOperationException(msg);
-            }
-        }
-    }
-
-    final void checkChild(XmlNode!S aChild, string aOp)
-    {
-        if (!allowChild())
-        {
-            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
-            throw new XmlInvalidOperationException(msg);
-        }
-
-        if (aChild !is null)
-        {
-            if (!allowChildType(aChild.nodeType))
-            {
-                string msg = format(Message.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
-                throw new XmlInvalidOperationException(msg);
-            }
-
-            if (!isLoading())
-            {
-                if (aChild.ownerDocument !is null && aChild.ownerDocument !is selfOwnerDocument)
-                {
-                    string msg = format(Message.eNotAllowAppendDifDoc, "child");
-                    throw new XmlInvalidOperationException(msg);
-                }
-
-                if (aChild is this || isAncestorNode(aChild))
-                    throw new XmlInvalidOperationException(Message.eNotAllowAppendSelf);
-            }
-        }
-    }
-
     final void checkParent(XmlNode!S aNode, bool aChild, string aOp)
     {
         if (aNode._parent !is this)
@@ -286,25 +222,6 @@ protected:
                 return i;
         }
         return null;
-    }
-
-    final bool findElementById(XmlNode!S aParent, const(C)[] aId, ref XmlElement!S foundElement)
-    {
-        const equalName = document.equalName;
-        for (auto i = aParent.firstChild; i !is null; i = i.nextSibling)
-        {
-            if (i.nodeType == XmlNodeType.element) 
-            {
-                if (equalName(i.getAttributeById(), aId))
-                {
-                    foundElement = cast(XmlElement!S) i;
-                    return true;
-                }
-                else if (findElementById(i, aId, foundElement))
-                    return true;
-            }
-        }
-        return false;
     }
 
     bool isLoading() nothrow @safe
@@ -366,11 +283,11 @@ protected:
 package:
     final XmlAttribute!S appendAttribute(XmlAttribute!S newAttribute)
     {
-        checkAttribute(newAttribute, "appendAttribute()");
-
         if (!isLoading())
         {
-            if (auto n = newAttribute.parentNode)
+            checkAttribute(newAttribute, "appendAttribute()");
+
+            if (auto n = newAttribute.parent)
                 n.removeAttribute(newAttribute);
         }
 
@@ -383,6 +300,57 @@ package:
         }
 
         return newAttribute;
+    }
+
+    final void checkAttribute(XmlNode!S aAttribute, string aOp)
+    {
+        if (!allowAttribute())
+        {
+            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            throw new XmlInvalidOperationException(msg);
+        }
+
+        if (aAttribute !is null)
+        {
+            if (aAttribute.ownerDocument !is null && aAttribute.ownerDocument !is selfOwnerDocument)
+            {
+                string msg = format(Message.eNotAllowAppendDifDoc, "attribute");
+                throw new XmlInvalidOperationException(msg);
+            }
+
+            if (findAttribute(aAttribute.name) !is null)
+            {
+                string msg = format(Message.eAttributeDuplicated, aAttribute.name);
+                throw new XmlInvalidOperationException(msg);
+            }
+        }
+    }
+
+    final void checkChild(XmlNode!S aChild, string aOp)
+    {
+        if (!allowChild())
+        {
+            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            throw new XmlInvalidOperationException(msg);
+        }
+
+        if (aChild !is null)
+        {
+            if (!allowChildType(aChild.nodeType))
+            {
+                string msg = format(Message.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
+                throw new XmlInvalidOperationException(msg);
+            }
+
+            if (aChild.ownerDocument !is null && aChild.ownerDocument !is selfOwnerDocument)
+            {
+                string msg = format(Message.eNotAllowAppendDifDoc, "child");
+                throw new XmlInvalidOperationException(msg);
+            }
+
+            if (aChild is this || isAncestorNode(aChild))
+                throw new XmlInvalidOperationException(Message.eNotAllowAppendSelf);            
+        }
     }
 
     final bool matchElement(ref XmlNodeList!S aList, XmlNode!S aNode)
@@ -427,7 +395,7 @@ public:
         Returns:
             Its' child node list
     */
-    final XmlNodeList!S getChildNodes(Object aContext, Flag!"deep" aDeep)
+    final XmlNodeList!S getChildNodes(Object aContext, Flag!"deep" aDeep = No.deep)
     {
         if (aDeep)
             return XmlNodeList!S(this, XmlNodeListType.childNodesDeep, null, aContext);
@@ -451,7 +419,7 @@ public:
         Returns:
             Its' element node list
     */
-    final XmlNodeList!S getElements(Object aContext, Flag!"deep" aDeep)
+    final XmlNodeList!S getElements(Object aContext, Flag!"deep" aDeep = No.deep)
     {
         if (aDeep)
             return XmlNodeList!S(this, XmlNodeListType.childNodesDeep, &matchElement, aContext);
@@ -505,12 +473,12 @@ public:
     */
     final bool isAncestorNode(XmlNode!S aNode) nothrow @safe
     {
-        auto n = parentNode;
+        auto n = parent;
         while (n !is null && n !is this)
         {
             if (n is aNode)
                 return true;
-            n = n.parentNode;
+            n = n.parent;
         }
 
         return false;
@@ -550,7 +518,7 @@ public:
             attribute node with name, aName 
     */
     final XmlAttribute!S appendAttribute(const(C)[] aName)
-    {
+    {        
         checkAttribute(null, "appendAttribute()");
 
         XmlAttribute!S a = findAttribute(aName);
@@ -570,9 +538,10 @@ public:
     */
     final XmlNode!S appendChild(XmlNode!S newChild)
     {
-        checkChild(newChild, "appendChild()");
+        if (!isLoading())
+            checkChild(newChild, "appendChild()");
 
-        if (auto n = newChild.parentNode)
+        if (auto n = newChild.parent)
             n.removeChild(newChild);
 
         if (newChild.nodeType == XmlNodeType.documentFragment)
@@ -656,18 +625,34 @@ public:
         otherwise return null if no element with matched name found
         Params:
             aName = a name to be checked
+            aDeep = need to search for element in all sub-nodes
         Returns:
             Found element node
             Otherwise null
     */
-    final XmlElement!S findElement(const(C)[] aName) nothrow
+    final XmlElement!S findElement(const(C)[] aName, Flag!"deep" aDeep = No.deep) nothrow
     {
         const equalName = document.equalName;
+
         for (auto i = firstChild; i !is null; i = i.nextSibling)
         {
             if (i.nodeType == XmlNodeType.element && equalName(i.name, aName))
                 return cast(XmlElement!S) i;
         }
+
+        // Prefer shallow level node
+        if (aDeep)
+        {
+            for (auto i = firstChild; i !is null; i = i.nextSibling)
+            {
+                if (i.nodeType == XmlNodeType.element)
+                {
+                    if (auto found = i.findElement(aName, aDeep))
+                        return found;
+                }
+            }
+        }
+
         return null;
     }
 
@@ -676,13 +661,15 @@ public:
         Params:
             aLocalName = a localName to be checked
             aNamespaceUri = a namespaceUri to be checked
+            aDeep = need to search for element in all sub-nodes
         Returns:
             Found element node
             Otherwise null
     */
-    final XmlElement!S findElement(const(C)[] aLocalName, const(C)[] aNamespaceUri) nothrow
+    final XmlElement!S findElement(const(C)[] aLocalName, const(C)[] aNamespaceUri, Flag!"deep" aDeep = No.deep) nothrow
     {
         const equalName = document.equalName;
+
         for (auto i = firstChild; i !is null; i = i.nextSibling)
         {
             if (i.nodeType == XmlNodeType.element && 
@@ -690,6 +677,20 @@ public:
                 equalName(i.namespaceUri, aNamespaceUri))
                 return cast(XmlElement!S) i;
         }
+
+        // Prefer shallow level node
+        if (aDeep)
+        {
+            for (auto i = firstChild; i !is null; i = i.nextSibling)
+            {
+                if (i.nodeType == XmlNodeType.element)
+                {
+                    if (auto found = i.findElement(aLocalName, aNamespaceUri, aDeep))
+                        return found;
+                }
+            }
+        }
+
         return null;
     }
 
@@ -748,13 +749,27 @@ public:
             Found element node
             Otherwise null            
     */
-    final XmlElement!S getElementById(const(C)[] aId)
+    final XmlElement!S findElementById(const(C)[] aId)
     {
-        XmlElement!S result;
-        if (findElementById(this, aId, result))
-            return result;
-        else
-            return null;
+        const equalName = document.equalName;
+
+        for (auto i = firstChild; i !is null; i = i.nextSibling)
+        {
+            if (i.nodeType == XmlNodeType.element && equalName(i.getAttributeById(), aId)) 
+                return cast(XmlElement!S) i;
+        }
+
+        // Prefer shallow level node
+        for (auto i = firstChild; i !is null; i = i.nextSibling)
+        {
+            if (i.nodeType == XmlNodeType.element)
+            {
+                if (auto found = i.findElementById(aId))
+                    return found;
+            }
+        }
+
+        return null;
     }
 
     /** Implement opIndex operator based on matched aName
@@ -789,7 +804,7 @@ public:
 
         checkParent(refChild, true, "insertChildAfter()");
 
-        if (auto n = newChild.parentNode)
+        if (auto n = newChild.parent)
             n.removeChild(newChild);
 
         if (newChild.nodeType == XmlNodeType.documentFragment)
@@ -836,7 +851,7 @@ public:
 
         checkParent(refChild, true, "insertChildBefore()");
 
-        if (auto n = newChild.parentNode)
+        if (auto n = newChild.parent)
             n.removeChild(newChild);
 
         if (newChild.nodeType == XmlNodeType.documentFragment)
@@ -1226,10 +1241,10 @@ public:
     */
     size_t level() nothrow @safe
     {
-        if (parentNode is null)
+        if (parent is null)
             return 0;
         else
-            return (parentNode.level + 1);
+            return (parent.level + 1);
     }
 
     /** Return node's localname if any, null otherwise
@@ -1281,14 +1296,14 @@ public:
     */
     final XmlNode!S nextSibling() nothrow @safe
     {
-        if (parentNode is null)
+        if (parent is null)
             return _next;
 
         XmlNode!S last;
         if (nodeType == XmlNodeType.attribute)
-            last = parentNode.lastAttribute;
+            last = parent.lastAttribute;
         else
-            last = parentNode.lastChild;
+            last = parent.lastChild;
 
         if (this is last)
             return null;
@@ -1309,7 +1324,7 @@ public:
 
     /** Returns its' parent node if any, null otherwise
     */
-    final XmlNode!S parentNode() nothrow @safe
+    final XmlNode!S parent() nothrow @safe
     {
         return _parent;
     }
@@ -1366,14 +1381,14 @@ public:
     */
     final XmlNode!S previousSibling() nothrow @safe
     {
-        if (parentNode is null)
+        if (parent is null)
             return _prev;
 
         XmlNode!S first;
         if (nodeType == XmlNodeType.attribute)
-            first = parentNode.firstAttribute;
+            first = parent.firstAttribute;
         else
-            first = parentNode.firstChild;
+            first = parent.firstChild;
 
         if (this is first)
             return null;
@@ -2017,10 +2032,10 @@ public:
 
     final override size_t level() nothrow @safe
     {
-        if (parentNode is null)
+        if (parent is null)
             return 0;
         else
-            return parentNode.level;
+            return parent.level;
     }
 
     alias localName = XmlNode!S.localName;
@@ -2447,7 +2462,7 @@ package:
     pragma (inline, true)
     final const(C)[] addSymbolIf(const(C)[] aSymbol)
     {
-        if (aSymbol.length == 0 || !parseOptions.useSymbolTable)
+        if (aSymbol.length == 0 || !useSymbolTable)
             return aSymbol;
         else
             return addSymbol(aSymbol);
@@ -2551,9 +2566,9 @@ public:
     */
     const(C)[] defaultUri;
 
-    /** Parser options that control behavior while parsing
+    /** Controls whether to use symbol table for node name to conserve memory usage
     */
-    XmlParseOptions!S parseOptions;
+    bool useSymbolTable;
 
     this()
     {
@@ -2561,12 +2576,6 @@ public:
         _ownerDocument = null;
         _qualifiedName = singleton!(XmlName!S)(_defaultQualifiedName, &createDefaultQualifiedName);
         _buffers = new XmlBufferList!(S, No.checkEncoded)();
-    }
-
-    this(XmlParseOptions!S aParseOptions)
-    {
-        this();
-        parseOptions = aParseOptions;
     }
 
     final override bool allowChild() const
@@ -2597,22 +2606,24 @@ public:
     /** Load a string xml, aXmlText, and returns its' document        
         Params:
             aXmlText = a xml string
+            aParseOptions = control behaviors of xml parser
         Returns:
             self document instance
     */
-    final XmlDocument!S load(const(C)[] aXmlText)
+    final XmlDocument!S load(const(C)[] aXmlText, in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init)
     {
         auto reader = new XmlStringReader!S(aXmlText);
-        return load(reader);
+        return load(reader, aParseOptions);
     }
 
     /** Load a content xml from a xml reader, reader, and returns its' document        
         Params:
-            reader = a content xml reader
+            reader = a content xml reader to tokenize the text
+            parseOptions = control behaviors of xml parser
         Returns:
             self document instance
     */
-    final XmlDocument!S load(XmlReader!S reader)
+    final XmlDocument!S load(XmlReader!S reader, in XmlParseOptions!S parseOptions)
     {
         ++_loading;
         scope (exit)
@@ -2620,35 +2631,30 @@ public:
 
         removeAll();
 
-        auto parser = XmlParser!S(this, reader);
+        auto parser = XmlParser!S(this, reader, parseOptions);
         return parser.parse();
     }
 
     /** Load a content xml from a file-name, aFileName, and returns its' document        
         Params:
             aFileName = a xml content file-name to be loaded from
+            aParseOptions = control behaviors of xml parser
         Returns:
             self document instance
     */
-    final XmlDocument!S loadFromFile(string aFileName)
+    final XmlDocument!S loadFromFile(string aFileName, in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init)
     {
         auto reader = new XmlFileReader!S(aFileName);
         scope (exit)
             reader.close();
 
-        return load(reader);
+        return load(reader, aParseOptions);
     }
 
-    static XmlDocument!S opCall(S aXmlText) 
+    static XmlDocument!S opCall(S aXmlText, in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init) 
     {
         auto doc = new XmlDocument!S();
-		return doc.load(aXmlText);
-	}
-
-    static XmlDocument!S opCall(S aXmlText, in XmlParseOptions!S aParseOptions) 
-    {
-        auto doc = new XmlDocument!S(aParseOptions);
-		return doc.load(aXmlText);
+		return doc.load(aXmlText, aParseOptions);
 	}
 
     /** Write the document xml into a file-name, aFileName, and returns aFileName        
@@ -3691,10 +3697,10 @@ public:
 @property:
     final override size_t level() nothrow @safe
     {
-        if (parentNode is null)
+        if (parent is null)
             return 0;
         else
-            return parentNode.level;
+            return parent.level;
     }
 
     final override XmlNodeType nodeType() const pure nothrow @safe
@@ -3813,10 +3819,10 @@ public:
 @property:
     final override size_t level() nothrow @safe
     {
-        if (parentNode is null)
+        if (parent is null)
             return 0;
         else
-            return parentNode.level;
+            return parent.level;
     }
 
     final override const(C)[] value()
@@ -4068,27 +4074,35 @@ unittest  // XmlDocument
         .appendAttribute(doc.createAttribute("a2", "&<>'\""));
     root.appendChild(doc.createElement("a3"))
         .appendAttribute(cast(XmlAttribute!string) doc.createAttribute("prefix_a", "a3", "localhost.com").value("value"));
+    root.appendChild(doc.createElement("a4"))
+        .appendAttribute("id").value("123");
     root.appendChild(doc.createElement("c"))
-        .appendChild(doc.createComment("--comment--"));
+        .appendChild(doc.createComment("--comment--"))
+        .parent.appendChild(doc.createElement("cc"));
     root.appendChild(doc.createElement("t"))
         .appendChild(doc.createText("text"));
+    root.appendChild(doc.createElement("t"))
+        .appendChild(doc.createText("text2"));
     root.appendChild(doc.createProcessingInstruction("target", "what to do with this processing instruction"));
     root.appendChild(doc.createCData("data &<>"));
 
     static immutable string res =
-        "<?xml version=\"1.2\" encoding=\"utf8\" standalone=\"true\"?>" ~
-        "<root>" ~ 
+    "<?xml version=\"1.2\" encoding=\"utf8\" standalone=\"true\"?>" ~
+    "<root>" ~ 
         "<prefix_e:localname a0=\"\"/>" ~
         "<a1 a1=\"value\"/>" ~
         "<a2 a2=\"&amp;&lt;&gt;&apos;&quot;\"/>" ~
         "<a3 prefix_a:a3=\"value\"/>" ~
+        "<a4 id=\"123\"/>" ~
         "<c>" ~
-        "<!----comment---->" ~
+            "<!----comment---->" ~
+            "<cc/>" ~
         "</c>" ~
         "<t>text</t>" ~
-        "<?target what to do with this processing instruction?>"
+        "<t>text2</t>" ~
+        "<?target what to do with this processing instruction?>" ~ 
         "<![CDATA[data &<>]]>" ~
-        "</root>";
+    "</root>";
 
     outputXmlTraceProgress("unittest XmlDocument - outerXml()");
     assert(doc.outerXml() == res, doc.outerXml());
@@ -4096,6 +4110,23 @@ unittest  // XmlDocument
     outputXmlTraceProgress("unittest XmlDocument - load()");
     doc = XmlDocument!string(res);
 
-    outputXmlTraceProgress("unittest XmlDocument - outerXml()");
-    assert(doc.outerXml() == res);
+    outputXmlTraceProgress("unittest XmlDocument - load()+outerXml()");
+    assert(doc.outerXml() == res, doc.outerXml());
+
+    assert(doc.documentElement !is null);
+
+    XmlElement!string e = doc.findElementById("123");
+    assert(e);
+    assert(e.name == "a4");
+    assert(e.getAttribute("id") == "123");
+
+    e = doc.documentElement.findElement("t");
+    assert(e !is null);
+    assert(e.innerText == "text");
+
+    e = doc.documentElement.findElement("xyz", Yes.deep);
+    assert(e is null);
+
+    e = doc.documentElement.findElement("cc", Yes.deep);
+    assert(e !is null);
 }

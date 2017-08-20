@@ -618,12 +618,12 @@ protected:
     {
         foreach (e; inputContext.resNodes)
         {
-            auto p = e.parentNode;
+            auto p = e.parent;
             while (p !is null)
             {
                 if (accept(p))
                     outputContext.resNodes.insertBack(p);
-                p = p.parentNode;
+                p = p.parent;
             }
         }
 
@@ -640,12 +640,12 @@ protected:
             if (accept(e))
                 outputContext.resNodes.insertBack(e);
 
-            auto p = e.parentNode;
+            auto p = e.parent;
             while (p !is null)
             {
                 if (accept(p))
                     outputContext.resNodes.insertBack(p);
-                p = p.parentNode;
+                p = p.parent;
             }
         }        
 
@@ -801,7 +801,7 @@ protected:
     {
         foreach (e; inputContext.resNodes)
         {
-            auto p = e.parentNode;
+            auto p = e.parent;
             if (p !is null && accept(p))
                 outputContext.resNodes.insertBack(p);
         }
@@ -1248,7 +1248,7 @@ private void fctLang(S)(XPathFunction!S context, ref XPathContext!S inputContext
                 const(XmlChar!S)[] av = a.value;
                 r = av.startsWith(lan);
             }
-            e = e.parentNode;
+            e = e.parent;
         }
         while (e !is null && !r);
         return r;
