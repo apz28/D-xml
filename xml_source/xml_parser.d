@@ -168,11 +168,15 @@ private:
         auto parentNode = peekNode();
         auto node = document.createCData(data);
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     void parseComment(ref ParseContext!S tagName)
@@ -203,11 +207,15 @@ private:
         auto parentNode = peekNode();
         auto node = document.createComment(data);
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     void parseDeclaration(ref ParseContext!S tagName)
@@ -223,8 +231,7 @@ private:
         auto parentNode = peekNode();
         auto node = document.createDeclaration();
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
         if (reader.skipSpaces().isDeclarationNameStart())
         {
@@ -239,8 +246,13 @@ private:
         expectChar!(0)('?');
         expectChar!(0)('>');
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     void parseAttributeDeclaration(XmlDeclaration!S parentNode, ref ParseContext!S contextName)
@@ -280,11 +292,15 @@ private:
 
         auto attribute = document.createAttribute(name, text);
         if (options.validate)
-            parentNode.checkAttribute(attribute, "appendAttribute()");
-        parentNode.appendAttribute(attribute);
+            parentNode.checkAttribute(attribute, "appendAttribute()");        
 
-        if (useSaxAttribute && !options.onSaxAttributeNode(attribute))
-            parentNode.removeAttribute(attribute);
+        if (useSaxAttribute)
+        {
+            if (options.onSaxAttributeNode(parentNode, attribute))
+                parentNode.appendAttribute(attribute);
+        }
+        else
+            parentNode.appendAttribute(attribute);
     }
 
     void parseDocumentType(ref ParseContext!S tagName)
@@ -313,7 +329,7 @@ private:
             documentTypeNode = document.createDocumentType(name, systemOrPublic, publicId, text);
             if (options.validate)
                 parentNode.checkChild(documentTypeNode, "appendChild()");
-            pushNode(parentNode.appendChild(documentTypeNode));
+            pushNode(documentTypeNode);
         }
 
         if (reader.skipSpaces().moveFrontIf('['))
@@ -323,7 +339,7 @@ private:
                 documentTypeNode = document.createDocumentType(name);
                 if (options.validate)
                     parentNode.checkChild(documentTypeNode, "appendChild()");
-                pushNode(parentNode.appendChild(documentTypeNode));
+                pushNode(documentTypeNode);
             }
 
             while (true)
@@ -340,11 +356,15 @@ private:
 
                     auto node = document.createText(entityReferenceName);
                     //if (options.validate)
-                    //    documentTypeNode.checkChild(node, "appendChild()");
-                    documentTypeNode.appendChild(node);
+                    //    documentTypeNode.checkChild(node, "appendChild()");                    
 
-                    if (useSaxOtherNode && !options.onSaxOtherNode(node))
-                        documentTypeNode.removeChild(node);
+                    if (useSaxOtherNode)
+                    {
+                        if (options.onSaxOtherNode(documentTypeNode, node))
+                            documentTypeNode.appendChild(node);
+                    }
+                    else
+                        documentTypeNode.appendChild(node);
                 }
                 else
                     break;
@@ -357,10 +377,16 @@ private:
 
         if (documentTypeNode !is null)
         {
-            popNode();
+            auto e = popNode();
+            assert(e is documentTypeNode);
 
-            if (useSaxOtherNode && !options.onSaxOtherNode(documentTypeNode))
-                parentNode.removeChild(documentTypeNode);
+            if (useSaxOtherNode)
+            {
+                if (options.onSaxOtherNode(parentNode, documentTypeNode))
+                    parentNode.appendChild(documentTypeNode);
+            }
+            else
+                parentNode.appendChild(documentTypeNode);
         }
     }
 
@@ -381,16 +407,21 @@ private:
         auto parentNode = peekNode();
         auto node = document.createDocumentTypeAttributeList(name);
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
         while (reader.skipSpaces().isAnyFrontBut('>'))
             parseDocumentTypeAttributeListItem(node);
 
         expectChar!(0)('>');
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
+
     }
 
     void parseDocumentTypeAttributeListItem(XmlDocumentTypeAttributeList!S attributeList)
@@ -477,8 +508,7 @@ private:
         auto parentNode = peekNode();
         auto node = document.createDocumentTypeElement(name);
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
         if (reader.skipSpaces().moveFrontIf('('))
         {
@@ -500,8 +530,13 @@ private:
 
         expectChar!(skipSpaceBefore)('>');
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     void parseDocumentTypeElementChoice(XmlDocumentTypeElement!S node, XmlDocumentTypeElementItem!S parent)
@@ -686,11 +721,15 @@ private:
                 node = document.createEntity(name, text);
         }
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     void parseElementX(ref ParseContext!S tagName)
@@ -714,10 +753,10 @@ private:
         auto element = document.createElement(name);
         if (options.validate)
             parentNode.checkChild(element, "appendChild()");
-        pushNode(parentNode.appendChild(element));
+        pushNode(element);
 
         if (useSaxElementBegin)
-            options.onSaxElementNodeBegin(element);
+            options.onSaxElementNodeBegin(parentNode, element);
 
         if (reader.skipSpaces().isElementAttributeNameStart())
         {
@@ -751,9 +790,17 @@ private:
         {
             expectChar!(0)('/');
             expectChar!(0)('>');
-            auto parentElement = cast(XmlElement!S) popNode();
-            if (useSaxElementEnd && !options.onSaxElementNodeEnd(parentElement))
-                peekNode().removeChild(parentElement);
+
+            auto e = popNode();
+            assert(e is element);
+
+            if (useSaxElementEnd) 
+            {
+                if (options.onSaxElementNodeEnd(parentNode, element))
+                    parentNode.appendChild(element);
+            }
+            else
+                parentNode.appendChild(element);
         }
     }
 
@@ -794,11 +841,15 @@ private:
 
         auto attribute = document.createAttribute(name, text);
         if (options.validate)
-            parentNode.checkAttribute(attribute, "appendAttribute()");
-        parentNode.appendAttribute(attribute);
+            parentNode.checkAttribute(attribute, "appendAttribute()");        
 
-        if (useSaxAttribute && !options.onSaxAttributeNode(attribute))
-            parentNode.removeAttribute(attribute);
+        if (useSaxAttribute)
+        {
+            if (options.onSaxAttributeNode(parentNode, attribute))
+                parentNode.appendAttribute(attribute);
+        }
+        else
+            parentNode.appendAttribute(attribute);
     }
 
     void parseElementXEnd(const(C)[] beginTagName)
@@ -815,8 +866,15 @@ private:
         expectChar!(skipSpaceBefore)('>');
 
         auto element = cast(XmlElement!S) popNode();
-        if (useSaxElementEnd && !options.onSaxElementNodeEnd(element))
-            peekNode().removeChild(element);
+        auto parentNode = peekNode();
+
+        if (useSaxElementEnd)
+        {
+            if (options.onSaxElementNodeEnd(parentNode, element))
+                parentNode.appendChild(element);
+        }
+        else
+            parentNode.appendChild(element);
     }
 
     void parseElementXText(XmlElement!S parentNode)
@@ -845,11 +903,15 @@ private:
         if (node)
         {
             //if (options.validate)
-            //    parentNode.checkChild(node, "appendChild()");
-            parentNode.appendChild(node);
+            //    parentNode.checkChild(node, "appendChild()");            
 
-            if (useSaxOtherNode && !options.onSaxOtherNode(node))
-                parentNode.removeChild(node);
+            if (useSaxOtherNode)
+            {
+                if (options.onSaxOtherNode(parentNode, node))
+                    parentNode.appendChild(node);
+            }
+            else
+                parentNode.appendChild(node);
         }
     }
 
@@ -905,11 +967,15 @@ private:
         auto parentNode = peekNode();
         auto node = document.createNotation(name, systemOrPublic, publicId, text);
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     void parseProcessingInstruction(ref ParseContext!S tagName)
@@ -948,11 +1014,15 @@ private:
         auto parentNode = peekNode();
         auto node = document.createProcessingInstruction(name, data);
         if (options.validate)
-            parentNode.checkChild(node, "appendChild()");
-        parentNode.appendChild(node);
+            parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode && !options.onSaxOtherNode(node))
-            parentNode.removeChild(node);
+        if (useSaxOtherNode)
+        {
+            if (options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);
+        }
+        else
+            parentNode.appendChild(node);
     }
 
     XmlString!S parseQuotedValue()
@@ -984,21 +1054,29 @@ private:
                 auto node = document.createWhitespace(s);
                 if (options.validate)
                     document.checkChild(node, "appendChild()");
-                document.appendChild(node);
-
-                if (useSaxOtherNode && !options.onSaxOtherNode(node))
-                    document.removeChild(node);
+                
+                if (useSaxOtherNode)
+                {
+                    if (options.onSaxOtherNode(document, node))
+                        document.appendChild(node);
+                }
+                else
+                    document.appendChild(node);
             }
             else
             {
                 auto parentNode = peekNode();
                 auto node = document.createSignificantWhitespace(s);
                 if (options.validate)
-                    parentNode.checkChild(node, "appendChild()");
-                parentNode.appendChild(node);
+                    parentNode.checkChild(node, "appendChild()");                
 
-                if (useSaxOtherNode && !options.onSaxOtherNode(node))
-                    parentNode.removeChild(node);
+                if (useSaxOtherNode)
+                {
+                    if (options.onSaxOtherNode(parentNode, node))
+                        parentNode.appendChild(node);
+                }
+                else
+                    parentNode.appendChild(node);
             }
         }
     }
@@ -1553,7 +1631,7 @@ unittest  // XmlParser.SAX
 
     outputXmlTraceProgress("unittest XmlParser.SAX");
 
-    static bool processAttribute(XmlAttribute!string attribute)
+    static bool processAttribute(XmlNode!string parent, XmlAttribute!string attribute)
     {
         // return true to keep the attribute, however if its parent node is discarded,
         // the attribute will also be discarded at the end
@@ -1561,11 +1639,11 @@ unittest  // XmlParser.SAX
         return false; 
     }
 
-    static void processElementBegin(XmlElement!string element)
+    static void processElementBegin(XmlNode!string parent, XmlElement!string element)
     {
     }
 
-    static bool processElementEnd(XmlElement!string element)
+    static bool processElementEnd(XmlNode!string parent, XmlElement!string element)
     {
         // return true to keep the element, however if its parent node is discarded,
         // the element will also be discarded at the end
@@ -1578,7 +1656,7 @@ unittest  // XmlParser.SAX
             localName == "title";
     }
 
-    static bool processOtherNode(XmlNode!string node)
+    static bool processOtherNode(XmlNode!string parent, XmlNode!string node)
     {
         // return true to keep the node, however if its parent node is discarded,
         // the node will also be discarded at the end

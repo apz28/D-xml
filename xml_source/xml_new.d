@@ -39,10 +39,10 @@ enum XmlParseOptionFlag
 struct XmlParseOptions(S)
 if (isXmlString!S)
 {
-    alias XmlSaxAttributeEvent = bool function(XmlAttribute!S attribute);
-    alias XmlSaxElementBeginEvent = void function(XmlElement!S element);
-    alias XmlSaxElementEndEvent = bool function(XmlElement!S element);
-    alias XmlSaxNodeEvent = bool function(XmlNode!S node);
+    alias XmlSaxAttributeEvent = bool function(XmlNode!S parent, XmlAttribute!S attribute);
+    alias XmlSaxElementBeginEvent = void function(XmlNode!S parent, XmlElement!S element);
+    alias XmlSaxElementEndEvent = bool function(XmlNode!S parent, XmlElement!S element);
+    alias XmlSaxNodeEvent = bool function(XmlNode!S parent, XmlNode!S node);
 
     XmlSaxAttributeEvent onSaxAttributeNode;
     XmlSaxElementBeginEvent onSaxElementNodeBegin;
