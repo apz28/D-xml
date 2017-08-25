@@ -178,7 +178,13 @@ struct TestOptions
                 timingXml = profileXml;
             }
             else debug (xmlTraceParser)
+            {
                 testXmlSourceFileName = ".\\xml_test\\test\\xmltest.xml";
+            }
+            else version (unittest)
+            {
+                outputXmlTraceTiming = false;
+            }
             else
             {
                 testXmlSourceDirectory = defaultXmlTestDirectory;
