@@ -32,8 +32,7 @@ enum XmlParseOptionFlag
 {
     none,
     preserveWhitespace = 1 << 0,
-    useSax = 1 << 1,
-    validate = 1 << 2
+    validate = 1 << 1
 }
 
 struct XmlParseOptions(S)
@@ -57,12 +56,6 @@ if (isXmlString!S)
     bool preserveWhitespace() const
     {
         return flags.isOn(XmlParseOptionFlag.preserveWhitespace);
-    }
-
-    pragma (inline, true)
-    bool useSax() const
-    {
-        return flags.isOn(XmlParseOptionFlag.useSax);
     }
 
     pragma (inline, true)
@@ -2511,8 +2504,8 @@ package:
         return new XmlComment!S(this, aText);
     }
 
-    XmlDocumentType!S createDocumentType(const(C)[] aName, const(C)[] aPublicOrSystem,
-        XmlString!S aPublicId, XmlString!S aText)
+    XmlDocumentType!S createDocumentType(const(C)[] aName, const(C)[] aPublicOrSystem, XmlString!S aPublicId,
+        XmlString!S aText)
     {
         return new XmlDocumentType!S(this, aName, aPublicOrSystem, aPublicId, aText);
     }
@@ -2522,8 +2515,8 @@ package:
         return new XmlEntity!S(this, aName, aText);
     }
 
-    XmlEntity!S createEntity(const(C)[] aName, const(C)[] aPublicOrSystem,
-        XmlString!S aPublicId, XmlString!S aText, const(C)[] aNotationName)
+    XmlEntity!S createEntity(const(C)[] aName, const(C)[] aPublicOrSystem, XmlString!S aPublicId,
+        XmlString!S aText, const(C)[] aNotationName)
     {
         return new XmlEntity!S(this, aName, aPublicOrSystem, aPublicId, aText, aNotationName);
     }
@@ -2533,14 +2526,14 @@ package:
         return new XmlEntityReference!S(this, aName, aText);
     }
 
-    XmlEntityReference!S createEntityReference(const(C)[] aName, const(C)[] aPublicOrSystem,
-        XmlString!S aPublicId, XmlString!S aText)
+    XmlEntityReference!S createEntityReference(const(C)[] aName, const(C)[] aPublicOrSystem, XmlString!S aPublicId,
+        XmlString!S aText)
     {
         return new XmlEntityReference!S(this, aName, aPublicOrSystem, aPublicId, aText);
     }
 
-    XmlNotation!S createNotation(const(C)[] aName, const(C)[] aPublicOrSystem,
-        XmlString!S aPublicId, XmlString!S aText)
+    XmlNotation!S createNotation(const(C)[] aName, const(C)[] aPublicOrSystem, XmlString!S aPublicId,
+        XmlString!S aText)
     {
         return new XmlNotation!S(this, aName, aPublicOrSystem, aPublicId, aText);
     }
@@ -2610,10 +2603,11 @@ public:
         Returns:
             self document instance
     */
-    final XmlDocument!S load(const(C)[] aXmlText, in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init)
+    final XmlDocument!S load(Flag!"SAX" SAX = No.SAX)(const(C)[] aXmlText,
+        in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init)
     {
         auto reader = new XmlStringReader!S(aXmlText);
-        return load(reader, aParseOptions);
+        return load!(SAX)(reader, aParseOptions);
     }
 
     /** Load a content xml from a xml reader, reader, and returns its' document        
@@ -2623,7 +2617,8 @@ public:
         Returns:
             self document instance
     */
-    final XmlDocument!S load(XmlReader!S reader, in XmlParseOptions!S parseOptions)
+    final XmlDocument!S load(Flag!"SAX" SAX = No.SAX)(XmlReader!S reader,
+        in XmlParseOptions!S parseOptions)
     {
         ++_loading;
         scope (exit)
@@ -2631,7 +2626,7 @@ public:
 
         removeAll();
 
-        auto parser = XmlParser!S(this, reader, parseOptions);
+        auto parser = XmlParser!(S, SAX)(this, reader, parseOptions);
         return parser.parse();
     }
 
@@ -2642,19 +2637,21 @@ public:
         Returns:
             self document instance
     */
-    final XmlDocument!S loadFromFile(string aFileName, in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init)
+    final XmlDocument!S loadFromFile(Flag!"SAX" SAX = No.SAX)(string aFileName,
+        in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init)
     {
         auto reader = new XmlFileReader!S(aFileName);
         scope (exit)
             reader.close();
 
-        return load(reader, aParseOptions);
+        return load!(SAX)(reader, aParseOptions);
     }
 
-    static XmlDocument!S opCall(S aXmlText, in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init) 
+    static XmlDocument!S opCall(Flag!"SAX" SAX = No.SAX)(S aXmlText,
+        in XmlParseOptions!S aParseOptions = XmlParseOptions!S.init) 
     {
         auto doc = new XmlDocument!S();
-		return doc.load(aXmlText, aParseOptions);
+		return doc.load!(SAX)(aXmlText, aParseOptions);
 	}
 
     /** Write the document xml into a file-name, aFileName, and returns aFileName        
@@ -2714,8 +2711,8 @@ public:
         return new XmlDocumentType!S(this, aName);
     }
 
-    XmlDocumentType!S createDocumentType(const(C)[] aName, const(C)[] aPublicOrSystem,
-        const(C)[] aPublicId, const(C)[] aText)
+    XmlDocumentType!S createDocumentType(const(C)[] aName, const(C)[] aPublicOrSystem, const(C)[] aPublicId,
+        const(C)[] aText)
     {
         return new XmlDocumentType!S(this, aName, aPublicOrSystem, aPublicId, aText);
     }
@@ -2756,14 +2753,14 @@ public:
         return new XmlEntityReference!S(this, aName, aText);
     }
 
-    XmlEntityReference!S createEntityReference(const(C)[] aName, const(C)[] aPublicOrSystem,
-        const(C)[] aPublicId, const(C)[] aText)
+    XmlEntityReference!S createEntityReference(const(C)[] aName, const(C)[] aPublicOrSystem, const(C)[] aPublicId,
+        const(C)[] aText)
     {
         return new XmlEntityReference!S(this, aName, aPublicOrSystem, aPublicId, aText);
     }
 
-    XmlNotation!S createNotation(const(C)[] aName, const(C)[] aPublicOrSystem,
-        const(C)[] aPublicId, const(C)[] aText)
+    XmlNotation!S createNotation(const(C)[] aName, const(C)[] aPublicOrSystem, const(C)[] aPublicId,
+        const(C)[] aText)
     {
         return new XmlNotation!S(this, aName, aPublicOrSystem, aPublicId, aText);
     }

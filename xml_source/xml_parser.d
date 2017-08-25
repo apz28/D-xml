@@ -15,7 +15,7 @@ import std.range.primitives : back, empty, front, popFront, popBack;
 import std.conv : to;
 import std.format : format;
 import std.string : indexOf;
-import std.typecons : No, Yes;
+import std.typecons : Flag, No, Yes;
 
 import pham.xml_msg;
 import pham.xml_exception;
@@ -26,27 +26,29 @@ import pham.xml_string;
 import pham.xml_reader;
 import pham.xml_new;
 
-struct XmlParser(S)
+struct XmlParser(S, Flag!"SAX" SAX = No.SAX)
 if (isXmlString!S)
 {
 public:
     alias C = XmlChar!S;
 
 private:
-    alias ParseNameEvent = void delegate(ref ParseContext!S context);
-
     enum skipSpaceBefore = 1;
     enum skipSpaceAfter = 2;
 
-    XmlDocument!S document;
-    XmlReader!S reader;
     XmlNode!S[] nodeStack;
 
+    XmlDocument!S document;
+    XmlReader!S reader;
     const(XmlParseOptions!S) options;
-    bool useSaxAttribute;
-    bool useSaxElementBegin;
-    bool useSaxElementEnd;
-    bool useSaxOtherNode;
+
+    static if (SAX)
+    {
+        bool useSaxAttribute;
+        bool useSaxElementBegin;
+        bool useSaxElementEnd;
+        bool useSaxOtherNode;
+    }
     
     version (unittest)
     {
@@ -69,7 +71,7 @@ private:
             throw new XmlParserException(msg);
         }
 
-        if (reader.moveFrontIf(c) != c)
+        if (reader.moveFrontIf(c) == 0)
         {
             string msg = format(Message.eExpectedCharButChar, c, reader.front);
             throw new XmlParserException(msg, reader.sourceLoc);
@@ -117,6 +119,7 @@ private:
         return nodeStack.back;
     }
 
+    pragma (inline, true)
     XmlNode!S popNode()
     in
     {
@@ -170,9 +173,9 @@ private:
         if (options.validate)
             parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                 parentNode.appendChild(node);
         }
         else
@@ -209,9 +212,9 @@ private:
         if (options.validate)
             parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                 parentNode.appendChild(node);
         }
         else
@@ -246,9 +249,9 @@ private:
         expectChar!(0)('?');
         expectChar!(0)('>');
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                 parentNode.appendChild(node);
         }
         else
@@ -294,9 +297,9 @@ private:
         if (options.validate)
             parentNode.checkAttribute(attribute, "appendAttribute()");        
 
-        if (useSaxAttribute)
+        static if (SAX)
         {
-            if (options.onSaxAttributeNode(parentNode, attribute))
+            if (useSaxAttribute && options.onSaxAttributeNode(parentNode, attribute))
                 parentNode.appendAttribute(attribute);
         }
         else
@@ -358,9 +361,9 @@ private:
                     //if (options.validate)
                     //    documentTypeNode.checkChild(node, "appendChild()");                    
 
-                    if (useSaxOtherNode)
+                    static if (SAX)
                     {
-                        if (options.onSaxOtherNode(documentTypeNode, node))
+                        if (useSaxOtherNode && options.onSaxOtherNode(documentTypeNode, node))
                             documentTypeNode.appendChild(node);
                     }
                     else
@@ -380,9 +383,9 @@ private:
             auto e = popNode();
             assert(e is documentTypeNode);
 
-            if (useSaxOtherNode)
+            static if (SAX)
             {
-                if (options.onSaxOtherNode(parentNode, documentTypeNode))
+                if (useSaxOtherNode && options.onSaxOtherNode(parentNode, documentTypeNode))
                     parentNode.appendChild(documentTypeNode);
             }
             else
@@ -414,14 +417,13 @@ private:
 
         expectChar!(0)('>');
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                 parentNode.appendChild(node);
         }
         else
             parentNode.appendChild(node);
-
     }
 
     void parseDocumentTypeAttributeListItem(XmlDocumentTypeAttributeList!S attributeList)
@@ -530,9 +532,9 @@ private:
 
         expectChar!(skipSpaceBefore)('>');
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                 parentNode.appendChild(node);
         }
         else
@@ -619,7 +621,7 @@ private:
 
         ParseContext!S tagName = void;
 
-        immutable c = reader.front;
+        const c = reader.front;
         if (c == '?')
         {
             reader.popFront();
@@ -723,9 +725,9 @@ private:
         if (options.validate)
             parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                 parentNode.appendChild(node);
         }
         else
@@ -755,8 +757,11 @@ private:
             parentNode.checkChild(element, "appendChild()");
         pushNode(element);
 
-        if (useSaxElementBegin)
-            options.onSaxElementNodeBegin(parentNode, element);
+        static if (SAX)
+        {
+            if (useSaxElementBegin)
+                options.onSaxElementNodeBegin(parentNode, element);
+        }
 
         if (reader.skipSpaces().isElementAttributeNameStart())
         {
@@ -794,9 +799,9 @@ private:
             auto e = popNode();
             assert(e is element);
 
-            if (useSaxElementEnd) 
+            static if (SAX)
             {
-                if (options.onSaxElementNodeEnd(parentNode, element))
+                if (useSaxElementEnd && options.onSaxElementNodeEnd(parentNode, element)) 
                     parentNode.appendChild(element);
             }
             else
@@ -843,9 +848,9 @@ private:
         if (options.validate)
             parentNode.checkAttribute(attribute, "appendAttribute()");        
 
-        if (useSaxAttribute)
+        static if (SAX)
         {
-            if (options.onSaxAttributeNode(parentNode, attribute))
+            if (useSaxAttribute && options.onSaxAttributeNode(parentNode, attribute))
                 parentNode.appendAttribute(attribute);
         }
         else
@@ -868,9 +873,9 @@ private:
         auto element = cast(XmlElement!S) popNode();
         auto parentNode = peekNode();
 
-        if (useSaxElementEnd)
+        static if (SAX)
         {
-            if (options.onSaxElementNodeEnd(parentNode, element))
+            if (useSaxElementEnd && options.onSaxElementNodeEnd(parentNode, element))
                 parentNode.appendChild(element);
         }
         else
@@ -905,9 +910,9 @@ private:
             //if (options.validate)
             //    parentNode.checkChild(node, "appendChild()");            
 
-            if (useSaxOtherNode)
+            static if (SAX)
             {
-                if (options.onSaxOtherNode(parentNode, node))
+                if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
                     parentNode.appendChild(node);
             }
             else
@@ -969,10 +974,10 @@ private:
         if (options.validate)
             parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
-                parentNode.appendChild(node);
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);            
         }
         else
             parentNode.appendChild(node);
@@ -1016,10 +1021,10 @@ private:
         if (options.validate)
             parentNode.checkChild(node, "appendChild()");        
 
-        if (useSaxOtherNode)
+        static if (SAX)
         {
-            if (options.onSaxOtherNode(parentNode, node))
-                parentNode.appendChild(node);
+            if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
+                parentNode.appendChild(node);           
         }
         else
             parentNode.appendChild(node);
@@ -1055,10 +1060,10 @@ private:
                 if (options.validate)
                     document.checkChild(node, "appendChild()");
                 
-                if (useSaxOtherNode)
+                static if (SAX)
                 {
-                    if (options.onSaxOtherNode(document, node))
-                        document.appendChild(node);
+                    if (useSaxOtherNode && options.onSaxOtherNode(document, node))
+                        document.appendChild(node);                    
                 }
                 else
                     document.appendChild(node);
@@ -1070,10 +1075,10 @@ private:
                 if (options.validate)
                     parentNode.checkChild(node, "appendChild()");                
 
-                if (useSaxOtherNode)
+                static if (SAX)
                 {
-                    if (options.onSaxOtherNode(parentNode, node))
-                        parentNode.appendChild(node);
+                    if (useSaxOtherNode && options.onSaxOtherNode(parentNode, node))
+                        parentNode.appendChild(node);                    
                 }
                 else
                     parentNode.appendChild(node);
@@ -1090,10 +1095,13 @@ public:
         reader = aReader;
         options = aOptions;
 
-        useSaxAttribute = options.useSax && options.onSaxAttributeNode !is null;
-        useSaxElementBegin = options.useSax && options.onSaxElementNodeBegin !is null;
-        useSaxElementEnd = options.useSax && options.onSaxElementNodeEnd !is null;
-        useSaxOtherNode = options.useSax && options.onSaxOtherNode !is null;
+        static if (SAX)
+        {
+            useSaxAttribute = options.onSaxAttributeNode !is null;
+            useSaxElementBegin = options.onSaxElementNodeBegin !is null;
+            useSaxElementEnd = options.onSaxElementNodeEnd !is null;
+            useSaxOtherNode = options.onSaxOtherNode !is null;
+        }
 
         nodeStack.reserve(defaultXmlLevels);        
     }
@@ -1666,7 +1674,6 @@ unittest  // XmlParser.SAX
     }
 
     XmlParseOptions!string options;
-    options.flags.include(XmlParseOptionFlag.useSax);
     options.onSaxAttributeNode = &processAttribute;
     options.onSaxElementNodeBegin = &processElementBegin;
     options.onSaxElementNodeEnd = &processElementEnd;
@@ -1674,7 +1681,7 @@ unittest  // XmlParser.SAX
 
     auto doc = new XmlDocument!string();
    
-    doc.load(parserSaxXml, options);
+    doc.load!(Yes.SAX)(parserSaxXml, options);
 
     assert(doc.outerXml() == "<bookstore><book><title>Pride And Prejudice</title></book><book><title>The Handmaid's Tale</title></book></bookstore>");
 }
