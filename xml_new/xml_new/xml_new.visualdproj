@@ -42,7 +42,7 @@
   <checkProperty>0</checkProperty>
   <genStackFrame>0</genStackFrame>
   <pic>0</pic>
-  <cov>0</cov>
+  <cov>1</cov>
   <nofloat>0</nofloat>
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
@@ -100,8 +100,8 @@
   <privatePhobos>0</privatePhobos>
   <additionalOptions />
   <preBuildCommand />
-  <postBuildCommand>del *.tlog
-del *.lst</postBuildCommand>
+  <postBuildCommand>del $(TargetName)\*.tlog
+del $(TargetName)\*.lst</postBuildCommand>
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Config name="Release" platform="Win32">

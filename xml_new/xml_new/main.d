@@ -20,13 +20,14 @@ import main_test;
 Object loadXml(string xml)
 {
     auto doc = new XmlDocument!string();
-    return doc.load(xml);
+    return doc.load!(No.SAX)(xml);
 }
 
 Object loadXmlFromFile(string fileName)
 {
     auto doc = new XmlDocument!string();
-    return doc.loadFromFile(fileName);
+    return doc.loadFromFile!(No.SAX)(fileName);
+    return null;
 }
 
 const(char)[] saveXml(Object doc)
