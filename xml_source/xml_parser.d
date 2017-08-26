@@ -1639,6 +1639,7 @@ unittest  // XmlParser.SAX
 
     outputXmlTraceProgress("unittest XmlParser.SAX");
 
+    version (none)
     static bool processAttribute(XmlNode!string parent, XmlAttribute!string attribute)
     {
         // return true to keep the attribute, however if its parent node is discarded,
@@ -1647,6 +1648,7 @@ unittest  // XmlParser.SAX
         return false; 
     }
 
+    version (none)
     static void processElementBegin(XmlNode!string parent, XmlElement!string element)
     {
     }
@@ -1674,7 +1676,9 @@ unittest  // XmlParser.SAX
     }
 
     XmlParseOptions!string options;
+    version (none)
     options.onSaxAttributeNode = &processAttribute;
+    version (none)
     options.onSaxElementNodeBegin = &processElementBegin;
     options.onSaxElementNodeEnd = &processElementEnd;
     options.onSaxOtherNode = &processOtherNode;

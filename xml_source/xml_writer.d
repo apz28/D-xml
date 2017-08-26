@@ -20,7 +20,7 @@ import pham.xml_util;
 import pham.xml_object;
 import pham.xml_buffer;
 
-abstract class XmlWriter(S) : XmlObject!S
+abstract class XmlWriter(S = string) : XmlObject!S
 {
 protected:
     size_t _nodeLevel;
@@ -410,7 +410,7 @@ public:
 @property:
     final bool onlyOneNodeText() const
     {
-        return (_onlyOneNodeText != 0);
+        return _onlyOneNodeText != 0;
     }
 
     final int nodeLevel() const
@@ -424,7 +424,7 @@ public:
     }
 }
 
-class XmlStringWriter(S) : XmlWriter!S
+class XmlStringWriter(S = string) : XmlWriter!S
 {
 protected:
     XmlBuffer!(S, No.checkEncoded) buffer;
@@ -456,7 +456,7 @@ public:
     }
 }
 
-class XmlFileWriter(S) : XmlWriter!S
+class XmlFileWriter(S = string) : XmlWriter!S
 {
 import std.file;
 import std.stdio;

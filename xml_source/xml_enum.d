@@ -175,7 +175,7 @@ public:
     {
         assert(aValue != 0);
 
-        return ((_values & aValue) == 0);
+        return (_values & aValue) == 0;
     }
 
     pragma (inline, true)
@@ -183,7 +183,7 @@ public:
     {
         assert(aValue != 0);
 
-        return ((_values & aValue) == aValue);
+        return (_values & aValue) == aValue;
     }
 
     pragma (inline, true)
@@ -191,7 +191,7 @@ public:
     {
         assert(aValue != 0);
 
-        return ((_values & aValue) != 0);
+        return (_values & aValue) != 0;
     }
 
 @property:

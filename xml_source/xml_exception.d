@@ -31,7 +31,7 @@ public:
 
     bool isSpecified() const nothrow @safe
     {
-        return (line != 0 || column != 0);
+        return line != 0 || column != 0;
     }
 
 @property:

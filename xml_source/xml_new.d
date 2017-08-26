@@ -35,7 +35,7 @@ enum XmlParseOptionFlag
     validate = 1 << 1
 }
 
-struct XmlParseOptions(S)
+struct XmlParseOptions(S = string)
 if (isXmlString!S)
 {
     alias XmlSaxAttributeEvent = bool function(XmlNode!S parent, XmlAttribute!S attribute);
@@ -106,52 +106,64 @@ enum XmlNodeType
     documentTypeElement = 21 
 }
 
-class XmlNodeFilterContext(S) : XmlObject!S
+class XmlNodeFilterContext(S = string) : XmlObject!S
 {
+protected:
+    const(C)[] _localName;
+    const(C)[] _name;
+    const(C)[] _namespaceUri;
+
 public:
-    const(C)[] localName;
-    const(C)[] name;
-    const(C)[] namespaceUri;
     XmlDocument!S.EqualName equalName;
 
     @disable this();
 
     this(XmlDocument!S aDocument, const(C)[] aName)
     {
-        name = aName;
+        _name = aName;
         equalName = aDocument.equalName;
     }
 
     this(XmlDocument!S aDocument, const(C)[] aLocalName, const(C)[] aNamespaceUri)
     {
-        localName = aLocalName;
-        namespaceUri = aNamespaceUri;
+        _localName = aLocalName;
+        _namespaceUri = aNamespaceUri;
         equalName = aDocument.equalName;
     }
 
     final bool matchElementByName(ref XmlNodeList!S aList, XmlNode!S aNode)
     {
-        if (aNode.nodeType != XmlNodeType.element)
-            return false; 
-        else
-            return ((name == "*") || equalName(name, aNode.name));
+        return (aNode.nodeType == XmlNodeType.element) &&
+            ((name == "*") || equalName(name, aNode.name));
     }
 
     final bool matchElementByLocalNameUri(ref XmlNodeList!S aList, XmlNode!S aNode)
     {
-        if (aNode.nodeType != XmlNodeType.element)
-            return false; 
-        else
-        {
-            return ((localName == "*" || equalName(localName, aNode.localName)) &&
-                    equalName(namespaceUri, aNode.namespaceUri));
-        }
+        return (aNode.nodeType == XmlNodeType.element) &&
+            ((localName == "*") || equalName(localName, aNode.localName)) &&
+            ((namespaceUri == "*") || equalName(namespaceUri, aNode.namespaceUri));
+    }
+
+@property:
+    const(C)[] localName() const
+    {
+        return _localName;
+    }
+
+    const(C)[] name() const
+    {
+        return _name;
+    }
+
+    const(C)[] namespaceUri() const
+    {
+        return _namespaceUri;
     }
 }
 
 /** A root xml node for all xml node objects
 */
-abstract class XmlNode(S) : XmlObject!S
+abstract class XmlNode(S = string) : XmlObject!S
 {
 protected:
     XmlDocument!S _ownerDocument;
@@ -348,7 +360,7 @@ package:
 
     final bool matchElement(ref XmlNodeList!S aList, XmlNode!S aNode)
     {
-        return (aNode.nodeType == XmlNodeType.element);
+        return aNode.nodeType == XmlNodeType.element;
     }
 
 public:
@@ -1132,14 +1144,14 @@ public:
     */
     final bool hasAttributes() nothrow @safe
     {
-        return (_attrbLast !is null);
+        return _attrbLast !is null;
     }
 
     /** Return true if a node has any child node, false otherwise
     */
     final bool hasChildNodes() nothrow @safe
     {
-        return (_childLast !is null);
+        return _childLast !is null;
     }
 
     /** Returns true if a node has any value, false otherwise
@@ -1158,7 +1170,7 @@ public:
             case XmlNodeType.significantWhitespace:
             case XmlNodeType.whitespace:
             case XmlNodeType.declaration:
-                return (!checkContent || value.length > 0);
+                return !checkContent || value.length > 0;
             default:
                 return false;
         }
@@ -1200,10 +1212,10 @@ public:
     */
     final bool isNamespaceNode()
     {
-        return (nodeType == XmlNodeType.attribute &&                
-                localName.length > 0 &&                
-                value.length > 0 &&
-                document.equalName(prefix, XmlConst!S.xmlns));
+        return nodeType == XmlNodeType.attribute &&                
+            localName.length > 0 &&                
+            value.length > 0 &&
+            document.equalName(prefix, XmlConst!S.xmlns);
     }
 
     /** Returns true if aNode is the only child/attribute node (no sibling node),
@@ -1211,9 +1223,9 @@ public:
     */
     final bool isOnlyNode(XmlNode!S aNode) const nothrow @safe
     {
-        return (aNode !is null && 
-                aNode.previousSibling is null &&
-                aNode.nextSibling is null);
+        return aNode !is null && 
+            aNode.previousSibling is null &&
+            aNode.nextSibling is null;
     }
 
     /** Returns its' last attribute node. A null if node has no attribute
@@ -1237,7 +1249,7 @@ public:
         if (parent is null)
             return 0;
         else
-            return (parent.level + 1);
+            return parent.level + 1;
     }
 
     /** Return node's localname if any, null otherwise
@@ -1423,7 +1435,7 @@ enum XmlNodeListType
 /** A struct type for holding various xml node objects
     It implements range base api
 */
-struct XmlNodeList(S)
+struct XmlNodeList(S = string)
 if (isXmlString!S)
 {
 public:
@@ -1942,9 +1954,9 @@ public:
     bool empty()
     {
         if (_listType == XmlNodeListType.flat)
-            return (_currentIndex >= _flatList.length);
+            return _currentIndex >= _flatList.length;
         else
-            return (_current is null || _emptyList);
+            return _emptyList || _current is null;
     }
 
     XmlNode!S front()
@@ -1968,7 +1980,7 @@ public:
 
 /** A xml attribute node object
 */
-class XmlAttribute(S) : XmlNode!S
+class XmlAttribute(S = string) : XmlNode!S
 {
 protected:
     XmlString!S _text;
@@ -2082,7 +2094,7 @@ public:
 
 /** A xml CData node object
 */
-class XmlCData(S) : XmlCharacterDataCustom!S
+class XmlCData(S = string) : XmlCharacterDataCustom!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
@@ -2114,7 +2126,7 @@ public:
 
 /** A xml comment node object
 */
-class XmlComment(S) : XmlCharacterDataCustom!S
+class XmlComment(S = string) : XmlCharacterDataCustom!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
@@ -2153,7 +2165,7 @@ public:
 
 /** A xml declaration node object
 */
-class XmlDeclaration(S) : XmlNode!S
+class XmlDeclaration(S = string) : XmlNode!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
@@ -2361,7 +2373,7 @@ public:
 
 /** A xml document node object
 */
-class XmlDocument(S) : XmlNode!S
+class XmlDocument(S = string) : XmlNode!S
 {
 public:
     alias EqualName = pure nothrow @safe bool function(const(C)[] s1, const(C)[] s2);
@@ -2837,7 +2849,7 @@ public:
 
 /** A xml document-fragment node object
 */
-class XmlDocumentFragment(S) : XmlNode!S
+class XmlDocumentFragment(S = string) : XmlNode!S
 {
 protected:
     static shared XmlName!S qualifiedName;
@@ -2889,7 +2901,7 @@ public:
 
 /** A xml document-type node object
 */
-class XmlDocumentType(S) : XmlNode!S
+class XmlDocumentType(S = string) : XmlNode!S
 {
 protected:
     const(C)[] _publicOrSystem;
@@ -3006,7 +3018,7 @@ public:
     }
 }
 
-class XmlDocumentTypeAttributeList(S) : XmlNode!S
+class XmlDocumentTypeAttributeList(S = string) : XmlNode!S
 {
 protected:
     XmlDocumentTypeAttributeListDef!S[] _defs;
@@ -3040,7 +3052,7 @@ public:
     }
 }
 
-class XmlDocumentTypeAttributeListDef(S) : XmlObject!S
+class XmlDocumentTypeAttributeListDef(S = string) : XmlObject!S
 {
 protected:
     XmlDocument!S _ownerDocument;
@@ -3104,7 +3116,7 @@ public:
     }
 }
 
-class XmlDocumentTypeAttributeListDefType(S) : XmlObject!S
+class XmlDocumentTypeAttributeListDefType(S = string) : XmlObject!S
 {
 protected:
     XmlDocument!S _ownerDocument;
@@ -3153,7 +3165,7 @@ public:
     }
 }
 
-class XmlDocumentTypeElement(S) : XmlNode!S
+class XmlDocumentTypeElement(S = string) : XmlNode!S
 {
 protected:
     XmlDocumentTypeElementItem!S[] _content;
@@ -3207,7 +3219,7 @@ public:
     }
 }
 
-class XmlDocumentTypeElementItem(S) : XmlObject!S
+class XmlDocumentTypeElementItem(S = string) : XmlObject!S
 {
 protected:
     XmlDocument!S _ownerDocument;
@@ -3288,7 +3300,7 @@ public:
 
 /** A xml element node object
 */
-class XmlElement(S) : XmlNode!S
+class XmlElement(S = string) : XmlNode!S
 {
 public:
     this(XmlDocument!S aOwnerDocument, XmlName!S aName)
@@ -3411,7 +3423,7 @@ public:
 
 /** A xml entity node object
 */
-class XmlEntity(S) : XmlEntityCustom!S
+class XmlEntity(S = string) : XmlEntityCustom!S
 {
 package:
     this(XmlDocument!S aOwnerDocument, const(C)[] aName, XmlString!S aValue)
@@ -3454,7 +3466,7 @@ public:
 
 /** A xml entity-reference node object
 */
-class XmlEntityReference(S) : XmlEntityCustom!S
+class XmlEntityReference(S = string) : XmlEntityCustom!S
 {
 package:
     this(XmlDocument!S aOwnerDocument, const(C)[] aName, XmlString!S aValue)
@@ -3496,7 +3508,7 @@ public:
 
 /** A xml annotation node object
 */
-class XmlNotation(S) : XmlNode!S
+class XmlNotation(S = string) : XmlNode!S
 {
 protected:
     const(C)[] _publicOrSystem;
@@ -3567,7 +3579,7 @@ public:
 
 /** A xml processing-instruction node object
 */
-class XmlProcessingInstruction(S) : XmlNode!S
+class XmlProcessingInstruction(S = string) : XmlNode!S
 {
 protected:
     XmlString!S _text;
@@ -3634,7 +3646,7 @@ public:
 
 /** A xml significant-whitespace node object
 */
-class XmlSignificantWhitespace(S) : XmlCharacterWhitespace!S
+class XmlSignificantWhitespace(S = string) : XmlCharacterWhitespace!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
@@ -3660,7 +3672,7 @@ public:
 
 /** A xml text node object
 */
-class XmlText(S) : XmlCharacterDataCustom!S
+class XmlText(S = string) : XmlCharacterDataCustom!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
@@ -3708,7 +3720,7 @@ public:
 
 /** A xml whitespace node object
 */
-class XmlWhitespace(S) : XmlCharacterWhitespace!S
+class XmlWhitespace(S = string) : XmlCharacterWhitespace!S
 {
 protected:
     __gshared static XmlName!S _defaultQualifiedName;
@@ -3734,7 +3746,7 @@ public:
 
 /** A xml custom node object for any text type node object
 */
-class XmlCharacterDataCustom(S) : XmlNode!S
+class XmlCharacterDataCustom(S = string) : XmlNode!S
 {
 protected:
     XmlString!S _text;
@@ -3786,7 +3798,7 @@ public:
 
 /** A xml custom node object for whitespace or significant-whitespace node object
 */
-class XmlCharacterWhitespace(S) : XmlCharacterDataCustom!S
+class XmlCharacterWhitespace(S = string) : XmlCharacterDataCustom!S
 {
 protected:
     final const(C)[] checkWhitespaces(const(C)[] aText)
@@ -3836,7 +3848,7 @@ public:
 
 /** A xml custom node object for entity or entity-reference node object
 */
-class XmlEntityCustom(S) : XmlNode!S
+class XmlEntityCustom(S = string) : XmlNode!S
 {
 protected:
     const(C)[] _notationName;
@@ -3913,7 +3925,7 @@ public:
 
 /** A xml name object
 */
-class XmlName(S) : XmlObject!S
+class XmlName(S = string) : XmlObject!S
 {
 protected:
     XmlDocument!S ownerDocument;

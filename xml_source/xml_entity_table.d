@@ -15,7 +15,7 @@ import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_object;
 
-class XmlEntityTable(S) : XmlObject!S
+class XmlEntityTable(S = string) : XmlObject!S
 {
 private:
     __gshared static XmlEntityTable!S _defaultEntityTable;

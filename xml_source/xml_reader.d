@@ -60,7 +60,7 @@ if (isXmlString!S)
     XmlLoc loc;
 }
 
-abstract class XmlReader(S) : XmlObject!S
+abstract class XmlReader(S = string) : XmlObject!S
 {
 private:
     enum isBlockReader = hasMember!(typeof(this), "nextBlock");
@@ -863,7 +863,7 @@ public:
     }
 }
 
-class XmlStringReader(S) : XmlReader!S
+class XmlStringReader(S = string) : XmlReader!S
 {
 public:
     this(const(XmlChar!S)[] aStr)
@@ -889,7 +889,7 @@ public:
     }
 }
 
-class XmlFileReader(S) : XmlReader!S
+class XmlFileReader(S = string) : XmlReader!S
 {
 import std.file;
 import std.stdio;

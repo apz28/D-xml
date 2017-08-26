@@ -52,8 +52,6 @@ alias XmlSignificantWhitespaceA = XmlSignificantWhitespace!string;
 alias XmlTextA = XmlText!string;
 alias XmlWhitespaceA = XmlWhitespace!string;
 
-alias XmlParserA = XmlParser!(string, No.SAX);
-
 alias XmlFileReaderA = XmlFileReader!string;
 alias XmlStringReaderA = XmlStringReader!string;
 
@@ -89,8 +87,6 @@ alias XmlSignificantWhitespaceW = XmlSignificantWhitespace!wstring;
 alias XmlTextW = XmlText!wstring;
 alias XmlWhitespaceW = XmlWhitespace!wstring;
 
-alias XmlParserW = XmlParser!(wstring, No.SAX);
-
 alias XmlFileReaderW = XmlFileReader!wstring;
 alias XmlStringReaderW = XmlStringReader!wstring;
 
@@ -125,8 +121,6 @@ alias XmlProcessingInstructionD = XmlProcessingInstruction!dstring;
 alias XmlSignificantWhitespaceD = XmlSignificantWhitespace!dstring;
 alias XmlTextD = XmlText!dstring;
 alias XmlWhitespaceD = XmlWhitespace!dstring;
-
-alias XmlParserD = XmlParser!(dstring, No.SAX);
 
 alias XmlFileReaderD = XmlFileReader!dstring;
 alias XmlStringReaderD = XmlStringReader!dstring;

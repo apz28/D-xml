@@ -18,7 +18,7 @@ import pham.xml_util;
 import pham.xml_entity_table;
 import pham.xml_buffer;
 
-struct XmlString(S)
+struct XmlString(S = string)
 if (isXmlString!S)
 {
 public:
@@ -80,12 +80,14 @@ public:
 
     bool needDecode() const nothrow @safe
     {
-        return data.length > 0 && (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check);
+        return (data.length > 0) &&
+            (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check);
     }
 
     bool needEncode() const nothrow @safe
     {
-        return data.length > 0 && (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
+        return (data.length > 0) &&
+            (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
     }
 
     const(C)[] asValue() const nothrow @safe

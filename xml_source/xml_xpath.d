@@ -244,15 +244,13 @@ XmlNodeType toXmlNodeType(XPathNodeType aNodeType) pure nothrow @safe
 
 private bool toBoolean(double value) pure nothrow @safe
 {
-    return (!isNaN(value) && value != 0);
+    return !isNaN(value) && value != 0;
 }
 
 private bool toBoolean(S)(const(XmlChar!S)[] value) pure nothrow @safe
 if (isXmlString!S)
 {
-    return (value == "1" || 
-        value == XmlConst!S.true_ || 
-        value == XmlConst!S.yes);
+    return value == "1" || value == XmlConst!S.true_ || value == XmlConst!S.yes;
 }
 
 private double toNumber(bool value) pure nothrow @safe
@@ -491,7 +489,7 @@ public:
     }
 }
 
-abstract class XPathNode(S) : XmlObject!S
+abstract class XPathNode(S = string) : XmlObject!S
 {
 protected:
     alias XPathAstNodeEvaluate = void delegate(
@@ -584,7 +582,7 @@ public:
     abstract XPathResultType returnType() const;
 }
 
-class XPathAxis(S) : XPathNode!S
+class XPathAxis(S = string) : XPathNode!S
 {
 protected:
     XPathAstNodeEvaluate evaluateFct;
@@ -1027,7 +1025,7 @@ public:
     }
 }
 
-class XPathFilter(S) : XPathNode!S
+class XPathFilter(S = string) : XPathNode!S
 {
 protected:
     XPathNode!S _input, _condition;
@@ -1479,7 +1477,7 @@ private void fctTranslate(S)(XPathFunction!S context, ref XPathContext!S inputCo
     //todo
 }
 
-class XPathUserDefinedFunctionEntry(S) : XmlObject!S 
+class XPathUserDefinedFunctionEntry(S = string) : XmlObject!S 
 {
 private:
     const(C)[] _localName;
@@ -1527,7 +1525,7 @@ public:
     }
 }
 
-class XPathFunctionTable(S) : XmlObject!S
+class XPathFunctionTable(S = string) : XmlObject!S
 {
 public:
     alias XPathFunctionEvaluate = void function(XPathFunction!S context,
@@ -1629,7 +1627,7 @@ public:
     alias userDefinedFunctions this;
 }
 
-class XPathFunction(S) : XPathNode!S
+class XPathFunction(S = string) : XPathNode!S
 {
 protected:
     XPathUserDefinedFunctionEntry!S userDefinedevaluateFct;
@@ -1794,7 +1792,7 @@ public:
     }
 }
 
-class XPathGroup(S) : XPathNode!S
+class XPathGroup(S = string) : XPathNode!S
 {
 protected:
     XPathNode!S _groupNode;
@@ -1859,7 +1857,7 @@ public:
     }
 }
 
-class XPathOperand(S) : XPathNode!S
+class XPathOperand(S = string) : XPathNode!S
 {
 protected:
     Variant _value;
@@ -1908,7 +1906,7 @@ public:
                 case XPathResultType.number:
                     return toBoolean(value.get!double);
                 case XPathResultType.text:
-                    return (value.get!S.length > 0);
+                    return value.get!S.length > 0;
                 default:
                     assert(0);
             }
@@ -2084,7 +2082,7 @@ private void opBinary(string aOp, S)(XPathOperator!S aOpNode, ref XPathContext!S
     outputContext.resValue = Variant(result);
 }
 
-class XPathOperator(S) : XPathNode!S
+class XPathOperator(S = string) : XPathNode!S
 {
 protected:
     XPathAstNodeEvaluate evaluateFct;
@@ -2316,7 +2314,7 @@ public:
     }
 }
 
-class XPathRoot(S) : XPathNode!S
+class XPathRoot(S = string) : XPathNode!S
 {
 public:
     this(XPathNode!S aParent)
@@ -2359,7 +2357,7 @@ public:
     }
 }
 
-class XPathVariable(S) : XPathNode!S
+class XPathVariable(S = string) : XPathNode!S
 {
 public:
     this(XPathNode!S aParent, const(C)[] aPrefix, const(C)[] aLocalName)
@@ -2426,7 +2424,7 @@ public:
     }
 }
 
-class XPathAxisTypeTable(S) : XmlObject!S
+class XPathAxisTypeTable(S = string) : XmlObject!S
 {
 protected:
     __gshared static XPathAxisTypeTable!S _defaultAxisTypeTable;
@@ -2481,7 +2479,7 @@ public:
     alias data this;
 }
 
-class XPathParamInfo(S) : XmlObject!S
+class XPathParamInfo(S = string) : XmlObject!S
 {
 private:
     const(XPathResultType[]) _argTypes;
@@ -2525,7 +2523,7 @@ public:
     }
 }
 
-class XPathFunctionParamInfoTable(S) : XmlObject!S
+class XPathFunctionParamInfoTable(S = string) : XmlObject!S
 {
 protected:
     __gshared static XPathFunctionParamInfoTable!S _defaultFunctionParamInfoTable;
@@ -2634,7 +2632,7 @@ enum XPathScannerLexKind
     eof = 'e' // End of string
 }
 
-struct XPathScanner(S)
+struct XPathScanner(S = string)
 if (isXmlString!S)
 {
 public:
@@ -2660,9 +2658,12 @@ public:
     }
 
     bool nextChar()
+    in
     {
         assert(_xPathExpressionNextIndex <= _xPathExpressionLength);
-
+    }
+    body
+    {
         if (_xPathExpressionNextIndex < _xPathExpressionLength)
         {
             _currentChar = _xPathExpression[_xPathExpressionNextIndex++];
@@ -2933,78 +2934,87 @@ public:
     }
 
 @property:
-    bool canBeFunction()
+    bool canBeFunction() const nothrow @safe
+    in
     {
         assert(_kind == XPathScannerLexKind.name);
-
+    }
+    body
+    {
         return _canBeFunction;
     }
 
-    C currentChar()
+    C currentChar() const nothrow @safe
     {
         return _currentChar;
     }
 
-    int currentIndex()
+    int currentIndex() const nothrow @safe
     {
         return _xPathExpressionNextIndex - 1;
     }
 
-    bool isNameNodeType()
+    bool isNameNodeType() const nothrow @safe
     {
-        auto t = nameNodeType;
-        return ((prefix.length == 0) &&
-                (t == XPathNodeType.comment ||
-                 t == XPathNodeType.all ||
-                 t == XPathNodeType.processingInstruction ||
-                 t == XPathNodeType.text));
+        const t = nameNodeType;
+        return (prefix.length == 0) &&
+            (t == XPathNodeType.comment ||
+             t == XPathNodeType.all ||
+             t == XPathNodeType.processingInstruction ||
+             t == XPathNodeType.text);
     }
 
-    bool isPrimaryExpr()
+    bool isPrimaryExpr() const nothrow @safe
     {
-        auto k = kind;
-        return (k == XPathScannerLexKind.dollar ||
-                k == XPathScannerLexKind.lParens ||
-                k == XPathScannerLexKind.number ||
-                k == XPathScannerLexKind.text ||
-                k == XPathScannerLexKind.name
-                && canBeFunction && !isNameNodeType);
+        const k = kind;
+        //todo add parentheses for clarification
+        return (k == XPathScannerLexKind.dollar) ||
+            (k == XPathScannerLexKind.lParens) ||
+            (k == XPathScannerLexKind.number) ||
+            (k == XPathScannerLexKind.text) ||
+            (k == XPathScannerLexKind.name && canBeFunction && !isNameNodeType);
     }
 
-    bool isStep()
+    bool isStep() const nothrow @safe
     {
-        auto k = kind;
-        return (k == XPathScannerLexKind.at ||
-                k == XPathScannerLexKind.axe ||
-                k == XPathScannerLexKind.dot ||
-                k == XPathScannerLexKind.dotDot ||
-                k == XPathScannerLexKind.name ||
-                k == XPathScannerLexKind.star);
+        const k = kind;
+        return k == XPathScannerLexKind.at ||
+            k == XPathScannerLexKind.axe ||
+            k == XPathScannerLexKind.dot ||
+            k == XPathScannerLexKind.dotDot ||
+            k == XPathScannerLexKind.name ||
+            k == XPathScannerLexKind.star;
     }
 
-    C kind()
+    C kind() const nothrow @safe
     {
         return _kind;
     }
 
-    const(C)[] name()
+    const(C)[] name() const nothrow @safe
     {
         return _name;
     }
 
     XPathAxisType nameAxisType()
+    in
     {
         assert(kind == XPathScannerLexKind.axe);
         assert(_name.ptr !is null);
-
+    }
+    body
+    {
         return XPathAxisTypeTable!S.defaultAxisTypeTable().get(name);
     }
 
-    XPathNodeType nameNodeType()
+    XPathNodeType nameNodeType() const nothrow @safe
+    in
     {
         assert(_name.ptr !is null);
-
-        auto n = name;
+    }
+    body
+    {
+        const n = name;
         return n == "comment" ? XPathNodeType.comment :
             n == "node" ? XPathNodeType.all :
             n == "processing-instruction" ? XPathNodeType.processingInstruction :
@@ -3012,35 +3022,44 @@ public:
             XPathNodeType.root;
     }
 
-    double numberValue()
+    double numberValue() const nothrow @safe
+    in
     {
         assert(_kind == XPathScannerLexKind.number);
-
+    }
+    body
+    {
         return _numberValue;
     }
 
-    const(C)[] prefix()
+    const(C)[] prefix() const nothrow @safe
+    in
     {
         assert(_kind == XPathScannerLexKind.name);
-
+    }
+    body
+    {
         return _prefix;
     }
 
-    const(C)[] sourceText()
+    const(C)[] sourceText() const nothrow @safe
     {
         return _xPathExpression;
     }
 
-    const(C)[] textValue()
+    const(C)[] textValue() const nothrow @safe
+    in
     {
         assert(_kind == XPathScannerLexKind.text);
         assert(_textValue.ptr !is null);
-
+    }
+    body
+    {
         return _textValue;
     }
 }
 
-struct XPathParser(S)
+struct XPathParser(S = string)
 if (isXmlString!S)
 {
 public:
@@ -3128,9 +3147,9 @@ private:
         version (unittest)
         outputXmlTraceXPathParserF("%stestOp('%s') ? '%s'", indentString(), opName, scanner.name);
 
-        return (scanner.kind == XPathScannerLexKind.name &&
-                scanner.prefix.length == 0 &&
-                scanner.name == opName);
+        return scanner.kind == XPathScannerLexKind.name &&
+            scanner.prefix.length == 0 &&
+            scanner.name == opName;
     }
 
     pragma (inline, true)
@@ -3402,8 +3421,8 @@ private:
             else if (scanner.kind == XPathScannerLexKind.slashSlash)
             {
                 nextLex();
-                result = parseRelativeLocationPath(new XPathAxis!S(result,
-                        XPathAxisType.descendantOrSelf, result));
+                result = parseRelativeLocationPath(
+                    new XPathAxis!S(result, XPathAxisType.descendantOrSelf, result));
             }
         }
         else
@@ -4020,7 +4039,7 @@ public:
     }
 
 @property:
-    const(C)[] sourceText()
+    const(C)[] sourceText() const nothrow
     {
         return scanner.sourceText;
     }
@@ -4033,7 +4052,8 @@ public:
     Returns:
         a node-list, XmlNodeList, of matching xpath expression        
 */
-XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
+XmlNodeList!S selectNodes(S = string)(XmlNode!S aSource, S xpath)
+if (isXmlString!S)
 {
     XPathParser!S xpathParser = XPathParser!S(xpath);
     XPathNode!S xpathNode = xpathParser.parseExpression();
@@ -4063,7 +4083,8 @@ XmlNodeList!S selectNodes(S)(XmlNode!S aSource, S xpath)
         a node, XmlNode, of matching xpath expression
         or null if no matching found
 */
-XmlNode!S selectSingleNode(S)(XmlNode!S aSource, S xpath)
+XmlNode!S selectSingleNode(S = string)(XmlNode!S aSource, S xpath)
+if (isXmlString!S)
 {
     XmlNodeList!S resultList = selectNodes(aSource, xpath);
     return resultList.empty ? null : resultList.front;

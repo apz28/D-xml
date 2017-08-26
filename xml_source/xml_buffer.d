@@ -48,7 +48,7 @@ enum XmlEncodeMode
     none 
 }
 
-class XmlBuffer(S, Flag!"checkEncoded" checkEncoded) : XmlObject!S
+class XmlBuffer(S = string, Flag!"checkEncoded" checkEncoded = No.checkEncoded) : XmlObject!S
 {
 public:
     alias XmlBuffer = typeof(this);
@@ -478,7 +478,7 @@ public:
 
     final bool empty() const nothrow @safe
     {
-        return (length == 0);
+        return length == 0;
     }
 
     final size_t length() const nothrow @safe
@@ -487,7 +487,7 @@ public:
     }
 }
 
-class XmlBufferList(S, Flag!"checkEncoded" checkEncoded) : XmlObject!S
+class XmlBufferList(S = string, Flag!"checkEncoded" checkEncoded = No.checkEncoded) : XmlObject!S
 {
 private:
     XmlBuffer!(S, checkEncoded) last;
