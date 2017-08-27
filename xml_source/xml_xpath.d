@@ -1589,7 +1589,7 @@ public:
         return singleton!(XPathFunctionTable!S)(_defaultFunctionTable, &createDefaultFunctionTable);
     }
 
-    final bool find(const(C)[] aName, ref XPathUserDefinedFunctionEntry!S fct) const
+    final bool find(const(C)[] aName, ref XPathUserDefinedFunctionEntry!S fct) const nothrow
     {
         const(XPathUserDefinedFunctionEntry!S)* r = aName in userDefinedFunctions;
 
@@ -1602,7 +1602,7 @@ public:
         }
     }
 
-    final bool find(const(C)[] aName, ref XPathFunctionEvaluate fct) const
+    final bool find(const(C)[] aName, ref XPathFunctionEvaluate fct) const nothrow
     {
         const(XPathFunctionEvaluate)* r = aName in defaultFunctions;
 
@@ -1665,9 +1665,12 @@ protected:
 
 public:
     this(XPathNode!S aParent, XPathFunctionType aFunctionType, XPathNode!S[] aArgumentList)
+    in
     {
         assert(aFunctionType != XPathFunctionType.userDefined);
-
+    }
+    body
+    {
         version (unittest) 
         outputXmlTraceXPathParserF("%s.this(function: %s, argc: %d)", shortClassName(this), 
             aFunctionType, aArgumentList.length);        
@@ -1695,9 +1698,12 @@ public:
     }
 
     this(XPathNode!S aParent, XPathFunctionType aFunctionType)
+    in
     {
         assert(aFunctionType != XPathFunctionType.userDefined);
-
+    }
+    body
+    {
         version (unittest)
         outputXmlTraceXPathParserF("%s.this(function: %s)", shortClassName(this), aFunctionType);
 
@@ -1708,9 +1714,12 @@ public:
     }
 
     this(XPathNode!S aParent, XPathFunctionType aFunctionType, XPathNode!S aArgument)
+    in
     {
         assert(aFunctionType != XPathFunctionType.userDefined);
-
+    }
+    body
+    {
         version (unittest)
         outputXmlTraceXPathParserF("%s.this(function: %s, argn: %s)", shortClassName(this), shortClassName(aArgument));
 
@@ -2461,19 +2470,19 @@ public:
         initDefault();
     }
 
-    static const(XPathAxisTypeTable!S) defaultAxisTypeTable()
+    static XPathAxisTypeTable!S defaultAxisTypeTable()
     {
         return singleton!(XPathAxisTypeTable!S)(_defaultAxisTypeTable, &createDefaultAxisTypeTable);
     }
 
-    final XPathAxisType get(const(C)[] aName, XPathAxisType aDefault = XPathAxisType.error) const
+    final XPathAxisType get(const(C)[] aName, XPathAxisType aDefault = XPathAxisType.error) const nothrow
     {
-        return data.get(aName, aDefault);
-    }
+        const(XPathAxisType)* r = aName in data;
 
-    final XPathAxisType get(S aName, XPathAxisType aDefault = XPathAxisType.error) const
-    {
-        return data.get(aName, aDefault);
+        if (r is null)
+            return aDefault;
+        else
+            return *r;
     }
 
     alias data this;
@@ -2639,6 +2648,7 @@ public:
     alias C = XmlChar!S;
 
 private:
+    XPathAxisTypeTable!S _axisTypeTable;
     const(C)[] _prefix, _name, _textValue;
     const(C)[] _xPathExpression;
     size_t _xPathExpressionNextIndex, _xPathExpressionLength;
@@ -2648,9 +2658,13 @@ private:
 
 public:
     this(const(C)[] aXPathExpression)
+    in
     {
         assert(aXPathExpression.length > 0);
-
+    }
+    body
+    {
+        _axisTypeTable = XPathAxisTypeTable!S.defaultAxisTypeTable();
         _xPathExpression = aXPathExpression;
         _xPathExpressionLength = _xPathExpression.length;
         nextChar();
@@ -2830,11 +2844,14 @@ public:
     }
 
     const(C)[] scanName()
+    in
     {
         assert(isNameStartC(currentChar));
         assert(_xPathExpressionNextIndex >= 1);
-
-        size_t start = _xPathExpressionNextIndex - 1;
+    }
+    body
+    {
+        const start = _xPathExpressionNextIndex - 1;
         size_t end = _xPathExpressionNextIndex - 1;
         while (currentChar != ':' && isNameInC(currentChar))
         {
@@ -2850,13 +2867,17 @@ public:
     }
 
     double scanNumberM()
+    in
     {
         assert(isDigit(currentChar));
         assert(_xPathExpressionNextIndex >= 2);
-
-        size_t start = _xPathExpressionNextIndex - 2;
-        assert(start >= 0 && _xPathExpression[start] == '.');
+        assert(_xPathExpression[_xPathExpressionNextIndex - 2] == '.');
+    }
+    body
+    {
+        const start = _xPathExpressionNextIndex - 2;
         size_t end = _xPathExpressionNextIndex - 1;
+
         while (isDigit(currentChar))
         {
             ++end;
@@ -2871,11 +2892,14 @@ public:
     }
 
     double scanNumberS()
+    in
     {
         assert(currentChar == '.' || isDigit(currentChar));
         assert(_xPathExpressionNextIndex >= 1);
-
-        size_t start = _xPathExpressionNextIndex - 1;
+    }
+    body
+    {
+        const start = _xPathExpressionNextIndex - 1;
         size_t end = _xPathExpressionNextIndex - 1;
         while (isDigit(currentChar))
         {
@@ -2902,11 +2926,13 @@ public:
 
     const(C)[] scanText()
     {
-        C quoteChar = currentChar;
+        const quoteChar = currentChar;
         nextChar();
         assert(_xPathExpressionNextIndex >= 1);
+
         size_t start = _xPathExpressionNextIndex - 1;
         size_t end = _xPathExpressionNextIndex - 1;
+
         while (currentChar != quoteChar)
         {
             if (!nextChar())
@@ -2916,7 +2942,13 @@ public:
             }
             ++end;
         }
-        assert(currentChar == quoteChar);
+
+        if (currentChar != quoteChar)
+        {
+            string msg = format(Message.eExpectedCharButChar, quoteChar, currentChar);
+            throw new XmlParserException(msg);
+        }
+
         nextChar();
 
         version (none)
@@ -2967,7 +2999,6 @@ public:
     bool isPrimaryExpr() const nothrow @safe
     {
         const k = kind;
-        //todo add parentheses for clarification
         return (k == XPathScannerLexKind.dollar) ||
             (k == XPathScannerLexKind.lParens) ||
             (k == XPathScannerLexKind.number) ||
@@ -2996,7 +3027,7 @@ public:
         return _name;
     }
 
-    XPathAxisType nameAxisType()
+    XPathAxisType nameAxisType() const nothrow
     in
     {
         assert(kind == XPathScannerLexKind.axe);
@@ -3004,7 +3035,7 @@ public:
     }
     body
     {
-        return XPathAxisTypeTable!S.defaultAxisTypeTable().get(name);
+        return _axisTypeTable.get(name);
     }
 
     XPathNodeType nameNodeType() const nothrow @safe
@@ -3132,7 +3163,7 @@ private:
         version (unittest)
         outputXmlTraceXPathParserF("%sgetAxisType() ? '%s'", indentString(), scanner.name);
 
-        auto axis = scanner.nameAxisType();
+        const axis = scanner.nameAxisType();
         if (axis == XPathAxisType.error)
         {
             string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
@@ -3629,10 +3660,11 @@ private:
             case XPathScannerLexKind.name:
                 if (scanner.canBeFunction && scanner.isNameNodeType)
                 {
+                    assert(scanner.nameNodeType != XPathNodeType.root);
+
                     nodePrefix = null;
                     nodeName = null;
                     nodeType = scanner.nameNodeType;
-                    assert(nodeType != XPathNodeType.root);
                     nextLex();
 
                     checkAndSkipToken(XPathScannerLexKind.lParens);
@@ -3674,6 +3706,11 @@ private:
 
     // PrimaryExpr ::= Literal | Number | VariableReference | '(' Expr ')' | FunctionCall
     XPathNode!S parsePrimaryExpr(XPathNode!S aInput)
+    in
+    {
+        assert(scanner.isPrimaryExpr);
+    }
+    body
     {
         version (unittest)
         {
@@ -3681,9 +3718,7 @@ private:
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
-        }
-
-        assert(scanner.isPrimaryExpr);
+        }        
 
         XPathNode!S result;
         switch (scanner.kind)
@@ -3878,6 +3913,11 @@ private:
 
     // IdKeyPattern ::= 'id' '(' Literal ')' | 'key' '(' Literal ',' Literal ')'  
     XPathNode!S parseIdKeyPattern(XPathNode!S aInput)
+    in
+    {
+        assert(scanner.canBeFunction);
+    }
+    body
     {
         version (unittest)
         {
@@ -3886,8 +3926,6 @@ private:
             scope (exit)
                 --nodeIndent;
         }
-
-        assert(scanner.canBeFunction);
 
         XPathNode!S[] argList;
         if (scanner.prefix.length == 0)

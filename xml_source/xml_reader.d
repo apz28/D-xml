@@ -434,7 +434,7 @@ package:
 
     final dchar moveFrontIf(dchar aCheckNonSpaceChar)
     {
-        auto f = front();
+        const f = front();
         if (f == aCheckNonSpaceChar)
         {
             popFrontColumn();
@@ -458,7 +458,7 @@ package:
         }
         else
         {
-            size_t pStart = pPos; 
+            const pStart = pPos; 
             while (!stopChar(current))
                 popFrontColumn();
             name.s = s[pStart .. pPos];
@@ -611,7 +611,7 @@ package:
         else
         {
             XmlEncodeMode encodedMode = XmlEncodeMode.checked;
-            size_t pStart = pPos; 
+            const pStart = pPos; 
             while (!isElementTextSeparator(current))
             {
                 if (allWhitespaces && !isSpace(current))
@@ -629,7 +629,7 @@ public:
     pragma (inline, true)
     final dchar moveFront()
     {
-        auto f = current;
+        const f = current;
         popFront();
         return f;
     }
@@ -658,7 +658,7 @@ public:
         }
         else
         {
-            size_t pStart = pPos; 
+            const pStart = pPos; 
             while (isSpace(current))
                 popFront();
 
@@ -668,7 +668,7 @@ public:
 
     final bool readUntilMarker(out const(C)[] data, const(C)[] untilMarker)
     {
-        immutable c = untilMarker[$ - 1];
+        const c = untilMarker[$ - 1];
         data = null;
 
         static if (isBlockReader)
@@ -720,7 +720,7 @@ public:
                 return false;
             }
 
-            size_t pStart = pPos;
+            const pStart = pPos;
             while (readUntilChar())
             {
                 if (equalRight!S(s[pStart .. pPos], untilMarker))
@@ -736,7 +736,7 @@ public:
 
     final bool readUntilText(bool checkReservedChar)(out XmlString!S data, const(C)[] untilMarker)
     {
-        immutable c = untilMarker[$ - 1];
+        const c = untilMarker[$ - 1];
         data = null;
 
         static if (isBlockReader)
@@ -813,7 +813,7 @@ public:
                 return false;
             }
 
-            size_t pStart = pPos;
+            const pStart = pPos;
             while (readUntilChar())
             {
                 if (equalRight!S(s[pStart .. pPos], untilMarker))
