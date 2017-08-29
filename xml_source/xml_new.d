@@ -1170,7 +1170,7 @@ public:
             case XmlNodeType.significantWhitespace:
             case XmlNodeType.whitespace:
             case XmlNodeType.declaration:
-                return !checkContent || value.length > 0;
+                return !checkContent || value.length != 0;
             default:
                 return false;
         }
@@ -1213,8 +1213,8 @@ public:
     final bool isNamespaceNode()
     {
         return nodeType == XmlNodeType.attribute &&                
-            localName.length > 0 &&                
-            value.length > 0 &&
+            localName.length != 0 &&                
+            value.length != 0 &&
             document.equalName(prefix, XmlConst!S.xmlns);
     }
 
@@ -1574,9 +1574,9 @@ private:
         else
         {
             _current = _current.nextSibling;
-            while (_current is null && _walkNodes.length > 0)
+            while (_current is null && _walkNodes.length != 0)
             {
-                size_t index = _walkNodes.length - 1;
+                const index = _walkNodes.length - 1;
                 _parent = _walkNodes[index].parent;
                 _current = _walkNodes[index].next;
                 debug (PhamXml)
@@ -1606,7 +1606,7 @@ private:
 
         auto restore = this;
 
-        while (aIndex > 0 && _current !is null)
+        while (aIndex != 0 && _current !is null)
         {
             popFrontSibling();
             --aIndex;
@@ -1637,7 +1637,7 @@ private:
 
         auto restore = this;
 
-        while (aIndex > 0 && _current !is null)
+        while (aIndex != 0 && _current !is null)
         {
             popFrontDeep();
             --aIndex;
@@ -2218,14 +2218,14 @@ protected:
             writer.putAttribute(XmlConst!S.declarationVersionName, versionStr);
 
             s = encoding;
-            if (s.length > 0)
+            if (s.length != 0)
             {
                 writer.put(' ');
                 writer.putAttribute(XmlConst!S.declarationEncodingName, s);
             }
 
             s = standalone;
-            if (s.length > 0)
+            if (s.length != 0)
             {
                 writer.put(' ');
                 writer.putAttribute(XmlConst!S.declarationStandaloneName, s);
@@ -2240,9 +2240,11 @@ protected:
 
     final void checkStandalone(const(C)[] s)
     {
-        if ((s.length > 0) && (s != XmlConst!S.yes || s != XmlConst!S.no))
+        if ((s.length != 0) && (s != XmlConst!S.yes || s != XmlConst!S.no))
         {
-            string msg = format(Message.eInvalidTypeValueOf2, XmlConst!string.declarationStandaloneName, XmlConst!string.yes, XmlConst!string.no, s);
+            string msg = format(Message.eInvalidTypeValueOf2,
+                XmlConst!string.declarationStandaloneName,
+                XmlConst!string.yes, XmlConst!string.no, s);
             throw new XmlException(msg);
         }
     }
@@ -2389,7 +2391,7 @@ protected:
 protected:
     XmlBufferList!(S, No.checkEncoded) _buffers;
     XmlEntityTable!S _entityTable;
-    const(C)[][const(C)[]] _symbolTable;
+    XmlIdentifier!S _symbolTable;
     int _loading;
 
     pragma (inline, true)
@@ -2453,15 +2455,15 @@ protected:
     }
 
 package:
-    final const(C)[] addSymbol(const(C)[] n)
+    pragma (inline, true)
+    final const(C)[] addSymbol(const(C)[] aSymbol)
+    in
     {
-        auto e = n in _symbolTable;
-        if (e is null)
-        {
-            _symbolTable[n] = n;
-            e = n in _symbolTable;
-        }
-        return *e;
+        assert(aSymbol.length != 0);
+    }
+    body
+    {
+        return _symbolTable.add(aSymbol);
     }
 
     pragma (inline, true)
@@ -3082,10 +3084,10 @@ public:
         if (_type !is null)
             _type.write(aWriter);
 
-        if (_defaultDeclareType.length > 0)
+        if (_defaultDeclareType.length != 0)
             aWriter.putWithPreSpace(_defaultDeclareType);
 
-        if (_defaultDeclareText.length > 0)
+        if (_defaultDeclareText.length != 0)
         {
             aWriter.put(' ');
             aWriter.putWithQuote(ownerDocument.getEncodedText(_defaultDeclareText));
@@ -3188,7 +3190,7 @@ public:
     {
         aWriter.putDocumentTypeElementBegin(name);
 
-        if (_content.length > 0)
+        if (_content.length != 0)
         {
             if (_content.length > 1)
                 aWriter.put('(');
@@ -3245,10 +3247,10 @@ public:
 
     final XmlWriter!S write(XmlWriter!S aWriter)
     {
-        if (_choice.length > 0)
+        if (_choice.length != 0)
             aWriter.put(_choice);
 
-        if (_subChoices.length > 0)
+        if (_subChoices.length != 0)
         {
             aWriter.put('(');
             _subChoices[0].write(aWriter);
@@ -3819,7 +3821,7 @@ public:
 
     final override XmlWriter!S write(XmlWriter!S aWriter)
     {
-        if (_text.length > 0)
+        if (_text.length != 0)
             aWriter.put(_text.value);
 
         return aWriter;
@@ -3956,7 +3958,7 @@ public:
     this(XmlDocument!S aOwnerDocument, const(C)[] aPrefix, const(C)[] aLocalName, const(C)[] aNamespaceUri)
     in 
     {
-        assert(aLocalName.length > 0);
+        assert(aLocalName.length != 0);
     }
     body
     {
@@ -3973,7 +3975,7 @@ public:
     this(XmlDocument!S aOwnerDocument, const(C)[] aQualifiedName)
     in
     {
-        assert(aQualifiedName.length > 0);
+        assert(aQualifiedName.length != 0);
     }
     body
     {

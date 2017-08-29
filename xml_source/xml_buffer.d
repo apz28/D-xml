@@ -350,7 +350,7 @@ public:
                 put(s[lastI .. i]);
 
             // Replace with r
-            if (r.length > 0)
+            if (r.length != 0)
             {
                 put(r);
                 r = null;

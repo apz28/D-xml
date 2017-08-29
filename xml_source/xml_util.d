@@ -592,7 +592,7 @@ if (isXmlString!S)
         if (!isSpace(c))
             return false;
     }
-    return s.length > 0;
+    return s.length != 0;
 }
 
 /** Returns true if object parameter is class type of T    
@@ -703,7 +703,7 @@ if (isXmlString!fromS && isXmlString!toS)
 private bool lookup(const(int[][]) pairTable, int c) pure nothrow @safe
 in
 {
-    assert(pairTable.length > 0);
+    assert(pairTable.length != 0);
 }
 body
 {
@@ -742,7 +742,7 @@ void splitName(S)(in const(XmlChar!S)[] aName,
 if (isXmlString!S)
 in
 {
-    assert(aName.length > 0);
+    assert(aName.length != 0);
 }
 body
 {
@@ -781,7 +781,7 @@ if (isXmlString!S)
 {
     import std.string : indexOf;
 
-    if (s.length > 0)
+    if (s.length != 0)
         return splitNameValueI!S(s, s.indexOf(aDelimiter), name, value);
     else
     {
@@ -843,11 +843,11 @@ body
 {
     import std.array : Appender;    
 
-    if (aCount > 0)
+    if (aCount != 0)
     {
         Appender!(XmlChar!S[]) buffer;
         buffer.reserve(aCount);
-        for (; aCount > 0; --aCount)
+        for (; aCount != 0; --aCount)
             buffer.put(aChar);
         return buffer.data.idup;
     }

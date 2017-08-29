@@ -80,13 +80,13 @@ public:
 
     bool needDecode() const nothrow @safe
     {
-        return (data.length > 0) &&
+        return (data.length != 0) &&
             (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check);
     }
 
     bool needEncode() const nothrow @safe
     {
-        return (data.length > 0) &&
+        return (data.length != 0) &&
             (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
     }
 

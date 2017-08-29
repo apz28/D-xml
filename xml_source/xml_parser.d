@@ -710,14 +710,14 @@ private:
         XmlNode!S node;
         if (reference)
         {
-            if (systemOrPublic.length > 0)
+            if (systemOrPublic.length != 0)
                 node = document.createEntityReference(name, systemOrPublic, publicId, text);
             else
                 node = document.createEntityReference(name, text);
         }
         else
         {
-            if (systemOrPublic.length > 0)
+            if (systemOrPublic.length != 0)
                 node = document.createEntity(name, systemOrPublic, publicId, text, notationName);
             else
                 node = document.createEntity(name, text);

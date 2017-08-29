@@ -113,12 +113,12 @@ public:
         if (prettyOutput)
             putIndent();
 
-        if (prettyOutput && text.length > 0 && !isSpace(text.front))
+        if (prettyOutput && text.length != 0 && !isSpace(text.front))
             put("<!-- ");
         else
             put("<!--");
         put(text);
-        if (prettyOutput && text.length > 0 && !isSpace(text.back))
+        if (prettyOutput && text.length != 0 && !isSpace(text.back))
             put(" -->");
         else
             put("-->");
@@ -149,18 +149,18 @@ public:
         put("<!DOCTYPE ");
         put(name);
 
-        if (publicOrSystem.length > 0)
+        if (publicOrSystem.length != 0)
         {
             putWithPreSpace(publicOrSystem);
 
-            if (publicId.length > 0 && publicOrSystem == XmlConst!S.public_)
+            if (publicId.length != 0 && publicOrSystem == XmlConst!S.public_)
             {
                 put(' ');
                 putWithQuote(publicId);
             }
         }
 
-        if (text.length > 0)
+        if (text.length != 0)
         {
             put(' ');
             putWithQuote(text);
@@ -290,7 +290,7 @@ public:
         put("<!ENTITY ");
         put(name);
 
-        if (publicOrSystem.length > 0)
+        if (publicOrSystem.length != 0)
         {
             putWithPreSpace(publicOrSystem);
 
@@ -301,10 +301,10 @@ public:
             }
         }
 
-        if (notationName.length > 0)
+        if (notationName.length != 0)
             putWithPreSpace(notationName);
 
-        if (text.length > 0)
+        if (text.length != 0)
         {
             if (notationName == XmlConst!S.nData)
                 putWithPreSpace(text);
@@ -330,7 +330,7 @@ public:
         put("<!ENTITY % ");
         put(name);
 
-        if (publicOrSystem.length > 0)
+        if (publicOrSystem.length != 0)
         {
             putWithPreSpace(publicOrSystem);
 
@@ -341,10 +341,10 @@ public:
             }
         }
 
-        if (notationName.length > 0)
+        if (notationName.length != 0)
             putWithPreSpace(notationName);
 
-        if (text.length > 0)
+        if (text.length != 0)
         {
             if (notationName == XmlConst!S.nData)
                 putWithPreSpace(text);
@@ -370,7 +370,7 @@ public:
         put("<!NOTATION ");
         put(name);
 
-        if (publicOrSystem.length > 0)
+        if (publicOrSystem.length != 0)
         {
             putWithPreSpace(publicOrSystem);
 
@@ -381,7 +381,7 @@ public:
             }
         }
 
-        if (text.length > 0)
+        if (text.length != 0)
         {
             put(' ');
             putWithQuote(text);
@@ -500,7 +500,7 @@ public:
 
     final void flush()
     {
-        if (_buffer.data.length > 0)
+        if (_buffer.data.length != 0)
             doFlush();
     }
 

@@ -48,18 +48,18 @@ public:
 
 template XmlExceptionConstructors()
 {
-    this(string aMsg, Exception aNext = null)
+    this(string aMessage, Exception aNext = null)
     {
-        super(aMsg, aNext);
+        super(aMessage, aNext);
     }
 
-    this(string aMsg, XmlLoc aLoc, Exception aNext = null)
+    this(string aMessage, XmlLoc aLoc, Exception aNext = null)
     {
         if (aLoc.isSpecified())
-            aMsg = aMsg ~ format(Message.atLineInfo, aLoc.sourceLine, aLoc.sourceColumn);
+            aMessage = aMessage ~ format(Message.atLineInfo, aLoc.sourceLine, aLoc.sourceColumn);
 
-        this(aMsg, aNext);
         loc = aLoc;
+        this(aMessage, aNext);
     }
 }
 
@@ -73,7 +73,7 @@ class XmlException : Exception
     {
         string s = super.toString();
 
-        Throwable e = next;
+        auto e = next;
         while (e !is null)
         {
             s ~= "\n\n" ~ e.toString();

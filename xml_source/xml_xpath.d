@@ -600,9 +600,9 @@ protected:
         if (!_xmlMatchAnyName)
         {
             const equalName = aNode.document.equalName;
-            if (result && prefix.length > 0)
+            if (result && prefix.length != 0)
                 result = equalName(aNode.prefix, prefix);
-            if (result && localName.length > 0)
+            if (result && localName.length != 0)
                 result = equalName(aNode.localName, localName);
         }
 
@@ -1253,7 +1253,7 @@ private void fctLang(S)(XPathFunction!S context, ref XPathContext!S inputContext
     }
 
     bool result;
-    if (lan.length > 0)
+    if (lan.length != 0)
     {
         for (size_t i = 0; i < inputContext.resNodes.length; ++i)
         {
@@ -1278,7 +1278,7 @@ private void fctLocalName(S)(XPathFunction!S context, ref XPathContext!S inputCo
 {
     const(XmlChar!S)[] result;
     bool useDefault;
-    if (context.argumentList.length > 0)
+    if (context.argumentList.length != 0)
     {
         XPathContext!S tempOutputContext = inputContext.createOutputContext();
         context.argumentList[0].evaluate(inputContext, tempOutputContext);
@@ -1297,7 +1297,7 @@ private void fctName(S)(XPathFunction!S context, ref XPathContext!S inputContext
 {
     const(XmlChar!S)[] result;
     bool useDefault;
-    if (context.argumentList.length > 0)
+    if (context.argumentList.length != 0)
     {
         XPathContext!S tempOutputContext = inputContext.createOutputContext();
         context.argumentList[0].evaluate(inputContext, tempOutputContext);
@@ -1316,7 +1316,7 @@ private void fctNamespaceUri(S)(XPathFunction!S context, ref XPathContext!S inpu
 {
     const(XmlChar!S)[] result;
     bool useDefault;
-    if (context.argumentList.length > 0)
+    if (context.argumentList.length != 0)
     {
         XPathContext!S tempOutputContext = inputContext.createOutputContext();
         context.argumentList[0].evaluate(inputContext, tempOutputContext);
@@ -1392,7 +1392,7 @@ private void fctStringLength(S)(XPathFunction!S context, ref XPathContext!S inpu
 
     double result = 0;
     const(XmlChar!S)[] s;
-    if (context.argumentList.length > 0)
+    if (context.argumentList.length != 0)
         s = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
     else if (!inputContext.resNodes.empty)
         s = inputContext.resNodes.front.toText();
@@ -1650,7 +1650,7 @@ protected:
         else
         {
             XPathFunctionTable!S.defaultFunctionTable().find(qualifiedName(), userDefinedevaluateFct);
-            if (userDefinedevaluateFct is null && prefix.length > 0)
+            if (userDefinedevaluateFct is null && prefix.length != 0)
                 XPathFunctionTable!S.defaultFunctionTable().find(localName, userDefinedevaluateFct);
 
             if (userDefinedevaluateFct is null)
@@ -1755,7 +1755,7 @@ public:
         aWriter.put(toUTF!(string, S)(className(this)));
         aWriter.putAttribute(toUTF!(string, S)(n), qualifiedName());
 
-        if (argumentList.length > 0)
+        if (argumentList.length != 0)
         {
             aWriter.incNodeLevel();
             foreach (e; argumentList)
@@ -1915,7 +1915,7 @@ public:
                 case XPathResultType.number:
                     return toBoolean(value.get!double);
                 case XPathResultType.text:
-                    return value.get!S.length > 0;
+                    return value.get!S.length != 0;
                 default:
                     assert(0);
             }
@@ -2386,7 +2386,7 @@ public:
                 inputContext.indentString, shortClassName(this), prefix, localName);
 
         Variant* result = qualifiedName() in inputContext.variables;
-        if (result is null && prefix.length > 0)
+        if (result is null && prefix.length != 0)
           result = localName in inputContext.variables;
 
         if (result is null)
@@ -2660,7 +2660,7 @@ public:
     this(const(C)[] aXPathExpression)
     in
     {
-        assert(aXPathExpression.length > 0);
+        assert(aXPathExpression.length != 0);
     }
     body
     {

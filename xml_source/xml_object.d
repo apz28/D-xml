@@ -106,6 +106,41 @@ if (is(T == class))
     return v;
 }
 
+struct XmlIdentifier(S = string)
+if (isXmlString!S)
+{
+public:
+    alias C = XmlChar!S;
+
+public:
+    const(C)[][const(C)[]] table;
+
+    const(C)[] add(const(C)[] n)
+    in
+    {
+        assert(n.length != 0);
+    }
+    body
+    {
+        auto e = n in table;
+        if (e is null)
+        {
+            table[n] = n;
+            return n;
+        }
+        else
+            return *e;
+    }
+
+    bool exists(const(C)[] n)
+    {
+        auto e = n in table;
+        return e !is null;
+    }
+
+    alias table this;
+}
+
 abstract class XmlObject(S)
 if (isXmlString!S)
 {
