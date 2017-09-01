@@ -23,65 +23,65 @@ if (is(T == class))
         enum isDLink = false;
 }
 
-mixin template DLink()
+pragma (inline, true)
+package bool dlinkHasPrev(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) const nothrow @safe
+if (isDLink!TLinkNode)
 {
-    alias TLinkNode = typeof(this);
+    return checkNode !is lastNode._prev;
+}
 
-    final TLinkNode dlinkInsertAfter(TLinkNode)(TLinkNode refNode, TLinkNode newNode) nothrow @safe
-    in 
-    {
-        assert(refNode !is null);
-        assert(refNode._next !is null);
-    }
-    body
-    {
-        newNode._next = refNode._next;
-        newNode._prev = refNode;
-        refNode._next._prev = newNode;
-        refNode._next = newNode;
-        return newNode;
-    }
+pragma (inline, true)
+package bool dlinkHasNext(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) const nothrow @safe
+if (isDLink!TLinkNode)
+{
+    return checkNode !is lastNode._next;
+}
 
-    final TLinkNode dlinkInsertEnd(TLinkNode)(ref TLinkNode lastNode, TLinkNode newNode) nothrow @safe
-    {
-        if (lastNode is null)
-        {
-            newNode._next = newNode;
-            newNode._prev = newNode;
-        }
-        else
-            dlinkInsertAfter(lastNode, newNode);
-        lastNode = newNode;
-        return newNode;
-    }
+package TLinkNode dlinkInsertAfter(TLinkNode)(TLinkNode refNode, TLinkNode newNode) nothrow @safe
+if (isDLink!TLinkNode)
+in 
+{
+    assert(refNode !is null);
+    assert(refNode._next !is null);
+}
+body
+{
+    newNode._next = refNode._next;
+    newNode._prev = refNode;
+    refNode._next._prev = newNode;
+    refNode._next = newNode;
+    return newNode;
+}
 
-    pragma (inline, true)
-    final bool dlinkHasPrev(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) nothrow @safe
+package TLinkNode dlinkInsertEnd(TLinkNode)(ref TLinkNode lastNode, TLinkNode newNode) nothrow @safe
+if (isDLink!TLinkNode)
+{
+    if (lastNode is null)
     {
-        return (checkNode !is lastNode._prev);
+        newNode._next = newNode;
+        newNode._prev = newNode;
     }
+    else
+        dlinkInsertAfter(lastNode, newNode);
+    lastNode = newNode;
+    return newNode;
+}
 
-    pragma (inline, true)
-    final bool dlinkHasNext(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) nothrow @safe
+package TLinkNode dlinkRemove(TLinkNode)(ref TLinkNode lastNode, TLinkNode oldNode) nothrow @safe
+if (isDLink!TLinkNode)
+{
+    if (oldNode._next is oldNode)
+        lastNode = null;
+    else
     {
-        return (checkNode !is lastNode._next);
+        oldNode._next._prev = oldNode._prev;
+        oldNode._prev._next = oldNode._next;
+        if (oldNode is lastNode)
+            lastNode = oldNode._prev;
     }
-
-    final TLinkNode dlinkRemove(TLinkNode)(ref TLinkNode lastNode, TLinkNode oldNode) nothrow @safe
-    {
-        if (oldNode._next is oldNode)
-            lastNode = null;
-        else
-        {
-            oldNode._next._prev = oldNode._prev;
-            oldNode._prev._next = oldNode._next;
-            if (oldNode is lastNode)
-                lastNode = oldNode._prev;
-        }
-        oldNode._next = null;
-        oldNode._prev = null;
-        return oldNode;
-    }
+    oldNode._next = null;
+    oldNode._prev = null;
+    return oldNode;
 }
 
 /** Initialize parameter v if it is null in thread safe manner using pass in aInitiate function
@@ -106,39 +106,49 @@ if (is(T == class))
     return v;
 }
 
-struct XmlIdentifier(S = string)
+struct XmlIdentifierList(S = string)
 if (isXmlString!S)
 {
 public:
     alias C = XmlChar!S;
 
 public:
-    const(C)[][const(C)[]] table;
+    const(C)[][const(C)[]] items;
 
-    const(C)[] add(const(C)[] n)
+    /** Returns true if name, n, is existed in table; otherwise false
+        Params:
+            n = is a name to be searched for        
+    */
+    bool exist(const(C)[] n) const nothrow
+    {
+        auto e = n in items;
+        return e !is null;
+    }
+
+    /** Insert name, n, into table
+        Params:
+            n = is a name to be inserted
+        Returns:
+            existing its name, n
+    */
+    const(C)[] put(const(C)[] n) nothrow
     in
     {
         assert(n.length != 0);
     }
     body
     {
-        auto e = n in table;
+        auto e = n in items;
         if (e is null)
         {
-            table[n] = n;
+            items[n] = n;
             return n;
         }
         else
             return *e;
     }
 
-    bool exists(const(C)[] n)
-    {
-        auto e = n in table;
-        return e !is null;
-    }
-
-    alias table this;
+    alias items this;
 }
 
 abstract class XmlObject(S)

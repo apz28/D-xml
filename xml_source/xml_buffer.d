@@ -53,9 +53,11 @@ class XmlBuffer(S = string, Flag!"checkEncoded" checkEncoded = No.checkEncoded) 
 public:
     alias XmlBuffer = typeof(this);
 
-protected:
+package:
     XmlBuffer _next;
     XmlBuffer _prev;
+
+protected:
     Appender!(C[]) _buffer;
     XmlEncodeMode _decodeOrEncodeResultMode = XmlEncodeMode.checked;
 
@@ -492,9 +494,6 @@ class XmlBufferList(S = string, Flag!"checkEncoded" checkEncoded = No.checkEncod
 private:
     XmlBuffer!(S, checkEncoded) last;
 
-protected:
-    mixin DLink;
-
 public:
     final XmlBuffer!(S, checkEncoded) acquire() nothrow @safe
     {
@@ -528,7 +527,7 @@ unittest  // XmlBuffer.decode
 {
     import std.exception : assertThrown;
 
-    outputXmlTraceProgress("unittest XmlBuffer.decode");
+    outputXmlTraceProgress("unittest xml_buffer.XmlBuffer.decode");
 
     const(char)[] s;
     auto buffer = new XmlBuffer!(string, No.checkEncoded)();
@@ -567,7 +566,7 @@ unittest  // XmlBuffer.decode
 
 unittest  // XmlBuffer.encode
 {
-    outputXmlTraceProgress("unittest XmlBuffer.encode");
+    outputXmlTraceProgress("unittest xml_buffer.XmlBuffer.encode");
 
     const(XmlChar!string)[] s;
     auto buffer = new XmlBuffer!(string, No.checkEncoded)();

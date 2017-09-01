@@ -201,9 +201,10 @@ public:
     }
 }
 
-struct EnumArray(E, V) 
+struct EnumArray(E, V)
 {
 nothrow @safe:
+
 public:
     struct Entry 
     {
@@ -238,16 +239,28 @@ public:
     {
         import std.conv : to;
 
-        immutable e = aEnumName.to!E;
-        return this[e];
+        enum e = aEnumName.to!E;
+        return _values[e];
     }
 
+    version (none)
     V opDispatch(string aEnumName)(V aValue)
     {
         import std.conv : to;
 
-        immutable e = aEnumName.to!E;
-        return this[e] = aValue;
+        enum e = aEnumName.to!E;
+        return _values[e] = aValue;
+    }
+
+    E getEnum(V aValue, E aDefault = E.min)
+    {
+        foreach (i; EnumMembers!E)
+        {
+            if (_values[i] == aValue)
+                return i;
+        }
+
+        return aDefault;
     }
 
 @property:
@@ -259,6 +272,10 @@ public:
 
 unittest // EnumArray
 {
+    import pham.xml_util;
+
+    outputXmlTraceProgress("unittest xml_enum.EnumArray");
+
     enum EnumTest
     {
         one,
@@ -266,15 +283,42 @@ unittest // EnumArray
         max
     }
     
-    alias EnumTestTable = EnumArray!(EnumTest, int); 
+    alias EnumTestInt = EnumArray!(EnumTest, int); 
 
-    EnumTestTable testTable = EnumTestTable(
-        EnumTestTable.Entry(EnumTest.one, 1),
-        EnumTestTable.Entry(EnumTest.two, 2),
-        EnumTestTable.Entry(EnumTest.max, int.max)
+    EnumTestInt testInt = EnumTestInt(
+        EnumTestInt.Entry(EnumTest.one, 1),
+        EnumTestInt.Entry(EnumTest.two, 2),
+        EnumTestInt.Entry(EnumTest.max, int.max)
     );
 
-    assert(testTable[EnumTest.one] == 1);
-    assert(testTable[EnumTest.two] == 2);
-    assert(testTable[EnumTest.max] == int.max);
+    assert(testInt.one == 1);
+    assert(testInt.two == 2);
+    assert(testInt.max == int.max);
+
+    assert(testInt[EnumTest.one] == 1);
+    assert(testInt[EnumTest.two] == 2);
+    assert(testInt[EnumTest.max] == int.max);
+
+    assert(testInt.getEnum(1) == EnumTest.one);
+    assert(testInt.getEnum(2) == EnumTest.two);
+    assert(testInt.getEnum(int.max) == EnumTest.max);
+    assert(testInt.getEnum(3) == EnumTest.one); // Unknown -> return default min
+
+
+    alias EnumTestString = EnumArray!(EnumTest, string); 
+
+    EnumTestString testString = EnumTestString(
+        EnumTestString.Entry(EnumTest.one, "1"),
+        EnumTestString.Entry(EnumTest.two, "2"),
+        EnumTestString.Entry(EnumTest.max, "int.max")
+    );
+
+    assert(testString[EnumTest.one] == "1");
+    assert(testString[EnumTest.two] == "2");
+    assert(testString[EnumTest.max] == "int.max");
+
+    assert(testString.getEnum("1") == EnumTest.one);
+    assert(testString.getEnum("2") == EnumTest.two);
+    assert(testString.getEnum("int.max") == EnumTest.max);
+    assert(testString.getEnum("3") == EnumTest.one); // Unknown -> return default min
 }

@@ -84,7 +84,7 @@ public:
 
 unittest // XmlEntityTable.defaultEntityTable
 {
-    outputXmlTraceProgress("unittest XmlEntityTable.defaultEntityTable");
+    outputXmlTraceProgress("unittest xml_entity_table.XmlEntityTable.defaultEntityTable");
 
     auto table = XmlEntityTable!string.defaultEntityTable();
     assert(table !is null);

@@ -165,21 +165,21 @@ public:
 */
 abstract class XmlNode(S = string) : XmlObject!S
 {
+package:
+    XmlNode!S _next;
+    XmlNode!S _prev;
+
 protected:
     XmlDocument!S _ownerDocument;
     XmlNode!S _attrbLast;
     XmlNode!S _childLast;
     XmlNode!S _parent;
-    XmlNode!S _next;
-    XmlNode!S _prev;
     XmlName!S _qualifiedName;
     debug (PhamXml)
     {
         size_t attrbVersion;
         size_t childVersion;
     }
-
-    mixin DLink;
 
     final void appendChildText(XmlStringWriter!S aWriter)
     {
@@ -2391,7 +2391,7 @@ protected:
 protected:
     XmlBufferList!(S, No.checkEncoded) _buffers;
     XmlEntityTable!S _entityTable;
-    XmlIdentifier!S _symbolTable;
+    XmlIdentifierList!S _symbolTable;
     int _loading;
 
     pragma (inline, true)
@@ -2463,7 +2463,7 @@ package:
     }
     body
     {
-        return _symbolTable.add(aSymbol);
+        return _symbolTable.put(aSymbol);
     }
 
     pragma (inline, true)
