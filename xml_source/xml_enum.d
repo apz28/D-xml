@@ -15,30 +15,6 @@ import std.meta : allSatisfy;
 import std.traits : EnumMembers, OriginalType;
 import std.typecons : isBitFlagEnum; 
 
-private struct EnumBitFlagNegations(E)
-if (isBitFlagEnum!(E))
-{
-nothrow @safe:
-private:
-    alias EType = OriginalType!E;
-
-    EType _values;
-
-public:
-    @disable this();
-
-    this(EType aValues)
-    {
-        _values = aValues;
-    }
-
-@property:
-    EType values() const
-    {
-        return _values;
-    }
-}
-
 struct EnumBitFlags(E)
 if (isBitFlagEnum!(E))
 {
@@ -50,17 +26,37 @@ private:
     EType _values;
 
 public:
+    static struct EnumBitFlagNegations
+    {
+    private:
+        EType _values;
+
+    public:
+        @disable this();
+
+        this(EType aValues)
+        {
+            _values = aValues;
+        }
+
+    @property:
+        EType values() const
+        {
+            return _values;
+        }
+    }
+
+public:
     this(E aValue)
     {
         _values = aValue;
     }
 
-    this(T...)(T aValues)
-    if (allSatisfy!(isBaseEnumType, T))
+    this(const(E)[] aValues)
     {
         _values = 0;
-        foreach (E e; aValues)
-            _values |= e;
+        foreach (i; aValues)
+            _values |= i;
     }
 
     bool opCast(B: bool)() const
@@ -108,7 +104,7 @@ public:
         return this;
     }
 
-    auto ref opOpAssign(string op)(EnumBitFlags aValues)
+    auto ref opOpAssign(string op)(EnumBitFlags!E aValues)
     if (op == "^" || op == "|" || op == "&")
     {
         static if (op == "^")
@@ -131,27 +127,27 @@ public:
     auto opBinary(string op)(E aValue) const
     if (op == "^" || op == "|" || op == "&")
     {
-        BitFlags result = this;
-        result.opOpAssign!op(aValue);
+        BitFlags res = this;
+        res.opOpAssign!op(aValue);
 
-        return result;
+        return res;
     }
 
-    auto opBinary(string op)(EnumBitFlags aValues) const
+    auto opBinary(string op)(EnumBitFlags!E aValues) const
     if (op == "^" || op == "|" || op == "&")
     {
-        BitFlags result = this;
-        result.opOpAssign!op(aValues);
+        BitFlags res = this;
+        res.opOpAssign!op(aValues);
 
-        return result;
+        return res;
     }
 
     auto opBinary(string op: "&")(EnumBitFlagNegations aValues) const
     {
-        BitFlags result = this;
-        result.opOpAssign!op(aValues);
+        BitFlags res = this;
+        res.opOpAssign!op(aValues);
 
-        return result;
+        return res;
     }
 
     auto opBinaryRight(string op)(E aValue) const
@@ -160,42 +156,49 @@ public:
         return opBinary!op(aValue);
     }
 
-    auto ref exclude(E aValue)
+    auto ref exc(E aValue)
     {
         return opOpAssign!"^"(aValue);
     }
 
-    auto ref include(E aValue)
+    auto ref inc(E aValue)
     {
         return opOpAssign!"|"(aValue);
     }
 
     pragma (inline, true)
-    bool isOff(E aValue) const
+    bool any(const(E)[] aValues) const
     {
-        assert(aValue != 0);
-
-        return (_values & aValue) == 0;
+        foreach (i; aValues)
+        {
+            if (on(i))
+                return true;
+        }
+        return false;
     }
 
     pragma (inline, true)
-    bool isOn(E aValue) const
+    bool off(E aValue) const
     {
-        assert(aValue != 0);
-
-        return (_values & aValue) == aValue;
+        return aValue != 0 && (_values & aValue) == 0;
     }
 
     pragma (inline, true)
-    bool isOnAny(E aValue) const
+    bool on(E aValue) const
     {
-        assert(aValue != 0);
-
-        return (_values & aValue) != 0;
+        return aValue != 0 && (_values & aValue) == aValue;
     }
 
+    auto ref set(E aValue, bool aOp)
+    {
+        if (aOp)
+            return opOpAssign!"|"(aValue);
+        else
+            return opOpAssign!"^"(aValue);
+    }
+    
 @property:
-    EType values()
+    EType values() const
     {
         return _values;
     }
@@ -267,6 +270,66 @@ public:
     size_t length() const
     {
         return size;
+    }
+}
+
+unittest // EnumBitFlags
+{
+    import pham.xml_util;
+
+    outputXmlTraceProgress("unittest xml_enum.EnumBitFlags");
+
+    enum EnumTest
+    {
+        //none,
+        one = 1 << 0,
+        two = 1 << 1,
+        three = 1 << 2
+    }
+    
+    alias EnumTestFlags = EnumBitFlags!EnumTest;
+
+    EnumTestFlags testFlags;
+
+    assert(testFlags.values == 0);
+    foreach (i; EnumMembers!EnumTest)
+    {
+        assert(testFlags.off(i));
+        assert(!testFlags.on(i));
+    }
+
+    assert(testFlags.inc(EnumTest.one).on(EnumTest.one));
+    assert(testFlags.off(EnumTest.two));
+    assert(testFlags.off(EnumTest.three));
+
+    assert(testFlags.inc(EnumTest.two).on(EnumTest.two));
+    assert(testFlags.on(EnumTest.one));
+    assert(testFlags.off(EnumTest.three));
+
+    assert(testFlags.inc(EnumTest.three).on(EnumTest.three));
+
+    assert(testFlags.values != 0);
+    foreach (i; EnumMembers!EnumTest)
+    {
+        assert(!testFlags.off(i));
+        assert(testFlags.on(i));
+    }
+
+    assert(testFlags.exc(EnumTest.one).off(EnumTest.one));
+    assert(testFlags.on(EnumTest.two));
+    assert(testFlags.on(EnumTest.three));
+
+    assert(testFlags.exc(EnumTest.two).off(EnumTest.two));
+    assert(testFlags.off(EnumTest.two));
+    assert(testFlags.on(EnumTest.three));
+
+    assert(testFlags.exc(EnumTest.three).off(EnumTest.three));
+
+    assert(testFlags.values == 0);
+    foreach (i; EnumMembers!EnumTest)
+    {
+        assert(testFlags.off(i));
+        assert(!testFlags.on(i));
     }
 }
 

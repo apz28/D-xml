@@ -30,7 +30,7 @@ enum unicodeSurrogateHighEnd = 0xDBFF;
 enum unicodeSurrogateLowBegin = 0xDC00;
 enum unicodeSurrogateLowEnd = 0xDFFF;
 
-immutable byte[] unicodeTrailingBytesForUTF8 = [
+immutable ubyte[] unicodeTrailingBytesForUTF8 = [
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -128,7 +128,7 @@ protected:
                     errorUtf16(UnicodeErrorKind.eos, 0);
             }
 
-            wchar u = s[sPos++];
+            ushort u = s[sPos++];
              
             if (u >= unicodeSurrogateHighBegin && u <= unicodeSurrogateHighEnd)
             {
@@ -202,12 +202,11 @@ protected:
                     errorUtf8(UnicodeErrorKind.eos, 0);
             }
 
-            char u = s[sPos++];
+            ubyte u = s[sPos++];
 
             if (u & 0x80)
             {
-                byte count = 0;
-                byte extraBytesToRead = unicodeTrailingBytesForUTF8[u];
+                const extraBytesToRead = unicodeTrailingBytesForUTF8[u];
 
                 if (extraBytesToRead + sPos > sLen)
                 {
@@ -215,13 +214,16 @@ protected:
                         errorUtf8(UnicodeErrorKind.eos, 0);
                 }
 
+                static if (!isBlockReader)
+                    ubyte currentCodeBufferCount = 0;
+                    
                 switch (extraBytesToRead) 
                 {
                     case 5: 
                         current += u;
                         current <<= 6;
                         static if (!isBlockReader)
-                            currentCodeBuffer[count++] = u;
+                            currentCodeBuffer[currentCodeBufferCount++] = u;
 
                         if (sPos >= sLen)
                             nextBlockUtf8();
@@ -235,7 +237,7 @@ protected:
                         current += u;
                         current <<= 6;
                         static if (!isBlockReader)
-                            currentCodeBuffer[count++] = u;
+                            currentCodeBuffer[currentCodeBufferCount++] = u;
 
                         if (sPos >= sLen)
                             nextBlockUtf8();
@@ -249,7 +251,7 @@ protected:
                         current += u;
                         current <<= 6;
                         static if (!isBlockReader)
-                            currentCodeBuffer[count++] = u;
+                            currentCodeBuffer[currentCodeBufferCount++] = u;
 
                         if (sPos >= sLen)
                             nextBlockUtf8();
@@ -263,7 +265,7 @@ protected:
                         current += u;
                         current <<= 6;
                         static if (!isBlockReader)
-                            currentCodeBuffer[count++] = u;
+                            currentCodeBuffer[currentCodeBufferCount++] = u;
 
                         if (sPos >= sLen)
                             nextBlockUtf8();
@@ -277,7 +279,7 @@ protected:
                         current += u;
                         current <<= 6;
                         static if (!isBlockReader)
-                            currentCodeBuffer[count++] = u;
+                            currentCodeBuffer[currentCodeBufferCount++] = u;
 
                         if (sPos >= sLen)
                             nextBlockUtf8();
@@ -290,7 +292,7 @@ protected:
 
                         current += u;
                         static if (!isBlockReader)
-                            currentCodeBuffer[count++] = u;
+                            currentCodeBuffer[currentCodeBufferCount++] = u;
                         break;
                     default:
                         assert(0);
@@ -298,7 +300,7 @@ protected:
 
                 current -= unicodeOffsetsFromUTF8[extraBytesToRead];
                 static if (!isBlockReader)
-                    currentCodes = currentCodeBuffer[0 .. count];
+                    currentCodes = currentCodeBuffer[0 .. currentCodeBufferCount];
 
                 if (current <= dchar.max) 
                 {

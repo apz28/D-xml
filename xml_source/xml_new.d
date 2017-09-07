@@ -55,13 +55,23 @@ if (isXmlString!S)
     pragma (inline, true)
     bool preserveWhitespace() const
     {
-        return flags.isOn(XmlParseOptionFlag.preserveWhitespace);
+        return flags.on(XmlParseOptionFlag.preserveWhitespace);
+    }
+
+    void preserveWhitespace(bool value)
+    {
+        flags.set(XmlParseOptionFlag.preserveWhitespace, value);
     }
 
     pragma (inline, true)
     bool validate() const
     {
-        return flags.isOn(XmlParseOptionFlag.validate);
+        return flags.on(XmlParseOptionFlag.validate);
+    }
+
+    void validate(bool value)
+    {
+        flags.set(XmlParseOptionFlag.validate, value);
     }
 }
 
