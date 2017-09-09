@@ -14,7 +14,6 @@ module pham.xml;
 import std.typecons : No, Yes;
 
 public import pham.xml_exception;
-public import pham.xml_enum;
 public import pham.xml_util;
 public import pham.xml_buffer;
 public import pham.xml_string;

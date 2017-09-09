@@ -17,9 +17,10 @@ import std.math : isNaN;
 import std.format : format;
 import std.variant;
 
+import pham.utl_enumset;
+
 import pham.xml_msg;
 import pham.xml_exception;
-import pham.xml_enum;
 import pham.xml_util;
 import pham.xml_object;
 import pham.xml_buffer;
@@ -148,9 +149,9 @@ enum XPathResultType
     boolean,
     nodeSet,
     number,
-    text,
-    navigator = XPathResultType.text
+    text
 }
+enum navigator = XPathResultType.text;
 
 enum XPathSortOrder
 {

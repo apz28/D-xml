@@ -14,9 +14,10 @@ module pham.xml_new;
 import std.format : format;
 import std.typecons : Flag, No, Yes;
 
+import pham.utl_enumset;
+
 import pham.xml_msg;
 import pham.xml_exception;
-import pham.xml_enum;
 import pham.xml_util;
 import pham.xml_object;
 import pham.xml_buffer;
@@ -48,8 +49,8 @@ if (isXmlString!S)
     XmlSaxElementEndEvent onSaxElementNodeEnd;
     XmlSaxNodeEvent onSaxOtherNode;
 
-    EnumBitFlags!XmlParseOptionFlag flags = 
-        EnumBitFlags!XmlParseOptionFlag(XmlParseOptionFlag.validate);
+    EnumSet!XmlParseOptionFlag flags = 
+        EnumSet!XmlParseOptionFlag(XmlParseOptionFlag.validate);
 
 @property:
     pragma (inline, true)
