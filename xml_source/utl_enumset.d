@@ -14,6 +14,12 @@ module pham.utl_enumset;
 import std.meta : allSatisfy;
 import std.traits : EnumMembers, isIntegral;
 
+private
+size_t maxBits() pure nothrow
+{
+    return ulong.sizeof * 8;
+}
+
 size_t count(E)() pure nothrow
 if (is(E == enum))
 {
@@ -39,7 +45,7 @@ template isBitEnum(E)
                     return false;
                 values |= i;
             }
-            return true;
+            return count!E <= maxBits();
         }();
     }
     else
@@ -64,7 +70,7 @@ template isOrderedEnum(E)
                     return false;
                 prev = i;
             }
-            return count!E <= ulong.sizeof * 8;
+            return count!E <= maxBits();
         }();
     }
     else
@@ -89,7 +95,7 @@ template isSequenceEnum(E)
                     return false;
                 prev = i;
             }
-            return count!E <= ulong.sizeof * 8;
+            return E.max < maxBits() && count!E <= maxBits();
         }();
     }
     else
@@ -678,6 +684,8 @@ unittest // EnumSet
         ", OriginalType: ", OriginalType!EnumTestOrder);
     */
 
+    static assert(!isBitEnum!EnumTestOrder);
+    static assert(!isSequenceEnum!EnumTestOrder);
     Test!EnumTestOrder("[one,two,three]");
 
 
@@ -718,6 +726,52 @@ unittest // EnumSet
     */
 
     Test!EnumTestBit("[one,two,three]");
+
+
+    enum EnumTestLimit1
+    {
+        b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
+        b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
+        b21, b22, b23, b24, b25, b26, b27, b28, b29, b30,
+        b31, b32
+    }
+    static assert(isEnumSet!EnumTestLimit1);
+    static assert(is(EnumSetType!EnumTestLimit1 == uint));
+
+    enum EnumTestLimit2
+    {
+        b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
+        b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
+        b21, b22, b23, b24, b25, b26, b27, b28, b29, b30,
+        b31, b32, b33, b34, b35, b36, b37, b38, b39, b40,
+        b41, b42, b43, b44, b45, b46, b47, b48, b49, b50,
+        b51, b52, b53, b54, b55, b56, b57, b58, b59, b60,
+        b61, b62, b63, b64
+    }
+    static assert(isEnumSet!EnumTestLimit2);
+    static assert(is(EnumSetType!EnumTestLimit2 == ulong));
+
+    enum EnumTestFailOverSequence
+    {
+        b1=60,
+        b2=61,
+        b3=62,
+        b4=63,
+        b5=64
+    }
+    static assert(!isSequenceEnum!EnumTestFailOverSequence);
+
+    enum EnumTestFailOverElement
+    {
+        b1, b2, b3, b4, b5, b6, b7, b8, b9, b0,
+        b11, b12, b13, b14, b15, b16, b17, b18, b19, b20,
+        b21, b22, b23, b24, b25, b26, b27, b28, b29, b30,
+        b31, b32, b33, b34, b35, b36, b37, b38, b39, b40,
+        b41, b42, b43, b44, b45, b46, b47, b48, b49, b50,
+        b51, b52, b53, b54, b55, b56, b57, b58, b59, b60,
+        b61, b62, b63, b64, b65
+    }
+    static assert(!isEnumSet!EnumTestFailOverElement);
 }
 
 unittest // EnumArray
