@@ -106,20 +106,35 @@ template isEnumSet(E)
     }();
 }
 
+template EnumSetType(E)
+if (isEnumSet!E)
+{
+    static if (isBitEnum!E)
+        static if (E.max <= uint.max)
+            alias EnumSetType = uint;
+        else
+            alias EnumSetType = ulong;
+    else
+        static if (count!E() <= uint.sizeof * 8)
+            alias EnumSetType = uint;
+        else
+            alias EnumSetType = ulong;
+}
+
 auto bit(E)(E value) pure nothrow
 if (isEnumSet!E)
 {
     static if (isBitEnum!E)
         return value;
     else static if (isSequenceEnum!E)
-        return 1 << value;
+        return cast(EnumSetType!E) 1 << value;
     else
     {
         size_t at;
         foreach (i; EnumMembers!E)
         {
             if (i == value)
-                return 1 << at;
+                return cast(EnumSetType!E) 1 << at;
             ++at;
         }
         assert(0);
@@ -152,19 +167,8 @@ nothrow @safe:
 public:
     enum size = count!E();
 
-    static if (isBitEnum!E)
-        static if (E.max < size_t.max)
-            alias EnumSetType = size_t;
-        else
-            alias EnumSetType = ulong;
-    else
-        static if (size <= size_t.sizeof * 8)
-            alias EnumSetType = size_t;
-        else
-            alias EnumSetType = ulong;
-
 private:
-    EnumSetType _values;
+    EnumSetType!E _values;
 
 public:
     struct Range
@@ -387,21 +391,17 @@ public:
     */
     size_t fromString(const(char)[] aValues)
     {
-        import std.conv: to;
+        import std.ascii : isWhite;
+        import std.conv : to;
 
         _values = 0;
 
         size_t fails, pos, len;
 
-        static bool isSpace(dchar c) pure 
-        {
-            return c == 0x09 || c == 0x0A || c == 0x0D || c == 0x20;
-        }
-
         len = aValues.length;
 
         // Skip trailing spaces
-        while (len > pos && isSpace(aValues[len - 1]))
+        while (len > pos && isWhite(aValues[len - 1]))
             --len;
 
         // Skip trailing set indicator?
@@ -411,7 +411,7 @@ public:
         // Skip preceeding spaces
         bool skipSpaces()
         {
-            while (pos < len && isSpace(aValues[pos]))
+            while (pos < len && isWhite(aValues[pos]))
                 ++pos;
             return pos < len;
         }
@@ -431,7 +431,7 @@ public:
             size_t lastSpace = size_t.max;
             while (pos < len && aValues[pos] != ',')
             {
-                if (isSpace(aValues[pos]))
+                if (isWhite(aValues[pos]))
                 {
                     if (lastSpace == size_t.max)
                         lastSpace = pos;
@@ -459,6 +459,11 @@ public:
         }
 
         return fails;
+    }
+
+    ulong toHash()
+    {
+        return _values;
     }
 
     /** Returns the string representation of the set
@@ -501,7 +506,7 @@ public:
         return _values == 0;
     }
 
-    EnumSetType values() const
+    EnumSetType!E values() const
     {
         return _values;
     }
@@ -535,17 +540,17 @@ public:
     if (allSatisfy!(isEntry, V))
     {
         foreach (i; aValues)
-            _values[ord!E(i.e)] = i.v;
+            _values[ord(i.e)] = i.v;
     }
     
     T opIndex(E aEnum) const
     { 
-        return _values[ord!E(aEnum)]; 
+        return _values[ord(aEnum)]; 
     }
 
     T opIndexAssign(T aValue, E aEnum)
     {
-        return _values[ord!E(aEnum)] = aValue;
+        return _values[ord(aEnum)] = aValue;
     }
 
     T opDispatch(string aEnumName)() const
@@ -553,23 +558,22 @@ public:
         import std.conv : to;
 
         enum e = aEnumName.to!E;
-        return _values[ord!E(e)];
+        return _values[ord(e)];
     }
 
-    version (none)
     T opDispatch(string aEnumName)(T aValue)
     {
         import std.conv : to;
 
         enum e = aEnumName.to!E;
-        return _values[ord!E(e)] = aValue;
+        return _values[ord(e)] = aValue;
     }
 
     E getEnum(T aValue, E aDefault = E.min)
     {
         foreach (i; EnumMembers!E)
         {
-            if (_values[ord!E(i)] == aValue)
+            if (_values[ord(i)] == aValue)
                 return i;
         }
 
@@ -666,7 +670,8 @@ unittest // EnumSet
 
     /*
     pragma(msg, 
-        "EnumTestSkip min: ", EnumTestOrder.min + 0, 
+        "EnumTestSkip ", EnumSetType!EnumTestOrder,
+        ", min: ", EnumTestOrder.min + 0, 
         ", max: ", EnumTestOrder.max + 0,
         ", count: ", count!EnumTestOrder(),
         ", isEnumSet: ", isEnumSet!(EnumTestOrder),
@@ -685,7 +690,8 @@ unittest // EnumSet
     
     /*
     pragma(msg, 
-        "EnumTestSequence min: ", EnumTestSequence.min + 0, 
+        "EnumTestSequence ", EnumSetType!EnumTestSequence,
+        ", min: ", EnumTestSequence.min + 0, 
         ", max: ", EnumTestSequence.max + 0,
         ", count: ", count!EnumTestSequence(),
         ", isEnumSet: ", isEnumSet!(EnumTestSequence),
@@ -703,7 +709,8 @@ unittest // EnumSet
 
     /*
     pragma(msg, 
-        "EnumTestBit min: ", EnumTestBit.min + 0, 
+        "EnumTestBit ", EnumSetType!EnumTestBit,
+        ", min: ", EnumTestBit.min + 0, 
         ", max: ", EnumTestBit.max + 0,
         ", count: ", count!EnumTestBit(),
         ", isEnumSet: ", isEnumSet!(EnumTestBit),
