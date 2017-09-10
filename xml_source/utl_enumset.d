@@ -12,7 +12,7 @@
 module pham.utl_enumset;
 
 import std.meta : allSatisfy;
-import std.traits : EnumMembers, isIntegral, OriginalType;
+import std.traits : EnumMembers, isIntegral;
 
 size_t count(E)() pure nothrow
 if (is(E == enum))
@@ -306,15 +306,20 @@ public:
     auto opBinary(string op)(E value) const
     if (op == "^" || op == "-" || op == "|" || op == "+")
     {
-        BitFlags res = this;
+        EnumSet!E res = this;
         return res.opOpAssign!op(value);
     }
 
     auto opBinary(string op)(EnumSet!E aValues) const
     if (op == "^" || op == "-" || op == "|" || op == "+" || op == "&" || op == "*")
     {
-        BitFlags res = this;
+        EnumSet!E res = this;
         return res.opOpAssign!op(aValues);
+    }
+
+    bool opEquals()(auto ref const EnumSet!E aValues) const
+    { 
+        return _values == aValues.values;
     }
 
     Range opSlice() const
@@ -508,6 +513,8 @@ if (isEnumSet!E)
 nothrow @safe:
 
 public:
+    enum size = count!E();
+
     struct Entry 
     {
         T v;
@@ -521,7 +528,6 @@ public:
 
 private:
     enum isEntry(TEntry) = is(TEntry == Entry);
-    enum size = count!E();
     T[size] _values;
 
 public:
@@ -579,6 +585,7 @@ public:
 
 unittest // EnumSet
 {
+    import std.traits : OriginalType;
     import std.stdio : writeln;
     writeln("unittest utl_enumset.EnumSet");
 
@@ -635,6 +642,19 @@ unittest // EnumSet
 
         assert(testFlags.fromString(values) == 0);
         assert(testFlags.toString() == values, testFlags.toString());
+
+        EnumTestSet testFlag1s = EnumTestSet(E.one, E.three);
+        EnumTestSet testFlag2s = EnumTestSet(E.two, E.three);
+        assert(testFlag1s != testFlag2s);
+
+        EnumTestSet testFlag3s = testFlag1s * testFlag2s;
+        assert(testFlag3s.toString() == "[three]", testFlag3s.toString());
+
+        testFlag3s = testFlag1s + testFlag2s;
+        assert(testFlag3s.toString() == "[one,two,three]", testFlag3s.toString());
+
+        testFlag3s = testFlag1s - testFlag2s;
+        assert(testFlag3s.toString() == "[one]", testFlag3s.toString());
     }
 
     enum EnumTestOrder
