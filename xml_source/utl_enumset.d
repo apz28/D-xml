@@ -575,7 +575,18 @@ public:
         return _values[ord(e)] = aValue;
     }
 
-    E getEnum(T aValue, E aDefault = E.min)
+    bool exist(T aValue)
+    {
+        foreach (i; EnumMembers!E)
+        {
+            if (_values[ord(i)] == aValue)
+                return true;
+        }
+
+        return false;
+    }
+
+    E get(T aValue, E aDefault = E.min)
     {
         foreach (i; EnumMembers!E)
         {
@@ -802,10 +813,13 @@ unittest // EnumArray
     assert(testInt[EnumTest.two] == 2);
     assert(testInt[EnumTest.max] == int.max);
 
-    assert(testInt.getEnum(1) == EnumTest.one);
-    assert(testInt.getEnum(2) == EnumTest.two);
-    assert(testInt.getEnum(int.max) == EnumTest.max);
-    assert(testInt.getEnum(3) == EnumTest.one); // Unknown -> return default min
+    assert(testInt.get(1) == EnumTest.one);
+    assert(testInt.get(2) == EnumTest.two);
+    assert(testInt.get(int.max) == EnumTest.max);
+
+    // Unknown -> return default min
+    assert(!testInt.exist(3));
+    assert(testInt.get(3) == EnumTest.min);
 
 
     alias EnumTestString = EnumArray!(EnumTest, string); 
@@ -820,8 +834,11 @@ unittest // EnumArray
     assert(testString[EnumTest.two] == "2");
     assert(testString[EnumTest.max] == "int.max");
 
-    assert(testString.getEnum("1") == EnumTest.one);
-    assert(testString.getEnum("2") == EnumTest.two);
-    assert(testString.getEnum("int.max") == EnumTest.max);
-    assert(testString.getEnum("3") == EnumTest.one); // Unknown -> return default min
+    assert(testString.get("1") == EnumTest.one);
+    assert(testString.get("2") == EnumTest.two);
+    assert(testString.get("int.max") == EnumTest.max);
+
+    // Unknown -> return default min
+    assert(!testString.exist("3"));
+    assert(testString.get("3") == EnumTest.min);
 }
