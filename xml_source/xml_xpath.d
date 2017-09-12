@@ -505,7 +505,7 @@ protected:
 
     final void evaluateError(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "evaluate()");
         throw new XmlInvalidOperationException(msg);
     }
 
@@ -1335,7 +1335,7 @@ private void fctNamespaceUri(S)(XPathFunction!S context, ref XPathContext!S inpu
 
 private void fctNormalize(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    string msg = format(Message.eInvalidOpFunction, "normalize()");
+    string msg = format(XmlMessage.eInvalidOpFunction, "normalize()");
     throw new XmlInvalidOperationException(msg);
     //todo
 }
@@ -1474,7 +1474,7 @@ private void fctText(S)(XPathFunction!S context, ref XPathContext!S inputContext
 
 private void fctTranslate(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    string msg = format(Message.eInvalidOpFunction, "translate()");
+    string msg = format(XmlMessage.eInvalidOpFunction, "translate()");
     throw new XmlInvalidOperationException(msg);
     //todo
 }
@@ -1645,7 +1645,7 @@ protected:
 
             if (evaluateFct is null)
             {
-                string msg = format(Message.eInvalidOpDelegate, shortClassName(this), to!S(functionType));
+                string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), to!S(functionType));
                 throw new XmlInvalidOperationException(msg);
             }
         }
@@ -1657,7 +1657,7 @@ protected:
 
             if (userDefinedevaluateFct is null)
             {
-                string msg = format(Message.eInvalidOpDelegate, shortClassName(this), qualifiedName());
+                string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), qualifiedName());
                 throw new XmlInvalidOperationException(msg);
             }
 
@@ -1830,7 +1830,7 @@ public:
                 inputContext.decNodeIndent;
         }
 
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "evaluate()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "evaluate()");
         throw new XmlInvalidOperationException(msg);
 
         //todo
@@ -2393,7 +2393,7 @@ public:
 
         if (result is null)
         {
-            string msg = format(Message.eInvalidVariableName, qualifiedName());
+            string msg = format(XmlMessage.eInvalidVariableName, qualifiedName());
             throw new XmlInvalidOperationException(msg);
         }
         
@@ -2807,7 +2807,7 @@ public:
                                 _name = scanName();
                             else
                             {
-                                string msg = format(Message.eInvalidNameAtOf, currentIndex + 1, sourceText);
+                                string msg = format(XmlMessage.eInvalidNameAtOf, currentIndex + 1, sourceText);
                                 throw new XmlParserException(msg);
                             }
                         }
@@ -2826,7 +2826,7 @@ public:
                             }
                             else
                             {
-                                string msg = format(Message.eInvalidNameAtOf, currentIndex + 1, sourceText);
+                                string msg = format(XmlMessage.eInvalidNameAtOf, currentIndex + 1, sourceText);
                                 throw new XmlParserException(msg);
                             }
                         }
@@ -2836,7 +2836,7 @@ public:
                 }
                 else
                 {
-                    string msg = format(Message.eInvalidTokenAtOf, currentChar, currentIndex + 1, sourceText);
+                    string msg = format(XmlMessage.eInvalidTokenAtOf, currentChar, currentIndex + 1, sourceText);
                     throw new XmlParserException(msg);
                 }
                 break;
@@ -2939,7 +2939,7 @@ public:
         {
             if (!nextChar())
             {
-                string msg = format(Message.eExpectedCharButEos, quoteChar);
+                string msg = format(XmlMessage.eExpectedCharButEos, quoteChar);
                 throw new XmlParserException(msg);
             }
             ++end;
@@ -2947,7 +2947,7 @@ public:
 
         if (currentChar != quoteChar)
         {
-            string msg = format(Message.eExpectedCharButChar, quoteChar, currentChar);
+            string msg = format(XmlMessage.eExpectedCharButChar, quoteChar, currentChar);
             throw new XmlParserException(msg);
         }
 
@@ -3142,7 +3142,7 @@ private:
 
         if (t != XPathResultType.nodeSet && t != XPathResultType.any)
         {   
-            string msg = format(Message.eNodeSetExpectedAtOf, scanner.currentIndex + 1, sourceText);
+            string msg = format(XmlMessage.eNodeSetExpectedAtOf, scanner.currentIndex + 1, sourceText);
             throw new XmlParserException(msg);
         }
     }
@@ -3155,7 +3155,7 @@ private:
 
         if (scanner.kind != t)
         {
-            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            string msg = format(XmlMessage.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
             throw new XmlParserException(msg);
         }
     }
@@ -3168,7 +3168,7 @@ private:
         const axis = scanner.nameAxisType();
         if (axis == XPathAxisType.error)
         {
-            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            string msg = format(XmlMessage.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
             throw new XmlParserException(msg);
         }
         return axis;
@@ -3203,7 +3203,7 @@ private:
 
         if (++parseDepth > maxParseDepth)
         {
-            string msg = format(Message.eExpressionTooComplex, sourceText);
+            string msg = format(XmlMessage.eExpressionTooComplex, sourceText);
             throw new XmlParserException(msg);
         }
 
@@ -3698,7 +3698,7 @@ private:
                 break;
             default:
             {
-                string msg = format(Message.eNodeSetExpectedAtOf, scanner.currentIndex + 1, sourceText);
+                string msg = format(XmlMessage.eNodeSetExpectedAtOf, scanner.currentIndex + 1, sourceText);
                 throw new XmlParserException(msg);
             }
         }
@@ -3795,7 +3795,7 @@ private:
             {
                 if (argList.length < pi.minArgs)
                 {
-                    string msg = format(Message.eInvalidNumberArgsOf, argList.length, pi.minArgs, name, sourceText);
+                    string msg = format(XmlMessage.eInvalidNumberArgsOf, argList.length, pi.minArgs, name, sourceText);
                     throw new XmlParserException(msg);
                 }
 
@@ -3812,7 +3812,7 @@ private:
                     auto argCount = argList.length;
                     if (argCount > pi.maxArgs)
                     {
-                        string msg = format(Message.eInvalidNumberArgsOf, argCount, pi.maxArgs, name, sourceText);
+                        string msg = format(XmlMessage.eInvalidNumberArgsOf, argCount, pi.maxArgs, name, sourceText);
                         throw new XmlParserException(msg);
                     }
 
@@ -3834,7 +3834,7 @@ private:
                                     if (!isClassType!(XPathVariable!S)(a) &&
                                         !(isClassType!(XPathFunction!S)(a) && a.returnType == XPathResultType.any))
                                     {
-                                        string msg = format(Message.eInvalidArgTypeOf, i, name, sourceText);
+                                        string msg = format(XmlMessage.eInvalidArgTypeOf, i, name, sourceText);
                                         throw new XmlParserException(msg);
                                     }
                                     break;
@@ -4014,7 +4014,7 @@ private:
                 axisType = getAxisType();
                 if (axisType != XPathAxisType.child && axisType != XPathAxisType.attribute)
                 { 
-                    string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+                    string msg = format(XmlMessage.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
                     throw new XmlParserException(msg);
                 }
                 nextLex();
@@ -4053,7 +4053,7 @@ public:
         XPathNode!S result = parseExpression(null);
         if (scanner.kind != XPathScannerLexKind.eof)
         {
-            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            string msg = format(XmlMessage.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
             throw new XmlParserException(msg);
         }
         return result;
@@ -4072,7 +4072,7 @@ public:
         XPathNode!S result = parsePattern(null);
         if (scanner.kind != XPathScannerLexKind.eof)
         {
-            string msg = format(Message.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
+            string msg = format(XmlMessage.eInvalidTokenAtOf, scanner.currentChar, scanner.currentIndex + 1, sourceText);
             throw new XmlParserException(msg);
         }
         return result;

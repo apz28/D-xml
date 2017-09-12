@@ -15,35 +15,14 @@ import std.traits : hasMember;
 import std.typecons : Flag, No, Yes;
 import std.range.primitives : back, empty, front, popFront;
 
+import pham.utl_utf8;
+
 import pham.xml_msg;
 import pham.xml_exception;
 import pham.xml_util;
 import pham.xml_object;
 import pham.xml_buffer;
 import pham.xml_string;
-
-enum unicodeHalfShift = 10; 
-enum unicodeHalfBase = 0x00010000;
-enum unicodeHalfMask = 0x03FF;
-enum unicodeSurrogateHighBegin = 0xD800;
-enum unicodeSurrogateHighEnd = 0xDBFF;
-enum unicodeSurrogateLowBegin = 0xDC00;
-enum unicodeSurrogateLowEnd = 0xDFFF;
-
-immutable ubyte[] unicodeTrailingBytesForUTF8 = [
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
-];
-
-immutable uint[] unicodeOffsetsFromUTF8 = [
-    0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
-];
 
 enum UnicodeErrorKind
 {
@@ -109,10 +88,10 @@ protected:
                     currentCodes = null;
 
                 if (errorKind == UnicodeErrorKind.eos)
-                    throw new XmlConvertException(Message.eInvalidUtf16Sequence1);
+                    throw new XmlConvertException(XmlMessage.eInvalidUtf16SequenceEos);
                 else
                 {
-                    string msg = Message.eInvalidUtf16Sequence2 ~ format(", code=%d", errorCode);
+                    string msg = format(XmlMessage.eInvalidUtf16SequenceCode, errorCode);
                     throw new XmlConvertException(msg);
                 }
             }
@@ -183,10 +162,10 @@ protected:
                     currentCodes = null;
 
                 if (errorKind == UnicodeErrorKind.eos)
-                    throw new XmlConvertException(Message.eInvalidUtf8Sequence1); 
+                    throw new XmlConvertException(XmlMessage.eInvalidUtf8SequenceEos); 
                 else
                 {
-                    string msg = Message.eInvalidUtf8Sequence2 ~ format(", code=%d", errorCode);
+                    string msg = format(XmlMessage.eInvalidUtf8SequenceCode, errorCode);
                     throw new XmlConvertException(msg);
                 }
             }
@@ -467,7 +446,7 @@ package:
         }
 
         if (name.s.length == 0)
-            throw new XmlParserException(Message.eBlankName, name.loc);
+            throw new XmlParserException(XmlMessage.eBlankName, name.loc);
 
         version (unittest)
         outputXmlTraceParserF("readNameImpl: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 
@@ -570,7 +549,7 @@ package:
         }
 
         if (name.s.length == 0)
-            throw new XmlParserException(Message.eBlankName, name.loc);
+            throw new XmlParserException(XmlMessage.eBlankName, name.loc);
 
         version (unittest)
         outputXmlTraceParserF("readElementEName: name: %s, line: %d, column: %d, nline: %d, ncolumn: %d", 

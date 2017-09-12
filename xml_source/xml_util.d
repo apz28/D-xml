@@ -152,10 +152,10 @@ if (isXmlString!S)
     if (!isName!(S, allowEmpty)(name))
     {
         if (name.length == 0)
-            throw new XmlException(Message.eBlankName);
+            throw new XmlException(XmlMessage.eBlankName);
         else
         {
-            string msg = format(Message.eInvalidName, name);
+            string msg = format(XmlMessage.eInvalidName, name);
             throw new XmlException(msg);
         }
     }

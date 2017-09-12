@@ -221,13 +221,13 @@ protected:
     {
         if (aNode._parent !is this)
         {
-            string msg = format(Message.eInvalidOpFromWrongParent, shortClassName(this), aOp);
+            string msg = format(XmlMessage.eInvalidOpFromWrongParent, shortClassName(this), aOp);
             throw new XmlInvalidOperationException(msg);
         }
 
         if (aChild && aNode.nodeType == XmlNodeType.attribute)
         {
-            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), aOp);
             throw new XmlInvalidOperationException(msg);
         }
     }
@@ -324,7 +324,7 @@ package:
     {
         if (!allowAttribute())
         {
-            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), aOp);
             throw new XmlInvalidOperationException(msg);
         }
 
@@ -332,13 +332,13 @@ package:
         {
             if (aAttribute.ownerDocument !is null && aAttribute.ownerDocument !is selfOwnerDocument)
             {
-                string msg = format(Message.eNotAllowAppendDifDoc, "attribute");
+                string msg = format(XmlMessage.eNotAllowAppendDifDoc, "attribute");
                 throw new XmlInvalidOperationException(msg);
             }
 
             if (findAttribute(aAttribute.name) !is null)
             {
-                string msg = format(Message.eAttributeDuplicated, aAttribute.name);
+                string msg = format(XmlMessage.eAttributeDuplicated, aAttribute.name);
                 throw new XmlInvalidOperationException(msg);
             }
         }
@@ -348,7 +348,7 @@ package:
     {
         if (!allowChild())
         {
-            string msg = format(Message.eInvalidOpDelegate, shortClassName(this), aOp);
+            string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), aOp);
             throw new XmlInvalidOperationException(msg);
         }
 
@@ -356,18 +356,18 @@ package:
         {
             if (!allowChildType(aChild.nodeType))
             {
-                string msg = format(Message.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
+                string msg = format(XmlMessage.eNotAllowChild, shortClassName(this), aOp, name, nodeType, aChild.name, aChild.nodeType);
                 throw new XmlInvalidOperationException(msg);
             }
 
             if (aChild.ownerDocument !is null && aChild.ownerDocument !is selfOwnerDocument)
             {
-                string msg = format(Message.eNotAllowAppendDifDoc, "child");
+                string msg = format(XmlMessage.eNotAllowAppendDifDoc, "child");
                 throw new XmlInvalidOperationException(msg);
             }
 
             if (aChild is this || isAncestorNode(aChild))
-                throw new XmlInvalidOperationException(Message.eNotAllowAppendSelf);            
+                throw new XmlInvalidOperationException(XmlMessage.eNotAllowAppendSelf);            
         }
     }
 
@@ -1276,7 +1276,7 @@ public:
     */
     XmlNode!S localName(const(C)[] newValue)
     {
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "localName()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "localName()");
         throw new XmlInvalidOperationException(msg);
     }
 
@@ -1291,7 +1291,7 @@ public:
     */
     XmlNode!S name(const(C)[] newValue)
     {
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "name()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "name()");
         throw new XmlInvalidOperationException(msg);
     }
 
@@ -1306,7 +1306,7 @@ public:
     */
     XmlNode!S namespaceUri(const(C)[] newValue)
     {
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "namespaceUri()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "namespaceUri()");
         throw new XmlInvalidOperationException(msg);
     }
 
@@ -1391,7 +1391,7 @@ public:
     */
     XmlNode!S prefix(const(C)[] newValue)
     {
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "prefix()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "prefix()");
         throw new XmlInvalidOperationException(msg);
     }
 
@@ -1426,7 +1426,7 @@ public:
     */
     XmlNode!S value(const(C)[] newValue)
     {
-        string msg = format(Message.eInvalidOpDelegate, shortClassName(this), "value()");
+        string msg = format(XmlMessage.eInvalidOpDelegate, shortClassName(this), "value()");
         throw new XmlInvalidOperationException(msg);
     }
 }
@@ -1703,7 +1703,7 @@ public:
 
         if (aListType == XmlNodeListType.flat)
         {
-            string msg = format(Message.eInvalidOpDelegate, "XmlNodeList", "this(listType = XmlNodeListType.flat)");
+            string msg = format(XmlMessage.eInvalidOpDelegate, "XmlNodeList", "this(listType = XmlNodeListType.flat)");
             throw new XmlInvalidOperationException(msg);
         }
 
@@ -1750,7 +1750,7 @@ public:
     {
         if (_listType != XmlNodeListType.flat)
         {
-            string msg = format(Message.eInvalidOpDelegate, "XmlNodeList", "insertBack(listType != XmlNodeListType.flat)");
+            string msg = format(XmlMessage.eInvalidOpDelegate, "XmlNodeList", "insertBack(listType != XmlNodeListType.flat)");
             throw new XmlInvalidOperationException(msg);
         }
 
@@ -2213,7 +2213,7 @@ protected:
             }
             else
             {
-                string msg = format(Message.eInvalidName, name);
+                string msg = format(XmlMessage.eInvalidName, name);
                 throw new XmlException(msg);
             }
         }
@@ -2255,7 +2255,7 @@ protected:
     {
         if ((s.length != 0) && (s != XmlConst!S.yes || s != XmlConst!S.no))
         {
-            string msg = format(Message.eInvalidTypeValueOf2,
+            string msg = format(XmlMessage.eInvalidTypeValueOf2,
                 XmlConst!string.declarationStandaloneName,
                 XmlConst!string.yes, XmlConst!string.no, s);
             throw new XmlException(msg);
@@ -2266,7 +2266,7 @@ protected:
     {
         if (!isVersionStr!(S, Yes.allowEmpty)(s))
         {
-            string msg = format(Message.eInvalidVersionStr, s);
+            string msg = format(XmlMessage.eInvalidVersionStr, s);
             throw new XmlException(msg);
         }
     }
@@ -3819,7 +3819,7 @@ protected:
     final const(C)[] checkWhitespaces(const(C)[] aText)
     {
         if (!isSpaces!S(aText))
-            throw new XmlException(Message.eNotAllWhitespaces);
+            throw new XmlException(XmlMessage.eNotAllWhitespaces);
         return aText;
     }
 

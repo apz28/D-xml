@@ -11,7 +11,7 @@
  
 module pham.xml_msg;
 
-struct Message
+struct XmlMessage
 {
     static immutable eBlankName = "Name is blank";
     static immutable eEos = "Incompleted xml data";
@@ -34,10 +34,10 @@ struct Message
     static immutable eInvalidOpFromWrongParent = "Invalid operation %s.%s of different parent node";
     static immutable eInvalidTokenAtOf = "Invalid token \"%c\" at \"%d\"; data \"%s\"";
     static immutable eInvalidTypeValueOf2 = "Invalid %s value [%s, %s]: \"%s\"";
-    static immutable eInvalidUtf8Sequence1 = "Invalid utf8 sequence - end of stream";
-    static immutable eInvalidUtf8Sequence2 = "Invalid utf8 sequence - invalid code";
-    static immutable eInvalidUtf16Sequence1 = "Invalid utf16 sequence - end of stream";
-    static immutable eInvalidUtf16Sequence2 = "Invalid utf16 sequence - invalid code";
+    static immutable eInvalidUtf8SequenceEos = "Invalid utf8 sequence - end of stream";
+    static immutable eInvalidUtf8SequenceCode = "Invalid utf8 sequence - invalid code %d";
+    static immutable eInvalidUtf16SequenceEos = "Invalid utf16 sequence - end of stream";
+    static immutable eInvalidUtf16SequenceCode = "Invalid utf16 sequence - invalid code";
     static immutable eInvalidVariableName = "Invalid variable name \"%s\"";
     static immutable eInvalidVersionStr = "Invalid version string \"%s\"";
     static immutable eMultipleTextFound = "Multiple \"%s\" found";

@@ -186,7 +186,7 @@ public:
             {
                 if (decodeMode == XmlDecodeMode.strict)
                 {
-                    auto msg = Message.eUnescapeAndChar ~ " " ~ 
+                    auto msg = XmlMessage.eUnescapeAndChar ~ " " ~ 
                         toUTF!(S, string)(leftString!S(refChars, 20).idup);
                     throw new XmlConvertException(msg.idup, XmlLoc(0, i));
                 }
@@ -215,7 +215,7 @@ public:
                     {
                         if (decodeMode == XmlDecodeMode.strict)
                         {
-                            auto Msg = Message.eUnescapeAndChar ~ " " ~ 
+                            auto Msg = XmlMessage.eUnescapeAndChar ~ " " ~ 
                                 toUTF!(S, string)(leftString!S(refChars, 20).idup);
                             throw new XmlConvertException(Msg.idup, XmlLoc(0, i));
                         }
@@ -234,7 +234,7 @@ public:
                     {
                         if (decodeMode == XmlDecodeMode.strict)
                         {
-                            auto msg = Message.eUnescapeAndChar ~ " " ~
+                            auto msg = XmlMessage.eUnescapeAndChar ~ " " ~
                                 toUTF!(S, string)(leftString!S(refChars, 20).idup);
                             throw new XmlConvertException(msg.idup, XmlLoc(0, i));
                         }

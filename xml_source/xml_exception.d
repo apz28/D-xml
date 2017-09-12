@@ -56,7 +56,7 @@ template XmlExceptionConstructors()
     this(string aMessage, XmlLoc aLoc, Exception aNext = null)
     {
         if (aLoc.isSpecified())
-            aMessage = aMessage ~ format(Message.atLineInfo, aLoc.sourceLine, aLoc.sourceColumn);
+            aMessage = aMessage ~ format(XmlMessage.atLineInfo, aLoc.sourceLine, aLoc.sourceColumn);
 
         loc = aLoc;
         this(aMessage, aNext);

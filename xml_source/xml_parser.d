@@ -67,13 +67,13 @@ private:
 
         if (reader.empty)
         {
-            string msg = format(Message.eExpectedCharButEos, c);
+            string msg = format(XmlMessage.eExpectedCharButEos, c);
             throw new XmlParserException(msg);
         }
 
         if (reader.moveFrontIf(c) == 0)
         {
-            string msg = format(Message.eExpectedCharButChar, c, reader.front);
+            string msg = format(XmlMessage.eExpectedCharButChar, c, reader.front);
             throw new XmlParserException(msg, reader.sourceLoc);
         }
 
@@ -88,7 +88,7 @@ private:
 
         if (reader.empty)
         {
-            string msg = format(Message.eExpectedOneOfCharsButEos, oneOfChars);
+            string msg = format(XmlMessage.eExpectedOneOfCharsButEos, oneOfChars);
             throw new XmlParserException(msg);
         }
 
@@ -96,7 +96,7 @@ private:
 
         if (oneOfChars.indexOf(c) < 0)
         {
-            string msg = format(Message.eExpectedOneOfCharsButChar, oneOfChars, c);
+            string msg = format(XmlMessage.eExpectedOneOfCharsButChar, oneOfChars, c);
             throw new XmlParserException(msg, reader.sourceLoc);
         }
 
@@ -158,12 +158,12 @@ private:
         {
             if (reader.empty)
             {
-                string msg = format(Message.eExpectedStringButEos, "]]>");
+                string msg = format(XmlMessage.eExpectedStringButEos, "]]>");
                 throw new XmlParserException(msg);
             }
             else
             {
-                string msg = format(Message.eExpectedStringButNotFound, "]]>");
+                string msg = format(XmlMessage.eExpectedStringButNotFound, "]]>");
                 throw new XmlParserException(msg, reader.sourceLoc);
             }
         }
@@ -197,12 +197,12 @@ private:
         {
             if (reader.empty)
             {
-                string msg = format(Message.eExpectedStringButEos, "-->");
+                string msg = format(XmlMessage.eExpectedStringButEos, "-->");
                 throw new XmlParserException(msg);
             }
             else
             {
-                string msg = format(Message.eExpectedStringButNotFound, "-->");
+                string msg = format(XmlMessage.eExpectedStringButNotFound, "-->");
                 throw new XmlParserException(msg, reader.sourceLoc);
             }
         }
@@ -274,13 +274,13 @@ private:
         {
             if (!isName!(S, No.allowEmpty)(name))
             {
-                string msg = format(Message.eInvalidName, name);
+                string msg = format(XmlMessage.eInvalidName, name);
                 throw new XmlParserException(msg, contextName.loc);
             }
 
             if (parentNode.findAttribute(name))
             {
-                string msg = format(Message.eAttributeDuplicated, name);
+                string msg = format(XmlMessage.eAttributeDuplicated, name);
                 throw new XmlParserException(msg, contextName.loc);
             }
         }
@@ -477,7 +477,7 @@ private:
                 defaultType != XmlConst!S.implied &&
                 defaultType != XmlConst!S.required)
             {
-                string msg = format(Message.eExpectedOneOfStringsButString,
+                string msg = format(XmlMessage.eExpectedOneOfStringsButString,
                     XmlConst!string.fixed ~ ", " ~
                     XmlConst!string.implied ~ " or " ~
                     XmlConst!string.required, defaultType);
@@ -522,7 +522,7 @@ private:
 
             if (choice != XmlConst!S.any && choice != XmlConst!S.empty)
             {
-                string msg = format(Message.eExpectedOneOfStringsButString,
+                string msg = format(XmlMessage.eExpectedOneOfStringsButString,
                     XmlConst!string.any ~ " or " ~ XmlConst!string.empty, choice);
                 throw new XmlParserException(msg, localContext.loc);
             }
@@ -570,7 +570,7 @@ private:
                         last.multiIndicator = cast(XmlChar!S) reader.moveFront();
                     else
                     {
-                        string msg = format(Message.eMultipleTextFound, reader.front);
+                        string msg = format(XmlMessage.eMultipleTextFound, reader.front);
                         throw new XmlParserException(msg, reader.sourceLoc);
                     }
                     break;
@@ -600,7 +600,7 @@ private:
                     parent.multiIndicator = cast(XmlChar!S) reader.moveFront();
                 else
                 {
-                    string msg = format(Message.eMultipleTextFound, reader.front);
+                    string msg = format(XmlMessage.eMultipleTextFound, reader.front);
                     throw new XmlParserException(msg, reader.sourceLoc);
                 }
                 break;
@@ -650,7 +650,7 @@ private:
                 parseNotation(tagName);
             else
             {
-                string msg = format(Message.eInvalidName, '!' ~ name);
+                string msg = format(XmlMessage.eInvalidName, '!' ~ name);
                 throw new XmlParserException(msg, tagName.loc);
             }
         }
@@ -697,7 +697,7 @@ private:
                 const(C)[] nData = reader.readAnyName(localContext);
                 if (nData != XmlConst!S.nData)
                 {
-                    string msg = format(Message.eExpectedStringButString, XmlConst!string.nData, nData);
+                    string msg = format(XmlMessage.eExpectedStringButString, XmlConst!string.nData, nData);
                     throw new XmlParserException(msg, localContext.loc);
                 }
                 notationName = reader.skipSpaces().readAnyName(localContext);
@@ -747,7 +747,7 @@ private:
         auto name = tagName.s;
         if (options.validate && !isName!(S, No.allowEmpty)(name))
         {
-            string msg = format(Message.eInvalidName, name);
+            string msg = format(XmlMessage.eInvalidName, name);
             throw new XmlParserException(msg, tagName.loc);
         }
 
@@ -825,13 +825,13 @@ private:
         {
             if (!isName!(S, No.allowEmpty)(name))
             {
-                string msg = format(Message.eInvalidName, name);
+                string msg = format(XmlMessage.eInvalidName, name);
                 throw new XmlParserException(msg, contextName.loc);
             }
 
             if (parentNode.findAttribute(name))
             {
-                string msg = format(Message.eAttributeDuplicated, name);
+                string msg = format(XmlMessage.eAttributeDuplicated, name);
                 throw new XmlParserException(msg, contextName.loc);
             }
         }
@@ -865,7 +865,7 @@ private:
         ParseContext!S endTagName = void;
         if (reader.readElementXName(endTagName) != beginTagName)
         {
-            string msg = format(Message.eExpectedEndName, beginTagName, endTagName.s);
+            string msg = format(XmlMessage.eExpectedEndName, beginTagName, endTagName.s);
             throw new XmlParserException(msg, endTagName.loc);
         }
         expectChar!(skipSpaceBefore)('>');
@@ -943,7 +943,7 @@ private:
         }
         else
         {
-            string msg = format(Message.eExpectedOneOfStringsButString,
+            string msg = format(XmlMessage.eExpectedOneOfStringsButString,
                 XmlConst!string.public_ ~ " or " ~ XmlConst!string.system, systemOrPublic);
             throw new XmlParserException(msg, localContext.loc);
         }
@@ -997,7 +997,7 @@ private:
         auto name = tagName.s;
         if (options.validate && !isName!(S, No.allowEmpty)(name))
         {
-            string msg = format(Message.eInvalidName, name);
+            string msg = format(XmlMessage.eInvalidName, name);
             throw new XmlParserException(msg, tagName.loc);
         }
 
@@ -1006,12 +1006,12 @@ private:
         {
             if (reader.empty)
             {
-                string msg = format(Message.eExpectedStringButEos, "?>");
+                string msg = format(XmlMessage.eExpectedStringButEos, "?>");
                 throw new XmlParserException(msg);
             }
             else
             {
-                string msg = format(Message.eExpectedStringButNotFound, "?>");
+                string msg = format(XmlMessage.eExpectedStringButNotFound, "?>");
                 throw new XmlParserException(msg, reader.sourceLoc);
             }
         }
@@ -1141,7 +1141,7 @@ public:
         }
 
         if (nodeStack.length != 1)
-            throw new XmlParserException(Message.eEos);
+            throw new XmlParserException(XmlMessage.eEos);
 
         return document;
     }
