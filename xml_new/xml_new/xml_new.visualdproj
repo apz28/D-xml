@@ -211,7 +211,9 @@ del $(TargetName)\*.lst</postBuildCommand>
   <File path="main.d" />
   <File path="..\..\xml_test_main\main_test.d" />
   <File path="..\..\xml_source\package.d" />
+  <File path="..\..\..\utl\utl_source\utl_dlinklist.d" />
   <File path="..\..\..\utl\utl_source\utl_enumset.d" />
+  <File path="..\..\..\utl\utl_source\utl_singleton.d" />
   <File path="..\..\xml_source\xml_buffer.d" />
   <File path="..\..\xml_source\xml_entity_table.d" />
   <File path="..\..\xml_source\xml_exception.d" />
