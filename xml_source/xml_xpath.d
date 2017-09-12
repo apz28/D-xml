@@ -18,6 +18,7 @@ import std.format : format;
 import std.variant;
 
 import pham.utl_enumset;
+import pham.utl_singleton;
 
 import pham.xml_msg;
 import pham.xml_exception;

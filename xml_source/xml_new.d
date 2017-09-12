@@ -15,6 +15,8 @@ import std.format : format;
 import std.typecons : Flag, No, Yes;
 
 import pham.utl_enumset;
+import pham.utl_dlinklist;
+import pham.utl_singleton;
 
 import pham.xml_msg;
 import pham.xml_exception;

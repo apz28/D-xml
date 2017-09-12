@@ -11,6 +11,8 @@
 
 module pham.xml_entity_table;
 
+import pham.utl_singleton;
+
 import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_object;
