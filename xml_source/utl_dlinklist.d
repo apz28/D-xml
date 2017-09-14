@@ -20,22 +20,68 @@ if (is(T == class))
         enum isDLink = false;
 }
 
+struct DLinkRange(T)
+if (isDLink!T)
+{
+private:
+    T _lastNode;
+    T _nextNode;
+    bool _done;
+
+public:
+    this(T lastNode)
+    {
+        _lastNode = lastNode;
+        if (lastNode is null)
+            _done = true;
+        else
+            _nextNode = cast(T) lastNode._next;
+    }
+
+    void dispose()
+    {
+        _lastNode = null;
+        _nextNode = null;
+        _done = true;
+    }
+
+    void popFront() nothrow
+    {
+        if (_nextNode !is null)
+        {
+            _nextNode = cast(T) _nextNode._next;
+            _done = _nextNode is null || _nextNode is _lastNode;
+        }
+    }
+
+@property:
+    T front() nothrow
+    {
+        return _nextNode;
+    }
+
+    bool empty() const nothrow
+    {
+        return _done;
+    }
+}
+
 pragma (inline, true)
-bool dlinkHasPrev(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) const nothrow @safe
-if (isDLink!TLinkNode)
+bool dlinkHasPrev(T)(T lastNode, T checkNode) const nothrow @safe
+if (isDLink!T)
 {
     return checkNode !is lastNode._prev;
 }
 
 pragma (inline, true)
-bool dlinkHasNext(TLinkNode)(TLinkNode lastNode, TLinkNode checkNode) const nothrow @safe
-if (isDLink!TLinkNode)
+bool dlinkHasNext(T)(T lastNode, T checkNode) const nothrow @safe
+if (isDLink!T)
 {
     return checkNode !is lastNode._next;
 }
 
-TLinkNode dlinkInsertAfter(TLinkNode)(TLinkNode refNode, TLinkNode newNode) nothrow @safe
-if (isDLink!TLinkNode)
+T dlinkInsertAfter(T)(T refNode, T newNode) nothrow @safe
+if (isDLink!T)
 in 
 {
     assert(refNode !is null);
@@ -50,8 +96,8 @@ body
     return newNode;
 }
 
-TLinkNode dlinkInsertEnd(TLinkNode)(ref TLinkNode lastNode, TLinkNode newNode) nothrow @safe
-if (isDLink!TLinkNode)
+T dlinkInsertEnd(T)(ref T lastNode, T newNode) nothrow @safe
+if (isDLink!T)
 {
     if (lastNode is null)
     {
@@ -64,8 +110,8 @@ if (isDLink!TLinkNode)
     return newNode;
 }
 
-TLinkNode dlinkRemove(TLinkNode)(ref TLinkNode lastNode, TLinkNode oldNode) nothrow @safe
-if (isDLink!TLinkNode)
+T dlinkRemove(T)(ref T lastNode, T oldNode) nothrow @safe
+if (isDLink!T)
 {
     if (oldNode._next is oldNode)
         lastNode = null;
@@ -74,7 +120,7 @@ if (isDLink!TLinkNode)
         oldNode._next._prev = oldNode._prev;
         oldNode._prev._next = oldNode._next;
         if (oldNode is lastNode)
-            lastNode = oldNode._prev;
+            lastNode = cast(T) oldNode._prev;
     }
     oldNode._next = null;
     oldNode._prev = null;
