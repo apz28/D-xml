@@ -18,7 +18,7 @@ import std.typecons : Flag;
 import pham.xml_msg;
 import pham.xml_exception;
 
-version (unittest) 
+version (unittest)
 {
     import std.stdio : write, writef, writeln, writefln;
 
@@ -82,11 +82,11 @@ enum XmlEncodedMarker
     utf32le
 }
 
-/** Determine XmlEncodedMarker of an array of bytes    
+/** Determine XmlEncodedMarker of an array of bytes
     Params:
         s = array of bytes
     Returns:
-        XmlEncodedMarker.none if s.length is less or equal to 1 
+        XmlEncodedMarker.none if s.length is less or equal to 1
         XmlEncodedMarker.utf8 if s starts with 0xEF 0xBB 0xBF
         XmlEncodedMarker.utf16be if s starts with 0xFE 0xFF
         XmlEncodedMarker.utf16le if s starts with 0xFF 0xFE
@@ -100,10 +100,10 @@ XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
         // utf8
         if (s.length >= 3 && s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
             return XmlEncodedMarker.utf8;
-        
+
         if (s.length >= 4)
         {
-            // utf32be 
+            // utf32be
             if (s[0] == 0x00 && s[1] == 0x00 && s[2] == 0xFE && s[3] == 0xFF)
                 return XmlEncodedMarker.utf32be;
 
@@ -112,7 +112,7 @@ XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
                 return XmlEncodedMarker.utf32le;
         }
 
-        // utf16be 
+        // utf16be
         if (s[0] == 0xFE && s[1] == 0xFF)
             return XmlEncodedMarker.utf16be;
 
@@ -120,7 +120,7 @@ XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
         if (s[0] == 0xFF && s[1] == 0xFE)
             return XmlEncodedMarker.utf16le;
     }
-    
+
     return XmlEncodedMarker.none;
 }
 
@@ -161,7 +161,7 @@ if (isXmlString!S)
     }
 }
 
-/** Combine two string into a XML qualified name    
+/** Combine two string into a XML qualified name
     Params:
         prefix = one of the D string type
         localName = one of the D string type
@@ -170,7 +170,7 @@ if (isXmlString!S)
         otherwise prefix ":" localName
 */
 pragma (inline, true)
-const(XmlChar!S)[] combineName(S)(const(XmlChar!S)[] prefix, const(XmlChar!S)[] localName) pure nothrow @safe 
+const(XmlChar!S)[] combineName(S)(const(XmlChar!S)[] prefix, const(XmlChar!S)[] localName) pure nothrow @safe
 if (isXmlString!S)
 {
     if (prefix.length == 0)
@@ -179,7 +179,7 @@ if (isXmlString!S)
         return prefix ~ ":" ~ localName;
 }
 
-/** Returns true if the characters can be converted to a base character according to the XML standard    
+/** Returns true if the characters can be converted to a base character according to the XML standard
     Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [66]
@@ -264,7 +264,7 @@ if (isXmlString!S)
     return isChar(c);
 }
 
-/** Returns true if both strings are the same (case-sensitive)    
+/** Returns true if both strings are the same (case-sensitive)
     Params:
         s1 = one of D string type
         s2 = one of D string type
@@ -296,7 +296,7 @@ if (isXmlString!S)
     }
 }
 
-/** Returns true if subString is same from the end of s (case-sensitive)    
+/** Returns true if subString is same from the end of s (case-sensitive)
     Params:
         s = one of D string type
         subString = one of D string type
@@ -333,7 +333,7 @@ struct FormatFloatSpec
     alias fmtg this;
 }
 
-string formatFloat(N)(N n, in FormatFloatSpec spec = FormatFloatSpec.init) @safe 
+string formatFloat(N)(N n, in FormatFloatSpec spec = FormatFloatSpec.init) @safe
 if (isFloatingPoint!N)
 {
     import std.format : format;
@@ -345,7 +345,7 @@ if (isFloatingPoint!N)
     if (decimalIndex >= 0)
     {
         if (decimalIndex + 1 < v.length)
-            return formatGroup(v[0 .. decimalIndex], spec.fmtg) ~ spec.decimalChar ~ 
+            return formatGroup(v[0 .. decimalIndex], spec.fmtg) ~ spec.decimalChar ~
                 formatGroup(v[decimalIndex + 1 .. $], spec.fmtg);
         else
             return formatGroup(v[0 .. decimalIndex], spec.fmtg) ~ spec.decimalChar;
@@ -362,7 +362,7 @@ struct FormatNumberSpec
     alias fmtg this;
 }
 
-string formatNumber(N)(N n, in FormatNumberSpec spec = FormatNumberSpec.init) pure @safe 
+string formatNumber(N)(N n, in FormatNumberSpec spec = FormatNumberSpec.init) pure @safe
 if (isIntegral!N)
 {
     import std.format : format;
@@ -370,10 +370,10 @@ if (isIntegral!N)
     return formatGroup(format(spec.fmt, n), spec.fmtg);
 }
 
-private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGroupSpec.init) pure nothrow @safe 
+private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGroupSpec.init) pure nothrow @safe
 {
     import std.uni : byGrapheme;
-    import std.array : Appender, appender, walkLength;
+    import std.range : Appender, appender, walkLength;
 
     char[100] buffer;
     int bLen;
@@ -384,9 +384,9 @@ private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGrou
         char e = v[i];
         buffer[bLen++] = e;
         if (--cLen > 0)
-        {        
-            if (c == 1 && e != spec.negChar) 
-                buffer[bLen++] = spec.groupChar;       
+        {
+            if (c == 1 && e != spec.negChar)
+                buffer[bLen++] = spec.groupChar;
             c = (c + 1) % 3;
         }
     }
@@ -400,15 +400,15 @@ private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGrou
         writeln(" negChar: ", cast(int) spec.negChar,
                 " groupChar: ", cast(int) spec.groupChar,
                 " v: ", v, " vlen: ", v.length,
-                " r: ", result, 
+                " r: ", result,
                 " rlen: ", result.length);
     }
 
     return result;
 }
 
-/** Returns true if the character is a base character according to the XML standard    
-    Standards: 
+/** Returns true if the character is a base character according to the XML standard
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [85]
     Params:
@@ -420,7 +420,7 @@ bool isBaseChar(dchar c) pure nothrow @safe
     return lookup(baseCharTable, c);
 }
 
-/** Returns true if the character is a character according to the XML standard    
+/** Returns true if the character is a character according to the XML standard
     Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [2]
@@ -430,13 +430,13 @@ bool isBaseChar(dchar c) pure nothrow @safe
 pragma (inline, true)
 bool isChar(dchar c) pure nothrow @safe
 {
-    return (c >= 0x20 && c <= 0xD7FF) || 
+    return (c >= 0x20 && c <= 0xD7FF) ||
         (c >= 0xE000 && c <= 0x10FFFF && (c & 0x1FFFFE) != 0xFFFE) || // U+FFFE and U+FFFF
         isSpace(c);
 }
 
-/** Returns true if the character is a combining character according to the XML standard    
-    Standards: 
+/** Returns true if the character is a combining character according to the XML standard
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [87]
     Params:
@@ -448,8 +448,8 @@ bool isCombiningChar(dchar c) pure nothrow @safe
     return lookup(combiningCharTable, c);
 }
 
-/** Returns true if the character is a digit according to the XML standard    
-    Standards: 
+/** Returns true if the character is a digit according to the XML standard
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [88]
     Params:
@@ -469,8 +469,8 @@ bool isDigit(char c) pure nothrow @safe
     return c >= 0x30 && c <= 0x39;
 }
 
-/** Returns true if the character is an extender according to the XML standard    
-    Standards: 
+/** Returns true if the character is an extender according to the XML standard
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [89]
     Params:
@@ -482,8 +482,8 @@ bool isExtender(dchar c) pure nothrow @safe
     return lookup(extenderTable, c);
 }
 
-/** Returns true if the character is an ideographic character according to the XML standard    
-    Standards: 
+/** Returns true if the character is an ideographic character according to the XML standard
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [86]
     Params:
@@ -495,7 +495,7 @@ bool isIdeographic(dchar c) pure nothrow @safe
     return (c == 0x3007) || (c >= 0x3021 && c <= 0x3029) || (c >= 0x4E00 && c <= 0x9FA5);
 }
 
-/** Returns true if the character is a combining character according to the XML standard    
+/** Returns true if the character is a combining character according to the XML standard
     Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [84]
@@ -508,7 +508,7 @@ bool isLetter(dchar c) pure nothrow @safe
     return isIdeographic(c) || isBaseChar(c);
 }
 
-/** Returns true if the character is a first character of a XML name according to the XML standard    
+/** Returns true if the character is a first character of a XML name according to the XML standard
     Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [5]
@@ -521,8 +521,8 @@ bool isNameStartC(dchar c) pure nothrow @safe
     return c == '_' || c == ':' || isLetter(c);
 }
 
-/** Returns true if the character is a subsequecence character of a XML name according to the XML standard    
-    Standards: 
+/** Returns true if the character is a subsequecence character of a XML name according to the XML standard
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [5]
     Params:
@@ -535,7 +535,7 @@ bool isNameInC(dchar c) pure nothrow @safe
         isLetter(c) || isDigit(c) || isCombiningChar(c) || isExtender(c);
 }
 
-/** Returns true if the string is a combining characters according to the XML standard    
+/** Returns true if the string is a combining characters according to the XML standard
     Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [5]
@@ -544,7 +544,7 @@ bool isNameInC(dchar c) pure nothrow @safe
     Params:
         name = the string to be tested
 */
-bool isName(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] name) pure nothrow @safe 
+bool isName(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] name) pure nothrow @safe
 if (isXmlString!S)
 {
     if (name.length == 0)
@@ -567,7 +567,7 @@ if (isXmlString!S)
 /** Returns true if the character is whitespace according to the XML standard
     Only the following characters are considered whitespace in XML - tab,
     carriage return, linefeed and space
-    Standards: 
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [3]
     Params:
@@ -584,7 +584,7 @@ bool isSpace(dchar c) pure nothrow @safe
     Params:
         s = the string to be tested
 */
-bool isSpaces(S)(const(XmlChar!S)[] s) pure nothrow @safe 
+bool isSpaces(S)(const(XmlChar!S)[] s) pure nothrow @safe
 if (isXmlString!S)
 {
     foreach (c; s)
@@ -595,7 +595,7 @@ if (isXmlString!S)
     return s.length != 0;
 }
 
-/** Returns true if object parameter is class type of T    
+/** Returns true if object parameter is class type of T
     Params:
         aObj = A class object.
 */
@@ -606,22 +606,22 @@ bool isClassType(T)(Object aObj)
 
 /** Returns true if the string is in form "D.D"
     D is any digit characters 0 to 9
-    Standards: 
+    Standards:
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         relax of rule [26]
     Template Params:
-        allowEmpty = return true if allowEmpty is true and s.length is 0 
+        allowEmpty = return true if allowEmpty is true and s.length is 0
     Params:
         s = the string to be tested
 */
-bool isVersionStr(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] s) pure nothrow @safe 
+bool isVersionStr(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] s) pure nothrow @safe
 if (isXmlString!S)
 {
     import std.string : isNumeric;
 
     if (s.length == 0)
         return allowEmpty;
-    
+
     const(XmlChar!S)[] v1, v2;
     if (int r = splitNameValueD!S(s, '.', v1, v2))
     {
@@ -638,13 +638,13 @@ if (isXmlString!S)
         return false;
 }
 
-/** Returns number of code-points from left of a string    
+/** Returns number of code-points from left of a string
     Params:
         s = the string to be sliced
         count = how many characters that the function returns
 */
 pragma (inline, true)
-const(XmlChar!S)[] leftString(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe 
+const(XmlChar!S)[] leftString(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe
 if (isXmlString!S)
 {
     if (count >= s.length)
@@ -659,7 +659,7 @@ if (isXmlString!S)
         s = the string to be sliced
         count = how many characters that the function returns
 */
-const(XmlChar!S)[] leftStringIndicator(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe 
+const(XmlChar!S)[] leftStringIndicator(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe
 if (isXmlString!S)
 {
     if (count >= s.length)
@@ -668,7 +668,7 @@ if (isXmlString!S)
         return s[0 .. count] ~ "...";
 }
 
-/** Convert from one string type to another. If both types are the same, 
+/** Convert from one string type to another. If both types are the same,
     returns the original value
     Params:
         s = the string that needed to be converted
@@ -705,7 +705,7 @@ in
 {
     assert(pairTable.length != 0);
 }
-body
+do
 {
     int l;
     int r = pairTable.length - 1;
@@ -728,7 +728,7 @@ body
         count = how many characters that the function returns
 */
 pragma (inline, true)
-const(XmlChar!S)[] rightString(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe 
+const(XmlChar!S)[] rightString(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe
 if (isXmlString!S)
 {
     if (count >= s.length)
@@ -738,13 +738,13 @@ if (isXmlString!S)
 }
 
 void splitName(S)(in const(XmlChar!S)[] aName,
-    out const(XmlChar!S)[] prefix, out const(XmlChar!S)[] localName) pure nothrow @safe 
+    out const(XmlChar!S)[] prefix, out const(XmlChar!S)[] localName) pure nothrow @safe
 if (isXmlString!S)
 in
 {
     assert(aName.length != 0);
 }
-body
+do
 {
     import std.string : indexOf;
 
@@ -771,12 +771,12 @@ body
     if the pass in string is empty, name and value will be null
     Params:
         s = the string to be splitted
-        aDelimiter = a separator character 
+        aDelimiter = a separator character
         name = string part before the aDelimiter
         value = string part after the aDelimiter
 */
 int splitNameValueD(S)(in const(XmlChar!S)[] s, in dchar aDelimiter,
-    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) pure nothrow @safe 
+    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) pure nothrow @safe
 if (isXmlString!S)
 {
     import std.string : indexOf;
@@ -796,20 +796,20 @@ if (isXmlString!S)
     and value will be null
     Params:
         s = the string to be splitted
-        aIndex = a index where the string to be splitted 
+        aIndex = a index where the string to be splitted
         name = string part before the aIndex
         value = string part after the aIndex
 */
 pragma (inline, true)
 int splitNameValueI(S)(in const(XmlChar!S)[] s, in ptrdiff_t aIndex,
-    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) pure nothrow @safe 
+    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) pure nothrow @safe
 if (isXmlString!S)
 in
 {
     assert(aIndex < 0 || aIndex < s.length);
 }
-body
-{    
+do
+{
     if (aIndex >= 0)
     {
         name = s[0 .. aIndex];
@@ -828,7 +828,7 @@ body
     }
 }
 
-/** Return a string of repetitive aChar for aCount times    
+/** Return a string of repetitive aChar for aCount times
     Params:
         aChar = the character that be repeated
         aCount = number of times aChar to be repeated
@@ -839,9 +839,9 @@ in
 {
     assert(aCount < (size_t.max / 2));
 }
-body
+do
 {
-    import std.array : Appender;    
+    import std.array : Appender;
 
     if (aCount != 0)
     {
@@ -1289,7 +1289,7 @@ unittest  // xml_util.leftStringIndicator
     assert(leftStringIndicator!string("xyz", 2) == "xy...");
 }
 
-unittest  // xml_util.rightString 
+unittest  // xml_util.rightString
 {
     outputXmlTraceProgress("unittest xml_util.rightString");
 
