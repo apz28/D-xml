@@ -5,62 +5,69 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
 module pham.xml_util;
 
-import std.format : format;
 import std.traits : isFloatingPoint, isIntegral;
 import std.typecons : Flag;
 
+import pham.xml_type;
 import pham.xml_msg;
 import pham.xml_exception;
 
+@safe:
+
 version (unittest)
 {
-    import std.stdio : write, writef, writeln, writefln;
+    import std.traits : isSomeChar;
+
+    import pham.utl_unittest;
 
     debug (xmlTraceProfile)
-        __gshared bool isXmlTraceProgress = false;
+        enum isXmlTraceProgress = false;
     else
-        __gshared bool isXmlTraceProgress = true;
+        enum isXmlTraceProgress = true;
 
-    void outputXmlTraceParser(T...)(T args)
+    void outputXmlTraceParser(A...)(A args) nothrow
     {
         debug (xmlTraceParser)
-            writeln(args);
+        dgWriteln(args);
     }
 
-    void outputXmlTraceParserF(Char, T...)(in Char[] fmt, T args)
+    void outputXmlTraceParserF(Char, A...)(in Char[] fmt, A args) nothrow
+    if (isSomeChar!Char)
     {
         debug (xmlTraceParser)
-            writefln(fmt, args);
+        dgWritefln(fmt, args);
     }
 
-    void outputXmlTraceParserF0(Char, T...)(in Char[] fmt, T args)
+    void outputXmlTraceParserF0(Char, A...)(in Char[] fmt, A args) nothrow
+    if (isSomeChar!Char)
     {
         debug (xmlTraceParser)
-            writef(fmt, args);
+        dgWritef(fmt, args);
     }
 
-    void outputXmlTraceXPathParser(T...)(T args)
+    void outputXmlTraceXPathParser(A...)(A args) nothrow
     {
         debug (xmlTraceXPathParser)
-            writeln(args);
+        dgWriteln(args);
     }
 
-    void outputXmlTraceXPathParserF(Char, T...)(in Char[] fmt, T args)
+    void outputXmlTraceXPathParserF(Char, A...)(in Char[] fmt, A args) nothrow
+    if (isSomeChar!Char)
     {
         debug (xmlTraceXPathParser)
-            writefln(fmt, args);
+        dgWritefln(fmt, args);
     }
 
-    void outputXmlTraceProgress(T...)(T args)
+    void outputXmlTraceProgress(A...)(A args) nothrow
     {
-        if (isXmlTraceProgress)
-            writeln(args);
+        static if (isXmlTraceProgress)
+        dgWriteln(args);
     }
 }
 
@@ -93,7 +100,7 @@ enum XmlEncodedMarker
         XmlEncodedMarker.utf32be if s starts with 0x00 0x00 0xFE 0xFF
         XmlEncodedMarker.utf32le if s starts with 0xFF 0xFE 0x00 0x00
 */
-XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
+XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) nothrow pure
 {
     if (s.length >= 2)
     {
@@ -124,40 +131,22 @@ XmlEncodedMarker getEncodedMarker(const(ubyte)[] s) pure nothrow @safe
     return XmlEncodedMarker.none;
 }
 
-/** Get XMLChar qualifier template from one of D string type S
-*/
-template XmlChar(S)
-if (isXmlString!S)
-{
-    static if (is(S == string))
-        alias XmlChar = char;
-    else static if (is(S == wstring))
-        alias XmlChar = wchar;
-    else static if (is(S == dstring))
-        alias XmlChar = dchar;
-    else
-        static assert(0);
-}
-
 /** Throws a XmlException if the string is not pass isName function according to the
     XML standard
     Template Params:
-        allowEmpty = consider valid if allowEmpty is true and name.length is 0
+        AllowEmpty = consider valid if AllowEmpty is true and name.length is 0
     Params:
         name = the string to be tested
 */
-void checkName(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] name)
+void checkName(S, Flag!"AllowEmpty" AllowEmpty)(const(XmlChar!S)[] name)
 if (isXmlString!S)
 {
-    if (!isName!(S, allowEmpty)(name))
+    if (!isName!(S, AllowEmpty)(name))
     {
         if (name.length == 0)
             throw new XmlException(XmlMessage.eBlankName);
         else
-        {
-            string msg = format(XmlMessage.eInvalidName, name);
-            throw new XmlException(msg);
-        }
+            throw new XmlException(XmlMessage.eInvalidName, name);
     }
 }
 
@@ -170,7 +159,7 @@ if (isXmlString!S)
         otherwise prefix ":" localName
 */
 pragma (inline, true)
-const(XmlChar!S)[] combineName(S)(const(XmlChar!S)[] prefix, const(XmlChar!S)[] localName) pure nothrow @safe
+const(XmlChar!S)[] combineName(S)(const(XmlChar!S)[] prefix, const(XmlChar!S)[] localName) nothrow pure
 if (isXmlString!S)
 {
     if (prefix.length == 0)
@@ -187,7 +176,7 @@ if (isXmlString!S)
         s = encoded char sequences (digit or hex form) to be converted
         c = the character to be returned
 */
-bool convertToChar(S)(const(XmlChar!S)[] s, out dchar c) pure nothrow @safe
+bool convertToChar(S)(const(XmlChar!S)[] s, out dchar c) nothrow pure
 if (isXmlString!S)
 {
     c = 0;
@@ -269,7 +258,7 @@ if (isXmlString!S)
         s1 = one of D string type
         s2 = one of D string type
 */
-bool equalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure nothrow @safe
+bool equalCase(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) nothrow pure
 if (isXmlString!S)
 {
     return s1 == s2;
@@ -281,7 +270,7 @@ if (isXmlString!S)
         s1 = one of D string type
         s2 = one of D string type
 */
-bool equalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) pure nothrow @safe
+bool equalCaseInsensitive(S)(const(XmlChar!S)[] s1, const(XmlChar!S)[] s2) nothrow pure
 if (isXmlString!S)
 {
     import std.uni : sicmp;
@@ -292,6 +281,7 @@ if (isXmlString!S)
     }
     catch (Exception e)
     {
+        assert(0);
         return false;
     }
 }
@@ -301,7 +291,7 @@ if (isXmlString!S)
         s = one of D string type
         subString = one of D string type
 */
-bool equalRight(S)(const(XmlChar!S)[] s, const(XmlChar!S)[] subString) pure nothrow @safe
+bool equalRight(S)(const(XmlChar!S)[] s, const(XmlChar!S)[] subString) nothrow pure
 if (isXmlString!S)
 {
     auto i = s.length;
@@ -333,7 +323,7 @@ struct FormatFloatSpec
     alias fmtg this;
 }
 
-string formatFloat(N)(N n, in FormatFloatSpec spec = FormatFloatSpec.init) @safe
+string formatFloat(N)(N n, in FormatFloatSpec spec = FormatFloatSpec.init)
 if (isFloatingPoint!N)
 {
     import std.format : format;
@@ -362,7 +352,7 @@ struct FormatNumberSpec
     alias fmtg this;
 }
 
-string formatNumber(N)(N n, in FormatNumberSpec spec = FormatNumberSpec.init) pure @safe
+string formatNumber(N)(N n, in FormatNumberSpec spec = FormatNumberSpec.init) pure
 if (isIntegral!N)
 {
     import std.format : format;
@@ -370,7 +360,7 @@ if (isIntegral!N)
     return formatGroup(format(spec.fmt, n), spec.fmtg);
 }
 
-private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGroupSpec.init) pure nothrow @safe
+private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGroupSpec.init) nothrow pure
 {
     import std.uni : byGrapheme;
     import std.range : Appender, appender, walkLength;
@@ -415,7 +405,7 @@ private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGrou
         c = the character to be tested
 */
 pragma (inline, true)
-bool isBaseChar(dchar c) pure nothrow @safe
+bool isBaseChar(dchar c) nothrow pure
 {
     return lookup(baseCharTable, c);
 }
@@ -428,7 +418,7 @@ bool isBaseChar(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isChar(dchar c) pure nothrow @safe
+bool isChar(dchar c) nothrow pure
 {
     return (c >= 0x20 && c <= 0xD7FF) ||
         (c >= 0xE000 && c <= 0x10FFFF && (c & 0x1FFFFE) != 0xFFFE) || // U+FFFE and U+FFFF
@@ -443,7 +433,7 @@ bool isChar(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isCombiningChar(dchar c) pure nothrow @safe
+bool isCombiningChar(dchar c) nothrow pure
 {
     return lookup(combiningCharTable, c);
 }
@@ -456,7 +446,7 @@ bool isCombiningChar(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isDigit(dchar c) pure nothrow @safe
+bool isDigit(dchar c) nothrow pure
 {
     return (c >= 0x30 && c <= 0x39) || lookup(digitTable, c);
 }
@@ -464,7 +454,7 @@ bool isDigit(dchar c) pure nothrow @safe
 /** A overloaded isDigit
 */
 pragma (inline, true)
-bool isDigit(char c) pure nothrow @safe
+bool isDigit(char c) nothrow pure
 {
     return c >= 0x30 && c <= 0x39;
 }
@@ -477,7 +467,7 @@ bool isDigit(char c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isExtender(dchar c) pure nothrow @safe
+bool isExtender(dchar c) nothrow pure
 {
     return lookup(extenderTable, c);
 }
@@ -490,7 +480,7 @@ bool isExtender(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isIdeographic(dchar c) pure nothrow @safe
+bool isIdeographic(dchar c) nothrow pure
 {
     return (c == 0x3007) || (c >= 0x3021 && c <= 0x3029) || (c >= 0x4E00 && c <= 0x9FA5);
 }
@@ -503,7 +493,7 @@ bool isIdeographic(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isLetter(dchar c) pure nothrow @safe
+bool isLetter(dchar c) nothrow pure
 {
     return isIdeographic(c) || isBaseChar(c);
 }
@@ -516,7 +506,7 @@ bool isLetter(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isNameStartC(dchar c) pure nothrow @safe
+bool isNameStartC(dchar c) nothrow pure
 {
     return c == '_' || c == ':' || isLetter(c);
 }
@@ -529,7 +519,7 @@ bool isNameStartC(dchar c) pure nothrow @safe
         c = the character to be tested
 */
 pragma (inline, true)
-bool isNameInC(dchar c) pure nothrow @safe
+bool isNameInC(dchar c) nothrow pure
 {
     return c == '_' || c == ':' || c == '-' || c == '.' ||
         isLetter(c) || isDigit(c) || isCombiningChar(c) || isExtender(c);
@@ -540,15 +530,15 @@ bool isNameInC(dchar c) pure nothrow @safe
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         rule [5]
     Template Params:
-        allowEmpty = return true if allowEmpty is true and name.lenght is 0
+        AllowEmpty = return true if AllowEmpty is true and name.lenght is 0
     Params:
         name = the string to be tested
 */
-bool isName(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] name) pure nothrow @safe
+bool isName(S, Flag!"AllowEmpty" AllowEmpty)(const(XmlChar!S)[] name) nothrow pure
 if (isXmlString!S)
 {
     if (name.length == 0)
-        return allowEmpty;
+        return AllowEmpty;
 
     if (!isNameStartC(name[0]))
         return false;
@@ -574,7 +564,7 @@ if (isXmlString!S)
         c = the character to be tested
 */
 pragma (inline, true)
-bool isSpace(dchar c) pure nothrow @safe
+bool isSpace(dchar c) nothrow pure
 {
     return c == 0x09 || c == 0x0A || c == 0x0D || c == 0x20;
 }
@@ -584,7 +574,7 @@ bool isSpace(dchar c) pure nothrow @safe
     Params:
         s = the string to be tested
 */
-bool isSpaces(S)(const(XmlChar!S)[] s) pure nothrow @safe
+bool isSpaces(S)(const(XmlChar!S)[] s) nothrow pure
 if (isXmlString!S)
 {
     foreach (c; s)
@@ -599,9 +589,9 @@ if (isXmlString!S)
     Params:
         aObj = A class object.
 */
-bool isClassType(T)(Object aObj)
+bool isClassType(T)(Object object)
 {
-    return (cast(T) aObj) !is null;
+    return (cast(T) object) !is null;
 }
 
 /** Returns true if the string is in form "D.D"
@@ -610,17 +600,17 @@ bool isClassType(T)(Object aObj)
         $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
         relax of rule [26]
     Template Params:
-        allowEmpty = return true if allowEmpty is true and s.length is 0
+        AllowEmpty = return true if AllowEmpty is true and s.length is 0
     Params:
         s = the string to be tested
 */
-bool isVersionStr(S, Flag!"allowEmpty" allowEmpty)(const(XmlChar!S)[] s) pure nothrow @safe
+bool isVersionStr(S, Flag!"AllowEmpty" AllowEmpty)(const(XmlChar!S)[] s) nothrow pure
 if (isXmlString!S)
 {
     import std.string : isNumeric;
 
     if (s.length == 0)
-        return allowEmpty;
+        return AllowEmpty;
 
     const(XmlChar!S)[] v1, v2;
     if (int r = splitNameValueD!S(s, '.', v1, v2))
@@ -630,7 +620,7 @@ if (isXmlString!S)
 
         // There is dot separator but no value
         if (r == 1 && v2.length == 0)
-            return allowEmpty;
+            return AllowEmpty;
 
         return v2.length == 0 || isNumeric(v2);
     }
@@ -644,7 +634,7 @@ if (isXmlString!S)
         count = how many characters that the function returns
 */
 pragma (inline, true)
-const(XmlChar!S)[] leftString(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe
+const(XmlChar!S)[] leftString(S)(const(XmlChar!S)[] s, size_t count) nothrow pure
 if (isXmlString!S)
 {
     if (count >= s.length)
@@ -659,7 +649,7 @@ if (isXmlString!S)
         s = the string to be sliced
         count = how many characters that the function returns
 */
-const(XmlChar!S)[] leftStringIndicator(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe
+const(XmlChar!S)[] leftStringIndicator(S)(const(XmlChar!S)[] s, size_t count) nothrow pure
 if (isXmlString!S)
 {
     if (count >= s.length)
@@ -700,7 +690,7 @@ if (isXmlString!fromS && isXmlString!toS)
     }
 }
 
-private bool lookup(const(int[][]) pairTable, int c) pure nothrow @safe
+private bool lookup(const(int[][]) pairTable, int c) nothrow pure
 in
 {
     assert(pairTable.length != 0);
@@ -728,7 +718,7 @@ do
         count = how many characters that the function returns
 */
 pragma (inline, true)
-const(XmlChar!S)[] rightString(S)(const(XmlChar!S)[] s, size_t count) pure nothrow @safe
+const(XmlChar!S)[] rightString(S)(const(XmlChar!S)[] s, size_t count) nothrow pure
 if (isXmlString!S)
 {
     if (count >= s.length)
@@ -737,52 +727,52 @@ if (isXmlString!S)
         return s[$ - count .. $];
 }
 
-void splitName(S)(in const(XmlChar!S)[] aName,
-    out const(XmlChar!S)[] prefix, out const(XmlChar!S)[] localName) pure nothrow @safe
+void splitName(S)(in const(XmlChar!S)[] name,
+    out const(XmlChar!S)[] prefix, out const(XmlChar!S)[] localName) nothrow pure
 if (isXmlString!S)
 in
 {
-    assert(aName.length != 0);
+    assert(name.length != 0);
 }
 do
 {
     import std.string : indexOf;
 
-    auto colonIndex = aName.indexOf(':');
+    auto colonIndex = name.indexOf(':');
     if (colonIndex >= 0)
     {
-        prefix = aName[0 .. colonIndex];
-        auto nameLength = aName.length;
+        prefix = name[0 .. colonIndex];
+        auto nameLength = name.length;
         if (colonIndex + 1 < nameLength)
-            localName = aName[colonIndex + 1 .. nameLength];
+            localName = name[colonIndex + 1 .. nameLength];
         else
             localName = "";
     }
     else
     {
-        localName = aName;
+        localName = name;
         prefix = "";
     }
 }
 
 /** Split the string into name and value separated by a character.
-    If a separator character, aDelimiter, is not found, the name will be the pass in string
+    If a separator character, delimiter, is not found, the name will be the pass in string
     and value will be null
     if the pass in string is empty, name and value will be null
     Params:
         s = the string to be splitted
-        aDelimiter = a separator character
+        delimiter = a separator character
         name = string part before the aDelimiter
         value = string part after the aDelimiter
 */
-int splitNameValueD(S)(in const(XmlChar!S)[] s, in dchar aDelimiter,
-    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) pure nothrow @safe
+int splitNameValueD(S)(in const(XmlChar!S)[] s, in dchar delimiter,
+    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) nothrow pure
 if (isXmlString!S)
 {
     import std.string : indexOf;
 
     if (s.length != 0)
-        return splitNameValueI!S(s, s.indexOf(aDelimiter), name, value);
+        return splitNameValueI!S(s, s.indexOf(delimiter), name, value);
     else
     {
         name = null;
@@ -791,31 +781,31 @@ if (isXmlString!S)
     }
 }
 
-/** Split the string into name and value at the index, aIndex.
-    If aIndex is equal or greater then the pass in string length, name will be the pass in string
+/** Split the string into name and value at the index, index.
+    If index is equal or greater then the pass in string length, name will be the pass in string
     and value will be null
     Params:
         s = the string to be splitted
-        aIndex = a index where the string to be splitted
+        index = a index where the string to be splitted
         name = string part before the aIndex
         value = string part after the aIndex
 */
 pragma (inline, true)
-int splitNameValueI(S)(in const(XmlChar!S)[] s, in ptrdiff_t aIndex,
-    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) pure nothrow @safe
+int splitNameValueI(S)(in const(XmlChar!S)[] s, in ptrdiff_t index,
+    out const(XmlChar!S)[] name, out const(XmlChar!S)[] value) nothrow pure
 if (isXmlString!S)
 in
 {
-    assert(aIndex < 0 || aIndex < s.length);
+    assert(index < 0 || index < s.length);
 }
 do
 {
-    if (aIndex >= 0)
+    if (index >= 0)
     {
-        name = s[0 .. aIndex];
+        name = s[0 .. index];
         auto sLength = s.length;
-        if (aIndex + 1 < sLength)
-            value = s[aIndex + 1 .. sLength];
+        if (index + 1 < sLength)
+            value = s[index + 1 .. sLength];
         else
             value = null;
         return 1;
@@ -828,27 +818,27 @@ do
     }
 }
 
-/** Return a string of repetitive aChar for aCount times
+/** Return a string of repetitive c for count times
     Params:
-        aChar = the character that be repeated
-        aCount = number of times aChar to be repeated
+        c = the character that be repeated
+        count = number of times c to be repeated
 */
-S stringOfChar(S)(XmlChar!S aChar, size_t aCount)
+S stringOfChar(S)(XmlChar!S c, size_t count)
 if (isXmlString!S)
 in
 {
-    assert(aCount < (size_t.max / 2));
+    assert(count < (size_t.max / 2));
 }
 do
 {
     import std.array : Appender;
 
-    if (aCount != 0)
+    if (count != 0)
     {
         Appender!(XmlChar!S[]) buffer;
-        buffer.reserve(aCount);
-        for (; aCount != 0; --aCount)
-            buffer.put(aChar);
+        buffer.reserve(count);
+        for (; count != 0; --count)
+            buffer.put(c);
         return buffer.data.idup;
     }
     else
@@ -1256,17 +1246,17 @@ unittest  // xml_util.isVersionStr
 
     outputXmlTraceProgress("unittest xml_util.isVersionStr");
 
-    assert(isVersionStr!(string, Yes.allowEmpty)(""));
-    assert(isVersionStr!(string, No.allowEmpty)("1"));
-    assert(isVersionStr!(string, No.allowEmpty)("1.1"));
-    assert(isVersionStr!(string, No.allowEmpty)("1.2"));
-    assert(isVersionStr!(string, No.allowEmpty)("123.456"));
+    assert(isVersionStr!(string, Yes.AllowEmpty)(""));
+    assert(isVersionStr!(string, No.AllowEmpty)("1"));
+    assert(isVersionStr!(string, No.AllowEmpty)("1.1"));
+    assert(isVersionStr!(string, No.AllowEmpty)("1.2"));
+    assert(isVersionStr!(string, No.AllowEmpty)("123.456"));
 
-    assert(!isVersionStr!(string, No.allowEmpty)(""));
-    assert(!isVersionStr!(string, No.allowEmpty)("1."));
-    assert(!isVersionStr!(string, No.allowEmpty)(".1"));
-    assert(!isVersionStr!(string, No.allowEmpty)("ab"));
-    assert(!isVersionStr!(string, No.allowEmpty)("a.b"));
+    assert(!isVersionStr!(string, No.AllowEmpty)(""));
+    assert(!isVersionStr!(string, No.AllowEmpty)("1."));
+    assert(!isVersionStr!(string, No.AllowEmpty)(".1"));
+    assert(!isVersionStr!(string, No.AllowEmpty)("ab"));
+    assert(!isVersionStr!(string, No.AllowEmpty)("a.b"));
 }
 
 unittest  // xml_util.leftString

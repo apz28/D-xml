@@ -5,7 +5,7 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
@@ -13,10 +13,13 @@ module pham.xml_string;
 
 import std.typecons : Flag, No, Yes;
 
+import pham.xml_type;
 import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_entity_table;
 import pham.xml_buffer;
+
+@safe:
 
 struct XmlString(S = string)
 if (isXmlString!S)
@@ -24,25 +27,21 @@ if (isXmlString!S)
 public:
     alias C = XmlChar!S;
 
-private:
-    const(C)[] data;
-    XmlEncodeMode mode;
-
 public:
-    this(const(C)[] aStr)
+    this(const(C)[] str)
     {
-        this(aStr, XmlEncodeMode.check);
+        this(str, XmlEncodeMode.check);
     }
 
-    this(const(C)[] aStr, XmlEncodeMode aMode)
+    this(const(C)[] str, XmlEncodeMode mode)
     {
-        data = aStr;
-        mode = aMode;
+        this.data = str;
+        this.mode = mode;
     }
 
-    auto ref opAssign(const(C)[] aValue)
+    auto ref opAssign(const(C)[] value)
     {
-        data = aValue;
+        this.data = value;
         if (mode != XmlEncodeMode.none)
             mode = XmlEncodeMode.check;
 
@@ -55,57 +54,56 @@ public:
         return data;
     }
 
-    const(C)[] decodedText(XmlBuffer!(S, No.checkEncoded) buffer, in XmlEntityTable!S entityTable)
+    const(C)[] decodedText(XmlBuffer!(S, No.CheckEncoded) buffer, in XmlEntityTable!S entityTable)
     in
     {
         assert(buffer !is null);
         assert(entityTable !is null);
         assert(needDecode());
     }
-    body
+    do
     {
         return buffer.decode(data, entityTable);
     }
 
-    const(C)[] encodedText(XmlBuffer!(S, No.checkEncoded) buffer)
+    const(C)[] encodedText(XmlBuffer!(S, No.CheckEncoded) buffer)
     in
     {
         assert(buffer !is null);
         assert(needEncode());
     }
-    body
+    do
     {
         return buffer.encode(data);
     }
 
-    bool needDecode() const nothrow @safe
+    bool needDecode() const nothrow
     {
         return (data.length != 0) &&
             (mode == XmlEncodeMode.encoded || mode == XmlEncodeMode.check);
     }
 
-    bool needEncode() const nothrow @safe
+    bool needEncode() const nothrow
     {
         return (data.length != 0) &&
             (mode == XmlEncodeMode.decoded || mode == XmlEncodeMode.check);
     }
 
-    const(C)[] asValue() const nothrow @safe
-    {
-        return data;
-    }
-
-@property:
-    size_t length() const nothrow @safe
+    @property size_t length() const nothrow
     {
         return data.length;
     }
 
-    const(C)[] value()
+    const(C)[] rawValue() const nothrow
+    {
+        return data;
+    }
+
+    @property const(C)[] value()
     {
         if (needDecode())
         {
-            auto buffer = new XmlBuffer!(S, No.checkEncoded)(data.length);
+            auto buffer = new XmlBuffer!(S, No.CheckEncoded)(data.length);
             data = buffer.decode(data);
             mode = buffer.decodeOrEncodeResultMode;
         }
@@ -113,7 +111,7 @@ public:
         return data;
     }
 
-    const(C)[] value(const(C)[] newText)
+    @property const(C)[] value(const(C)[] newText)
     {
         data = newText;
         if (mode != XmlEncodeMode.none)
@@ -121,18 +119,22 @@ public:
 
         return newText;
     }
+
+private:
+    const(C)[] data;
+    XmlEncodeMode mode;
 }
 
 version (none)
 pragma (inline, true)
-XmlString!S toXmlString(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
+XmlString!S toXmlString(S, Flag!"CheckEncoded" CheckEncoded)(XmlBuffer!(S, CheckEncoded) buffer)
 {
     auto m = buffer.decodeOrEncodeResultMode;
     return XmlString!S(buffer.value(), m);
 }
 
 pragma (inline, true)
-XmlString!S toXmlStringAndClear(S, Flag!"checkEncoded" checkEncoded)(XmlBuffer!(S, checkEncoded) buffer)
+XmlString!S toXmlStringAndClear(S, Flag!"CheckEncoded" CheckEncoded)(XmlBuffer!(S, CheckEncoded) buffer)
 {
     auto m = buffer.decodeOrEncodeResultMode;
     return XmlString!S(buffer.valueAndClear(), m);

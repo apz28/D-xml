@@ -5,14 +5,19 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
 module pham.xml_object;
 
 import pham.xml_msg;
-import pham.xml_util;
+import pham.xml_type;
+//import pham.xml_util;
+
+@safe:
+
+package enum defaultXmlLevels = 200;
 
 struct XmlIdentifierList(S = string)
 if (isXmlString!S)
@@ -44,7 +49,7 @@ public:
     {
         assert(n.length != 0);
     }
-    body
+    do
     {
         auto e = n in items;
         if (e is null)
@@ -66,17 +71,17 @@ public:
     alias C = XmlChar!S;
 }
 
-/** Returns the class-name of aObject.
+/** Returns the class-name of object.
     If it is null, returns "null"
     Params:
         aObject = the object to get the class-name from
 */
-string className(Object aObject) pure nothrow @safe
+string className(Object object) nothrow pure
 {
-    if (aObject is null)
+    if (object is null)
         return "null";
     else
-        return aObject.classinfo.name;
+        return object.classinfo.name;
 }
 
 /** Returns the short class-name of aObject.
@@ -84,17 +89,17 @@ string className(Object aObject) pure nothrow @safe
     Params:
         aObject = the object to get the class-name from
 */
-string shortClassName(Object aObject) pure nothrow @safe
+string shortClassName(Object object) nothrow pure
 {
     import std.array : join, split;
     import std.algorithm.iteration : filter;
     import std.string : indexOf;
 
-    if (aObject is null)
+    if (object is null)
         return "null";
     else
     {
-        string className = aObject.classinfo.name;
+        string className = object.classinfo.name;
         return split(className, ".").filter!(e => e.indexOf('!') < 0).join(".");
     }
 }

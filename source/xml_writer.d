@@ -5,7 +5,7 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
@@ -15,48 +15,40 @@ import std.range.primitives : back, empty, front, popFront;
 import std.array : Appender;
 import std.typecons : Flag, No, Yes;
 
+import pham.xml_type;
 import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_object;
 import pham.xml_buffer;
 
+@safe:
+
 abstract class XmlWriter(S = string) : XmlObject!S
 {
-protected:
-    size_t _nodeLevel;
-    size_t _onlyOneNodeText;
-    bool _prettyOutput;
-
-    pragma (inline, true)
-    final S indentString()
-    {
-        return stringOfChar!S(' ', _nodeLevel << 1);
-    }
-
 public:
-    final void decOnlyOneNodeText()
+    final void decOnlyOneNodeText() nothrow
     {
         _onlyOneNodeText--;
     }
 
-    final void decNodeLevel()
+    final void decNodeLevel() nothrow
     {
         _nodeLevel--;
     }
 
-    final void incOnlyOneNodeText()
+    final void incOnlyOneNodeText() nothrow
     {
         _onlyOneNodeText++;
     }
 
-    final void incNodeLevel()
+    final void incNodeLevel() nothrow
     {
         _nodeLevel++;
     }
 
     abstract void put(C c);
 
-    abstract void put(const(C)[] s);
+    abstract void put(scope const(C)[] s);
 
     static if (!is(C == dchar))
     {
@@ -70,11 +62,9 @@ public:
         }
     }
 
-    //pragma (inline, true)
     final XmlWriter!S putLF()
     {
-        version (none)
-        version (unittest)
+        version (none) version (unittest)
         outputXmlTraceParserF("putLF%d.%d()", _nodeLevel, _onlyOneNodeText);
 
         put('\n');
@@ -407,38 +397,47 @@ public:
             putLF();
     }
 
-@property:
-    final bool onlyOneNodeText() const
+    @property final bool onlyOneNodeText() const nothrow
     {
         return _onlyOneNodeText != 0;
     }
 
-    final int nodeLevel() const
+    @property final int nodeLevel() const nothrow
     {
         return _nodeLevel;
     }
 
-    final bool prettyOutput() const
+    @property final bool prettyOutput() const nothrow
     {
         return _prettyOutput;
     }
+
+protected:
+    pragma (inline, true)
+    final S indentString()
+    {
+        return stringOfChar!S(' ', _nodeLevel << 1);
+    }
+
+protected:
+    size_t _nodeLevel;
+    size_t _onlyOneNodeText;
+    bool _prettyOutput;
 }
 
 class XmlStringWriter(S = string) : XmlWriter!S
 {
-protected:
-    XmlBuffer!(S, No.checkEncoded) buffer;
-
 public:
-    this(Flag!"PrettyOutput" aPrettyOutput, size_t aCapacity = 64000)
+    this(Flag!"prettyOutput" prettyOutput,
+         size_t capacity = 64000)
     {
-        this(aPrettyOutput, new XmlBuffer!(S, No.checkEncoded)(aCapacity));
+        this(prettyOutput, new XmlBuffer!(S, No.CheckEncoded)(capacity));
     }
 
-    this(Flag!"PrettyOutput" aPrettyOutput, XmlBuffer!(S, No.checkEncoded) aBuffer)
+    this(Flag!"prettyOutput" prettyOutput, XmlBuffer!(S, No.CheckEncoded) buffer)
     {
-        _prettyOutput = aPrettyOutput;
-        buffer = aBuffer;
+        this._prettyOutput = prettyOutput;
+        this.buffer = buffer;
     }
 
     final override void put(C c)
@@ -446,14 +445,16 @@ public:
         buffer.put(c);
     }
 
-    final override void put(const(C)[] s)
+    final override void put(scope const(C)[] s)
     {
-        version (none)
-        version (unittest)
+        version (none) version (unittest)
         outputXmlTraceParserF("put%d.%d('%s')", _nodeLevel, _onlyOneNodeText, s);
 
         buffer.put(s);
     }
+
+protected:
+    XmlBuffer!(S, No.CheckEncoded) buffer;
 }
 
 class XmlFileWriter(S = string) : XmlWriter!S
@@ -462,26 +463,15 @@ import std.file;
 import std.stdio;
 import std.algorithm.comparison : max;
 
-protected:
-    File fileHandle;
-    string _fileName;
-    Appender!(C[]) _buffer;
-    size_t _maxBufferSize;
-
-    final void doFlush()
-    {
-        fileHandle.write(_buffer.data);
-        _buffer.clear();
-    }
-
 public:
-    this(string aFileName, Flag!"PrettyOutput" aPrettyOutput, ushort aBufferKSize = 64)
+    this(string fileName, Flag!"prettyOutput" prettyOutput,
+         ushort bufferKSize = 64)
     {
-        _prettyOutput = aPrettyOutput;
-        _maxBufferSize = 1024 * max(aBufferKSize, 8);
+        this._prettyOutput = prettyOutput;
+        this._maxBufferSize = 1024 * max(bufferKSize, 8);
         _buffer.reserve(_maxBufferSize);
-        _fileName = aFileName;
-        fileHandle.open(aFileName, "wb");
+        this._fileName = fileName;
+        fileHandle.open(fileName, "wb");
     }
 
     ~this()
@@ -511,16 +501,28 @@ public:
             doFlush();
     }
 
-    final override void put(const(C)[] s)
+    final override void put(scope const(C)[] s)
     {
         _buffer.put(s);
         if (_buffer.data.length >= _maxBufferSize)
             doFlush();
     }
 
-@property:
-    final string fileName()
+    @property final string fileName() const nothrow
     {
         return _fileName;
     }
+
+protected:
+    final void doFlush()
+    {
+        fileHandle.write(_buffer.data);
+        _buffer.clear();
+    }
+
+protected:
+    File fileHandle;
+    string _fileName;
+    Appender!(C[]) _buffer;
+    size_t _maxBufferSize;
 }

@@ -5,7 +5,7 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
@@ -13,41 +13,25 @@ module pham.xml_entity_table;
 
 import pham.utl_singleton;
 
+import pham.xml_type;
 import pham.xml_msg;
 import pham.xml_util;
 import pham.xml_object;
 
+@safe:
+
 class XmlEntityTable(S = string) : XmlObject!S
 {
-private:
-    __gshared static XmlEntityTable!S _defaultEntityTable;
-
-    static XmlEntityTable!S createDefaultEntityTable()
-    {
-        return new XmlEntityTable!S();
-    }
-
-protected:
-    final void initDefault()
-    {
-        data["&amp;"] = "&";
-        data["&apos;"] = "'";
-        data["&gt;"] = ">";
-        data["&lt;"] = "<";
-        data["&quot;"] = "\"";
-
-        data.rehash();
-    }
-
 public:
     const(C)[][const(C)[]] data;
 
+public:
     this()
     {
         initDefault();
     }
 
-    static const(XmlEntityTable!S) defaultEntityTable()
+    static const(XmlEntityTable!S) defaultEntityTable() @trusted
     {
         return singleton!(XmlEntityTable!S)(_defaultEntityTable, &createDefaultEntityTable);
     }
@@ -60,7 +44,7 @@ public:
             true if encodedValue found in the table
             false otherwise
     */
-    final bool find(const(C)[] encodedValue, ref const(C)[] decodedValue) const nothrow @safe
+    final bool find(scope const(C)[] encodedValue, ref const(C)[] decodedValue) const nothrow
     {
         const const(C)[]* r = encodedValue in data;
 
@@ -82,6 +66,26 @@ public:
     }
 
     alias data this;
+
+protected:
+    final void initDefault() nothrow
+    {
+        data["&amp;"] = "&";
+        data["&apos;"] = "'";
+        data["&gt;"] = ">";
+        data["&lt;"] = "<";
+        data["&quot;"] = "\"";
+
+        (() @trusted => data.rehash())();
+    }
+
+private:
+    __gshared XmlEntityTable!S _defaultEntityTable;
+
+    static XmlEntityTable!S createDefaultEntityTable() nothrow
+    {
+        return new XmlEntityTable!S();
+    }
 }
 
 unittest // XmlEntityTable.defaultEntityTable

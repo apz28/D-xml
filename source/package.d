@@ -5,14 +5,15 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
 module pham.xml;
 
-import std.typecons : No, Yes;
+public import std.typecons : No, Yes;
 
+public import pham.xml_type;
 public import pham.xml_exception;
 public import pham.xml_util;
 public import pham.xml_buffer;
@@ -24,7 +25,9 @@ public import pham.xml_reader;
 public import pham.xml_writer;
 public import pham.xml_xpath;
 
-
+// Remove this version will cause compiler crash
+version (dmdCrash)
+{
 /** For utf8 encoded string
 */
 alias XmlAttributeA = XmlAttribute!string;
@@ -40,8 +43,7 @@ alias XmlDocumentTypeElementA = XmlDocumentTypeElement!string;
 alias XmlDocumentTypeElementItemA = XmlDocumentTypeElementItem!string;
 alias XmlElementA = XmlElement!string;
 alias XmlEntityA = XmlEntity!string;
-alias XmlEntityReferenceA = .XmlEntityReference!string;
-alias XmlEntityTableA = XmlEntityTable!string;
+alias XmlEntityReferenceA = XmlEntityReference!string;
 alias XmlNameA = XmlName!string;
 alias XmlNodeA = XmlNode!string;
 alias XmlNodeListA = XmlNodeList!string;
@@ -53,9 +55,11 @@ alias XmlWhitespaceA = XmlWhitespace!string;
 
 alias XmlFileReaderA = XmlFileReader!string;
 alias XmlStringReaderA = XmlStringReader!string;
-
 alias XmlFileWriterA = XmlFileWriter!string;
 alias XmlStringWriterA = XmlStringWriter!string;
+
+alias XmlEntityTableA = XmlEntityTable!string;
+alias XmlParserA = XmlParser!string;
 
 alias selectNodesA = selectNodes!string;
 alias selectSingleNodeA = selectSingleNode!string;
@@ -76,7 +80,6 @@ alias XmlDocumentTypeElementItemW = XmlDocumentTypeElementItem!wstring;
 alias XmlElementW = XmlElement!wstring;
 alias XmlEntityW = XmlEntity!wstring;
 alias XmlEntityReferenceW = XmlEntityReference!wstring;
-alias XmlEntityTableW = XmlEntityTable!wstring;
 alias XmlNameW = XmlName!wstring;
 alias XmlNodeW = XmlNode!wstring;
 alias XmlNodeListW = XmlNodeList!wstring;
@@ -88,9 +91,11 @@ alias XmlWhitespaceW = XmlWhitespace!wstring;
 
 alias XmlFileReaderW = XmlFileReader!wstring;
 alias XmlStringReaderW = XmlStringReader!wstring;
-
 alias XmlFileWriterW = XmlFileWriter!wstring;
 alias XmlStringWriterW = XmlStringWriter!wstring;
+
+alias XmlEntityTableW = XmlEntityTable!wstring;
+alias XmlParserW = XmlParser!wstring;
 
 alias selectNodesW = selectNodes!wstring;
 alias selectSingleNodeW = selectSingleNode!wstring;
@@ -111,7 +116,6 @@ alias XmlDocumentTypeElementItemD = XmlDocumentTypeElementItem!dstring;
 alias XmlElementD = XmlElement!dstring;
 alias XmlEntityD = XmlEntity!dstring;
 alias XmlEntityReferenceD = XmlEntityReference!dstring;
-alias XmlEntityTableD = XmlEntityTable!dstring;
 alias XmlNameD = XmlName!dstring;
 alias XmlNodeD = XmlNode!dstring;
 alias XmlNodeListD = XmlNodeList!dstring;
@@ -123,9 +127,12 @@ alias XmlWhitespaceD = XmlWhitespace!dstring;
 
 alias XmlFileReaderD = XmlFileReader!dstring;
 alias XmlStringReaderD = XmlStringReader!dstring;
-
 alias XmlFileWriterD = XmlFileWriter!dstring;
 alias XmlStringWriterD = XmlStringWriter!dstring;
 
+alias XmlEntityTableD = XmlEntityTable!dstring;
+alias XmlParserD = XmlParser!dstring;
+
 alias selectNodesD = selectNodes!dstring;
 alias selectSingleNodeD = selectSingleNode!dstring;
+}

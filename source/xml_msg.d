@@ -5,11 +5,15 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
  
 module pham.xml_msg;
+
+import pham.xml_type;
+
+@safe:
 
 struct XmlMessage
 {
@@ -54,14 +58,6 @@ struct XmlMessage
 
     static immutable atLineInfo = " at line %d position %d";
 }
-
-/** Template trait to determine if S is an build in D string (string, wstring, dstring.)    
-    Params:
-        S = A type name.
-    Returns:
-        true if S is of a type string, wstring or dstring.
-*/
-enum bool isXmlString(S) = is(S == string) || is(S == wstring) || is(S == dstring);
 
 struct XmlConst(S)
 if (isXmlString!S)

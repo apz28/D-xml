@@ -5,14 +5,15 @@
  *
  * Copyright An Pham 2017 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
 module pham.xml_unittest;
 
-static immutable string xpathXml =
-q"XML
+@safe:
+
+static immutable string xpathXml = q"XML
 <?xml version="1.0"?>
 <!-- A fragment of a book store inventory database -->
 <bookstore xmlns:bk="urn:samples">
@@ -51,8 +52,7 @@ q"XML
 </bookstore>
 XML";
 
-static immutable string parserXml = 
-q"XML
+static immutable string parserXml = q"XML
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
   <withAttributeOnly1 emptyAtt1='' emptyAtt2=""/>
@@ -74,8 +74,7 @@ q"XML
 </root>
 XML";
 
-static immutable string parserSaxXml =
-q"XML
+static immutable string parserSaxXml = q"XML
 <?xml version="1.0"?>
 <!-- A fragment of a book store inventory database -->
 <bookstore xmlns:bk="urn:samples">
@@ -99,8 +98,7 @@ q"XML
 XML";
 
 // 4604 characters
-immutable string profileXml =
-q"XML
+immutable string profileXml = q"XML
 <?xml version="1.0"?>
 <catalog>
     <book id="bk101">
