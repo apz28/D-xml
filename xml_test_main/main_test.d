@@ -5,7 +5,7 @@
  *
  * Copyright An Pham 2016 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
@@ -34,24 +34,24 @@ public:
     Duration timeElapsedDuration;
     bool autoSaveOutXml, error, getOutXml, loadFromFile;
 
-    this(string aXml)
+    this(string xml)
     {
-        inXml = aXml;
+        this.inXml = xml;
     }
 
-    this(string aFileName,
-        Flag!"LoadFromFile" aLoadFromFile,
-        Flag!"AutoSaveOutXml" aAutoSaveOutXml)
+    this(string fileName,
+        Flag!"LoadFromFile" loadFromFile,
+        Flag!"AutoSaveOutXml" autoSaveOutXml)
     {
         getOutXml = true;
-        inFileName = aFileName;
-        autoSaveOutXml = aAutoSaveOutXml;
-        loadFromFile = aLoadFromFile;
-        outFileName = setExtension(aFileName, ".out");
+        this.inFileName = fileName;
+        this.autoSaveOutXml = autoSaveOutXml;
+        this.loadFromFile = loadFromFile;
+        outFileName = setExtension(fileName, ".out");
 
         if (!loadFromFile)
         {
-            ubyte[] temp = cast(ubyte[]) std.file.read(aFileName);
+            auto temp = cast(ubyte[]) std.file.read(fileName);
 
             switch (getEncodedMarker(temp))
             {
@@ -78,14 +78,10 @@ public:
             {
                 if (temp.length >= 4)
                     outputXmlTraceParserF("chars: %X.%X.%X.%X; lens: %s/%s", temp[0], temp[1],
-                        temp[2], temp[3], 
-                        formatNumber!size_t(temp.length),
-                        formatNumber!size_t(inXml.length));
+                        temp[2], temp[3], formatNumber!size_t(temp.length), formatNumber!size_t(inXml.length));
                 else if (temp.length >= 2)
                     outputXmlTraceParserF("chars: %X.%X; lens: %s/%s",
-                        temp[0], temp[1], 
-                        formatNumber!size_t(temp.length),
-                        formatNumber!size_t(inXml.length));
+                        temp[0], temp[1], formatNumber!size_t(temp.length), formatNumber!size_t(inXml.length));
             }
         }
     }
@@ -98,7 +94,7 @@ public:
 
     void writeOutXml()
     {
-        if (outXml.length > 0 && outFileName.length > 0)
+        if (outXml.length != 0 && outFileName.length != 0)
         {
             // "wb" = open for writing as-is (no extra CR for CRLF chars)
             auto fHandle = File(outFileName, "wb");
@@ -106,7 +102,7 @@ public:
             fHandle.close();
         }
 
-        if (errXml.length > 0 && errFileName.length > 0)
+        if (errXml.length != 0 && errFileName.length != 0)
         {
             // "wb" = open for writing as-is (no extra CR for CRLF chars)
             auto fHandle = File(errFileName, "wb");
@@ -136,11 +132,11 @@ public:
         totalCount = 0;
     }
 
-    void append(const TestResult aValue)
+    void append(const TestResult value)
     {
-        elapsedTime += aValue.elapsedTime;
-        errorCount += aValue.errorCount;
-        totalCount += aValue.totalCount;
+        elapsedTime += value.elapsedTime;
+        errorCount += value.errorCount;
+        totalCount += value.totalCount;
     }
 
 @property:
@@ -149,7 +145,7 @@ public:
     {
         assert(totalCount >= errorCount);
     }
-    body
+    do
     {
         return totalCount - errorCount;
     }
@@ -216,7 +212,7 @@ struct TestOptions
             }
 
             string[] s = e.split('=');
-            if (s.length == 2 && s[1].length > 0)
+            if (s.length == 2 && s[1].length != 0)
             {
                 if (s[0] == "timingFileName")
                     timingXmlFileName = s[1];
@@ -237,7 +233,7 @@ struct TestOptions
     }
 }
 
-ulong getGCSize(bool aBegin, bool aTiming)
+ulong getGCSize(bool begin, bool timing)
 {
     version (none)
     {
@@ -246,21 +242,21 @@ ulong getGCSize(bool aBegin, bool aTiming)
         MEMORYSTATUSEX status;
         status.dwLength = MEMORYSTATUSEX.sizeof;
         GlobalMemoryStatusEx(status);
-        return (status.ullTotalVirtual - status.ullAvailVirtual);
+        return status.ullTotalVirtual - status.ullAvailVirtual;
     }
 
-    if (aBegin)
+    if (begin)
     {
         GC.collect();
-        if (aTiming)
+        if (timing)
             GC.disable();
     }
 
     auto stats = GC.stats();
 
-    if (!aBegin)
+    if (!begin)
     {
-        if (aTiming)
+        if (timing)
             GC.enable();
     }
 
@@ -278,13 +274,13 @@ private:
     LoadEvent loadFromFile;
     SaveEvent save;
 
-    bool executeItem(ref TestItem testItem, size_t aIteratedCount)
+    bool executeItem(ref TestItem testItem, size_t iteratedCount)
     {
         version (unittest)
-        if (isXmlTraceProgress && testItem.inFileName.length > 0)
+        if (isXmlTraceProgress && testItem.inFileName.length != 0)
             outputXmlTraceProgress("executeItem: ", testItem.inFileName);
 
-        MonoTime timeStart = MonoTime.currTime;
+        auto timeStart = MonoTime.currTime;
         do
         {
             try
@@ -297,18 +293,18 @@ private:
                 }
                 else
                     doc = load(testItem.inXml);
-                if (doc && aIteratedCount == 1 && testItem.getOutXml)
+                if (doc && iteratedCount == 1 && testItem.getOutXml)
                     testItem.outXml = save(doc);
                 testItem.error = false;
             }
             catch (Exception e)
             {
                 testItem.error = true;                
-                if (testItem.inXml.length > 0)
+                if (testItem.inXml.length != 0)
                     testItem.errXml = testItem.inXml ~ "\n\n\n" ~ e.toString();
                 else
                     testItem.errXml = e.toString();
-                if (testItem.inFileName.length > 0)
+                if (testItem.inFileName.length != 0)
                     testItem.errFileName = setExtension(testItem.inFileName, ".err");
 
                 if (testItem.getOutXml)
@@ -317,20 +313,20 @@ private:
                     throw e;
             }
         }
-        while (--aIteratedCount > 0);
+        while (--iteratedCount > 0);
         testItem.timeElapsedDuration = MonoTime.currTime - timeStart;
 
         return !testItem.error;
     }
 
-    TestResult executeItems(ref TestItem[] testItems, size_t aEachIteratedCount)
+    TestResult executeItems(ref TestItem[] testItems, size_t eachIteratedCount)
     {
         TestResult testResult;
 
         foreach (ref e; testItems)
         {
             ++testResult.totalCount;
-            if (!executeItem(e, aEachIteratedCount))
+            if (!executeItem(e, eachIteratedCount))
                 ++testResult.errorCount;
             testResult.elapsedTime += e.elapsedTime;
         }
@@ -339,11 +335,11 @@ private:
     }
 
 public:
-    this(LoadEvent aLoad, LoadEvent aLoadFromFile, SaveEvent aSave)
+    this(LoadEvent load, LoadEvent loadFromFile, SaveEvent save)
     {
-        load = aLoad;
-        loadFromFile = aLoadFromFile;
-        save = aSave;
+        this.load = load;
+        this.loadFromFile = loadFromFile;
+        this.save = save;
     }
 
     TestResult execute(TestOptions options)
@@ -362,7 +358,7 @@ public:
                     formatNumber!ulong(memEndSize - memBeginSize));
         }
 
-        if (options.timingXml.length > 0)
+        if (options.timingXml.length != 0)
         {
             version (traceXmlProfile)
             {
@@ -373,17 +369,17 @@ public:
             testResult.append(timingXml(options.timingXml, options.timingIteratedCount));
         }
 
-        if (options.timingXmlFileName.length > 0)
+        if (options.timingXmlFileName.length != 0)
             testResult.append(timingFile(options.timingXmlFileName, options.timingIteratedCount, No.LoadFromFile, Yes.AutoSaveOutXml));
 
-        if (options.testXmlSourceDirectory.length > 0)
+        if (options.testXmlSourceDirectory.length != 0)
             testResult.append(timingDirectory(options.testXmlSourceDirectory, No.LoadFromFile, Yes.AutoSaveOutXml));
 
-        if (options.testXmlSourceFileName.length > 0)
+        if (options.testXmlSourceFileName.length != 0)
             testResult.append(timingFile(options.testXmlSourceFileName, 1, No.LoadFromFile, Yes.AutoSaveOutXml));
 
         version (unittest)
-        if (options.expectedOkCount > 0)
+        if (options.expectedOkCount != 0)
         {
             if (options.expectedOkCount != testResult.okCount)
                 writefln("execute: error: %s, ok: %s, total: %s, elapsedTime: %s, expectedOkCount: %s", 
@@ -399,20 +395,20 @@ public:
         return testResult;
     }
 
-    TestResult timingDirectory(string aDirectory,
-        Flag!"LoadFromFile" aLoadFromFile,
-        Flag!"AutoSaveOutXml" aAutoSaveOutXml)
+    TestResult timingDirectory(string directory,
+        Flag!"LoadFromFile" loadFromFile,
+        Flag!"AutoSaveOutXml" autoSaveOutXml)
     {
         version (unittest)
-        if (isXmlTraceProgress && aDirectory.length > 0)
-            outputXmlTraceProgress("testDirectory: ", aDirectory);
+        if (isXmlTraceProgress && directory.length != 0)
+            outputXmlTraceProgress("testDirectory: ", directory);
 
         TestItem[] testItems;
 
-        foreach (fileName; dirEntries(aDirectory, "*.xml", SpanMode.breadth))
-            testItems ~= TestItem(fileName, aLoadFromFile, aAutoSaveOutXml);
+        foreach (fileName; dirEntries(directory, "*.xml", SpanMode.breadth))
+            testItems ~= TestItem(fileName, loadFromFile, autoSaveOutXml);
 
-        TestResult testResult = executeItems(testItems, 1);
+        auto testResult = executeItems(testItems, 1);
 
         if (outputXmlTraceTiming)
             writefln("testDirectory elapsed (total %s with error %s) in milli-seconds: %s",
@@ -422,46 +418,46 @@ public:
 
         foreach (ref e; testItems)
         {
-            if (e.outFileName.length > 0)
+            if (e.outFileName.length != 0)
                 e.writeOutXml();
         }
 
         return testResult;
     }
 
-    TestResult timingFile(string aFileName, uint aIteratedCount,
-        Flag!"LoadFromFile" aLoadFromFile,
-        Flag!"AutoSaveOutXml" aAutoSaveOutXml)
+    TestResult timingFile(string fileName, uint iteratedCount,
+        Flag!"LoadFromFile" loadFromFile,
+        Flag!"AutoSaveOutXml" autoSaveOutXml)
     {
-        TestItem testItem = TestItem(aFileName, aLoadFromFile, aAutoSaveOutXml);
+        auto testItem = TestItem(fileName, loadFromFile, autoSaveOutXml);
 
         TestResult testResult;
         ++testResult.totalCount;
-        if (!executeItem(testItem, aIteratedCount))
+        if (!executeItem(testItem, iteratedCount))
             ++testResult.errorCount;
         testResult.elapsedTime = testItem.elapsedTime;
 
         if (outputXmlTraceTiming)
             writefln("timingFile elapsed (iterated %s) in milli-seconds: %s",
-                formatNumber!uint(aIteratedCount),
+                formatNumber!uint(iteratedCount),
                 formatNumber!long(testItem.elapsedTime));
 
         return testResult;
     }
 
-    TestResult timingXml(string aXml, uint aIteratedCount)
+    TestResult timingXml(string xml, uint iteratedCount)
     {
-        TestItem testItem = TestItem(aXml);
+        auto testItem = TestItem(xml);
 
         TestResult testResult;
         ++testResult.totalCount;
-        if (!executeItem(testItem, aIteratedCount))
+        if (!executeItem(testItem, iteratedCount))
             ++testResult.errorCount;
         testResult.elapsedTime += testItem.elapsedTime;
 
         if (outputXmlTraceTiming)
             writefln("timingXml elapsed (iterated %s) in milli-seconds: %s",
-                formatNumber!uint(aIteratedCount),
+                formatNumber!uint(iteratedCount),
                 formatNumber!long(testItem.elapsedTime));
 
         return testResult;
@@ -473,4 +469,3 @@ private enum defaultXmlTestOkCount = 460;
 private immutable string defaultXmlTestDirectory = ".\\xml_test";
 private immutable string defaultXmlTestFileName = ".\\xml_test\\book.xml";
 private immutable string defaultXmlTimingFile = ".\\xml_test\\book.xml";
-
