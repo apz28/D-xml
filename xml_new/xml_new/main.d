@@ -5,7 +5,7 @@
  *
  * Copyright An Pham 2016 - xxxx.
  * Distributed under the Boost Software License, Version 1.0.
- * (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ * (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  *
  */
 
@@ -20,19 +20,18 @@ import main_test;
 Object loadXml(string xml)
 {
     auto doc = new XmlDocument!string();
-    return doc.load!(No.SAX)(xml);
+    return doc.load(xml);
 }
 
 Object loadXmlFromFile(string fileName)
 {
     auto doc = new XmlDocument!string();
-    return doc.loadFromFile!(No.SAX)(fileName);
-    return null;
+    return doc.loadFromFile(fileName);
 }
 
 const(char)[] saveXml(Object doc)
 {
-    return (cast(XmlDocument!string) doc).outerXml(Yes.PrettyOutput);
+    return (cast(XmlDocument!string) doc).outerXml(Yes.prettyOutput);
 }
 
 int main(string[] argv)
