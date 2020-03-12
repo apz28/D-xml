@@ -9,22 +9,22 @@
  *
  */
 
-module pham.xml_parser;
+module pham.xml.parser;
 
 import std.range.primitives : back, empty, front, popFront, popBack;
 import std.conv : to;
 import std.string : indexOf;
 import std.typecons : Flag, No, Yes;
 
-import pham.xml_type;
-import pham.xml_msg;
-import pham.xml_exception;
-import pham.xml_util;
-import pham.xml_object;
-import pham.xml_buffer;
-import pham.xml_string;
-import pham.xml_reader;
-import pham.xml_new;
+import pham.xml.type;
+import pham.xml.message;
+import pham.xml.exception;
+import pham.xml.util;
+import pham.xml.object;
+import pham.xml.buffer;
+import pham.xml.string;
+import pham.xml.reader;
+import pham.xml.dom;
 
 @safe:
 
@@ -1120,7 +1120,7 @@ XML";
 
 unittest  // XmlParser 
 {
-    import pham.xml_unittest;
+    import pham.xml.test;
 
     outputXmlTraceProgress("unittest XmlParser");
 
@@ -1565,7 +1565,7 @@ XML";
 
 unittest  // XmlParser.SAX
 {
-    import pham.xml_unittest;
+    import pham.xml.test;
 
     outputXmlTraceProgress("unittest XmlParser.SAX");
 

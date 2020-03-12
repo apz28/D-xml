@@ -9,14 +9,14 @@
  *
  */
 
-module pham.xml_entity_table;
+module pham.xml.entity_table;
 
-import pham.utl_singleton;
+import pham.utl.singleton;
 
-import pham.xml_type;
-import pham.xml_msg;
-import pham.xml_util;
-import pham.xml_object;
+import pham.xml.type;
+import pham.xml.message;
+import pham.xml.util;
+import pham.xml.object;
 
 @safe:
 

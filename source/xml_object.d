@@ -9,11 +9,15 @@
  *
  */
 
-module pham.xml_object;
+module pham.xml.object;
 
-import pham.xml_msg;
-import pham.xml_type;
-//import pham.xml_util;
+import std.exception : assumeWontThrow;
+import std.format : format;
+
+import pham.utl.object;
+
+import pham.xml.message;
+import pham.xml.type;
 
 @safe:
 
@@ -22,6 +26,8 @@ package enum defaultXmlLevels = 200;
 struct XmlIdentifierList(S = string)
 if (isXmlString!S)
 {
+nothrow @safe:
+
 public:
     alias C = XmlChar!S;
 
@@ -71,35 +77,39 @@ public:
     alias C = XmlChar!S;
 }
 
-/** Returns the class-name of object.
-    If it is null, returns "null"
-    Params:
-        aObject = the object to get the class-name from
-*/
-string className(Object object) nothrow pure
+struct XmlLoc
 {
-    if (object is null)
-        return "null";
-    else
-        return object.classinfo.name;
-}
+nothrow @safe:
 
-/** Returns the short class-name of aObject.
-    If it is null, returns "null"
-    Params:
-        aObject = the object to get the class-name from
-*/
-string shortClassName(Object object) nothrow pure
-{
-    import std.array : join, split;
-    import std.algorithm.iteration : filter;
-    import std.string : indexOf;
-
-    if (object is null)
-        return "null";
-    else
+public:
+    this(size_t line, size_t column)
     {
-        string className = object.classinfo.name;
-        return split(className, ".").filter!(e => e.indexOf('!') < 0).join(".");
+        this.line = line;
+        this.column = column;
     }
+
+    bool isSpecified() const nothrow
+    {
+        return line != 0 || column != 0;
+    }
+
+    string lineMessage() const
+    {
+        return assumeWontThrow(format(XmlMessage.atLineInfo, sourceLine, sourceColumn));
+    }
+
+    @property size_t sourceColumn() const nothrow
+    {
+        return column + 1;
+    }
+
+    @property size_t sourceLine() const nothrow
+    {
+        return line + 1;
+    }
+    
+public:
+    // Zero based index values
+    size_t line;
+    size_t column;
 }

@@ -9,9 +9,9 @@
  *
  */
 
-module pham.xml_type;
+module pham.xml.type;
 
-@safe:
+nothrow @safe:
 
 /** Template trait to determine if S is an build in D string (string, wstring, dstring.)    
     Params:

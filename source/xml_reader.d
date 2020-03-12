@@ -9,21 +9,21 @@
  *
  */
 
-module pham.xml_reader;
+module pham.xml.reader;
 
 import std.traits : hasMember;
 import std.typecons : Flag, No, Yes;
 import std.range.primitives : back, empty, front, popFront;
 
-import pham.utl_utf8;
+import pham.utl.utf8;
 
-import pham.xml_type;
-import pham.xml_msg;
-import pham.xml_exception;
-import pham.xml_util;
-import pham.xml_object;
-import pham.xml_buffer;
-import pham.xml_string;
+import pham.xml.type;
+import pham.xml.message;
+import pham.xml.exception;
+import pham.xml.util;
+import pham.xml.object;
+import pham.xml.buffer;
+import pham.xml.string;
 
 @safe:
 

@@ -9,23 +9,24 @@
  *
  */
 
-module pham.xml_xpath;
+module pham.xml.xpath;
 
 import std.conv : to;
 import std.typecons : Flag, No, Yes;
 import std.math : isNaN;
 
-import pham.utl_enumset;
-import pham.utl_singleton;
+import pham.utl.enumset;
+import pham.utl.object;
+import pham.utl.singleton;
 
-import pham.xml_type;
-import pham.xml_msg;
-import pham.xml_exception;
-import pham.xml_util;
-import pham.xml_object;
-import pham.xml_buffer;
-import pham.xml_writer;
-import pham.xml_new;
+import pham.xml.type;
+import pham.xml.message;
+import pham.xml.exception;
+import pham.xml.util;
+import pham.xml.object;
+import pham.xml.buffer;
+import pham.xml.writer;
+import pham.xml.dom;
 
 @safe:
 
@@ -4455,7 +4456,7 @@ unittest  // XPathParser
 
 unittest  // XPathParser.selectNodes
 {
-    import pham.xml_unittest;
+    import pham.xml.test;
 
     outputXmlTraceProgress("unittest XPathParser.selectNodes");
 

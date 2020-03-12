@@ -9,19 +9,19 @@
  *
  */
 
-module pham.xml_buffer;
+module pham.xml.buffer;
 
 import std.typecons : Flag, No, Yes;
 import std.array : Appender; 
 
-import pham.utl_dlinklist;
+import pham.utl.dlinklist;
 
-import pham.xml_type;
-import pham.xml_msg;
-import pham.xml_exception;
-import pham.xml_util;
-import pham.xml_object;
-import pham.xml_entity_table;
+import pham.xml.type;
+import pham.xml.message;
+import pham.xml.exception;
+import pham.xml.util;
+import pham.xml.object;
+import pham.xml.entity_table;
 
 @safe:
 
@@ -480,7 +480,7 @@ protected:
             _buffer.reserve(c + (c >> 1));
     }
 
-package:
+public:
     XmlBuffer _next;
     XmlBuffer _prev;
 

@@ -9,48 +9,12 @@
  *
  */
 
-module pham.xml_exception;
+module pham.xml.exception;
 
-import pham.xml_msg;
+import pham.xml.message;
+import pham.xml.object;
 
 @safe:
-
-struct XmlLoc
-{
-public:
-    // Zero based index values
-    size_t line;
-    size_t column;
-
-public:
-    this(size_t line, size_t column)
-    {
-        this.line = line;
-        this.column = column;
-    }
-
-    bool isSpecified() const nothrow
-    {
-        return line != 0 || column != 0;
-    }
-
-    string lineMessage() const
-    {
-        import std.format : format;
-
-        return format(XmlMessage.atLineInfo, sourceLine, sourceColumn);
-    }
-
-    @property size_t sourceColumn() const nothrow
-    {
-        return column + 1;
-    }
-
-    @property size_t sourceLine() const nothrow
-    {
-        return line + 1;
-    }
-}
 
 template XmlExceptionConstructors()
 {
