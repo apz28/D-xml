@@ -38,7 +38,7 @@ public:
         Params:
             n = is a name to be searched for        
     */
-    bool exist(const(C)[] n) const nothrow
+    bool exist(const(C)[] n) const
     {
         auto e = n in items;
         return e !is null;
@@ -50,7 +50,7 @@ public:
         Returns:
             existing its name, n
     */
-    const(C)[] put(const(C)[] n) nothrow
+    const(C)[] put(const(C)[] n)
     in
     {
         assert(n.length != 0);
@@ -88,7 +88,7 @@ public:
         this.column = column;
     }
 
-    bool isSpecified() const nothrow
+    bool isSpecified() const
     {
         return line != 0 || column != 0;
     }
@@ -98,12 +98,12 @@ public:
         return assumeWontThrow(format(XmlMessage.atLineInfo, sourceLine, sourceColumn));
     }
 
-    @property size_t sourceColumn() const nothrow
+    @property size_t sourceColumn() const
     {
         return column + 1;
     }
 
-    @property size_t sourceLine() const nothrow
+    @property size_t sourceLine() const
     {
         return line + 1;
     }

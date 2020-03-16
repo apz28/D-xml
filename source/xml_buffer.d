@@ -138,7 +138,7 @@ public:
 
             // Copy previous non-replace string
             if (lastI < i)
-                put(s[lastI .. i]);
+                put(s[lastI..i]);
 
             refChars = null;
             mark = 0;
@@ -147,7 +147,7 @@ public:
                 switch (s[j])
                 {
                     case ';':
-                        refChars = s[i .. j + 1];
+                        refChars = s[i..j + 1];
                         mark = 1;
 
                         version (none) version (unittest)
@@ -155,7 +155,7 @@ public:
 
                         break;
                     case '&':
-                        refChars = s[i .. j];
+                        refChars = s[i..j];
                         mark = 2;
 
                         version (none) version (unittest)
@@ -195,7 +195,7 @@ public:
                 if (refChars[1] == '#')
                 {
                     dchar c;
-                    if (!convertToChar!S(refChars[2 .. $ - 1], c))
+                    if (!convertToChar!S(refChars[2..$ - 1], c))
                     {
                         if (decodeMode == XmlDecodeMode.strict)
                         {
@@ -242,7 +242,7 @@ public:
             return s;
         }
 
-        put(s[lastI .. $]);
+        put(s[lastI..$]);
         _decodeOrEncodeResultMode = XmlEncodeMode.decoded;
 
         return value();
@@ -333,7 +333,7 @@ public:
 
             // Copy previous non-replace string
             if (i > lastI)
-                put(s[lastI .. i]);
+                put(s[lastI..i]);
 
             // Replace with r
             if (r.length != 0)
@@ -351,7 +351,7 @@ public:
             return s;
         }
 
-        put(s[lastI .. $]);
+        put(s[lastI..$]);
         _decodeOrEncodeResultMode = XmlEncodeMode.encoded;
 
         return value();
@@ -387,7 +387,7 @@ public:
         C[6] b;
         size_t n = encode(c, b);
         reserve(n);
-        _buffer.put(b[0 .. n]);
+        _buffer.put(b[0..n]);
 
         static if (CheckEncoded)
         if (c == '&')
@@ -429,7 +429,7 @@ public:
         if (count >= len)
             return value();
         else
-            return _buffer.data[len - count .. len].idup;
+            return _buffer.data[len - count..len].idup;
     }
 
     final S value() const nothrow
@@ -480,39 +480,42 @@ protected:
             _buffer.reserve(c + (c >> 1));
     }
 
-public:
-    XmlBuffer _next;
-    XmlBuffer _prev;
-
 protected:
     Appender!(C[]) _buffer;
     XmlEncodeMode _decodeOrEncodeResultMode = XmlEncodeMode.checked;
+
+private:
+    XmlBuffer _next;
+    XmlBuffer _prev;
 }
 
 class XmlBufferList(S = string, Flag!"CheckEncoded" CheckEncoded = No.CheckEncoded) : XmlObject!S
 {
 public:
-    final XmlBuffer!(S, CheckEncoded) acquire() nothrow
+    alias XmlBufferElement = XmlBuffer!(S, CheckEncoded);
+
+public:
+    final XmlBufferElement acquire() nothrow
     {
         if (last is null)
-            return new XmlBuffer!(S, CheckEncoded)();
+            return new XmlBufferElement();
         else
-            return dlinkRemove(last, last);
+            return DLinkLastFunctions.remove(last, last);
     }
 
     final void clear() nothrow
     {
         while (last !is null)
-            dlinkRemove(last, last);
+            DLinkLastFunctions.remove(last, last);
     }
 
-    final void release(XmlBuffer!(S, CheckEncoded) b) nothrow
+    final void release(XmlBufferElement b) nothrow
     {
-        dlinkInsertEnd(last, b.clear());
+        DLinkLastFunctions.insertEnd(last, b.clear());
     }
 
     pragma (inline, true)
-    final S getAndRelease(XmlBuffer!(S, CheckEncoded) b) nothrow
+    final S getAndRelease(XmlBufferElement b) nothrow
     {
         auto result = b.value();
         release(b);
@@ -520,7 +523,10 @@ public:
     }
 
 private:
-    XmlBuffer!(S, CheckEncoded) last;
+    mixin DLinkFunctions!(XmlBufferElement) DLinkLastFunctions;
+
+private:
+    XmlBufferElement last;
 }
 
 unittest  // XmlBuffer.decode

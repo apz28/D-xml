@@ -36,6 +36,8 @@ enum UnicodeErrorKind
 package struct ParseContext(S)
 if (isXmlString!S)
 {
+@safe:
+
     alias C = XmlChar!S;
 
     const(C)[] s;
@@ -84,7 +86,7 @@ public:
             while (isSpace(current))
                 popFront();
 
-            return s[pStart .. pPos];
+            return s[pStart..pPos];
         }
     }
 
@@ -145,9 +147,9 @@ public:
             const pStart = pPos;
             while (readUntilChar())
             {
-                if (equalRight!S(s[pStart .. pPos], untilMarker))
+                if (equalRight!S(s[pStart..pPos], untilMarker))
                 {
-                    data = s[pStart .. pPos - untilMarker.length];
+                    data = s[pStart..pPos - untilMarker.length];
                     return true;
                 }
             }
@@ -238,9 +240,9 @@ public:
             const pStart = pPos;
             while (readUntilChar())
             {
-                if (equalRight!S(s[pStart .. pPos], untilMarker))
+                if (equalRight!S(s[pStart..pPos], untilMarker))
                 {
-                    data = XmlString!S(s[pStart .. pPos - untilMarker.length], encodedMode);
+                    data = XmlString!S(s[pStart..pPos - untilMarker.length], encodedMode);
                     return true;
                 }
 
@@ -337,7 +339,7 @@ package:
             const pStart = pPos; 
             while (!stopChar(current))
                 popFrontColumn();
-            name.s = s[pStart .. pPos];
+            name.s = s[pStart..pPos];
         }
 
         if (name.s.length == 0)
@@ -363,7 +365,7 @@ package:
         else 
         {
             if (currentCodes.length == 1)
-                buffer.put(cast(C) current);
+                buffer.put(cast(C)current);
             else
                 buffer.put(currentCodes);
         }
@@ -440,7 +442,7 @@ package:
                     popFrontColumn();
             }
 
-            name.s = s[pStart .. pPos];
+            name.s = s[pStart..pPos];
         }
 
         if (name.s.length == 0)
@@ -498,7 +500,7 @@ package:
                 popFront();
             }
 
-            text = XmlString!S(s[pStart .. pPos], encodedMode);
+            text = XmlString!S(s[pStart..pPos], encodedMode);
         }
     }
 
@@ -568,7 +570,7 @@ protected:
                     current = ((current - unicodeSurrogateHighBegin) << unicodeHalfShift) +
                         (u - unicodeSurrogateLowBegin) + unicodeHalfBase;
                     static if (!isBlockReader)
-                        currentCodes = currentCodeBuffer[0 .. 2];
+                        currentCodes = currentCodeBuffer[0..2];
                 }
                 else
                     errorUtf16(UnicodeErrorKind.invalidCode, u);
@@ -580,7 +582,7 @@ protected:
 
                 current = u;
                 static if (!isBlockReader)
-                    currentCodes = s[sPos - 1 .. sPos];
+                    currentCodes = s[sPos - 1..sPos];
             }
         }
         else
@@ -715,7 +717,7 @@ protected:
 
                 current -= unicodeOffsetsFromUTF8[extraBytesToRead];
                 static if (!isBlockReader)
-                    currentCodes = currentCodeBuffer[0 .. currentCodeBufferCount];
+                    currentCodes = currentCodeBuffer[0..currentCodeBufferCount];
 
                 if (current <= dchar.max) 
                 {
@@ -729,7 +731,7 @@ protected:
             {
                 current = u;
                 static if (!isBlockReader)
-                    currentCodes = s[sPos - 1 .. sPos];
+                    currentCodes = s[sPos - 1..sPos];
             }
         }        
     }

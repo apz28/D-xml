@@ -185,7 +185,7 @@ if (isXmlString!S)
 
     if (s[0] == 'x' || s[0] == 'X')
     {
-        s = s[1 .. $];
+        s = s[1..$];
         if (s.length == 0)
             return false;
 
@@ -335,10 +335,10 @@ if (isFloatingPoint!N)
     if (decimalIndex >= 0)
     {
         if (decimalIndex + 1 < v.length)
-            return formatGroup(v[0 .. decimalIndex], spec.fmtg) ~ spec.decimalChar ~
-                formatGroup(v[decimalIndex + 1 .. $], spec.fmtg);
+            return formatGroup(v[0..decimalIndex], spec.fmtg) ~ spec.decimalChar ~
+                formatGroup(v[decimalIndex + 1..$], spec.fmtg);
         else
-            return formatGroup(v[0 .. decimalIndex], spec.fmtg) ~ spec.decimalChar;
+            return formatGroup(v[0..decimalIndex], spec.fmtg) ~ spec.decimalChar;
     }
     else
         return formatGroup(v, spec.fmtg);
@@ -381,14 +381,14 @@ private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGrou
         }
     }
 
-    string result = buffer[0 .. bLen].idup;
+    string result = buffer[0..bLen].idup;
 
     version (none)
     {
         import std.stdio : writeln;
 
-        writeln(" negChar: ", cast(int) spec.negChar,
-                " groupChar: ", cast(int) spec.groupChar,
+        writeln(" negChar: ", cast(int)(spec.negChar),
+                " groupChar: ", cast(int)(spec.groupChar),
                 " v: ", v, " vlen: ", v.length,
                 " r: ", result,
                 " rlen: ", result.length);
@@ -543,7 +543,7 @@ if (isXmlString!S)
     if (!isNameStartC(name[0]))
         return false;
 
-    foreach (c; name[1 .. $])
+    foreach (c; name[1..$])
     {
         if (isNameInC(c))
             continue;
@@ -591,7 +591,7 @@ if (isXmlString!S)
 */
 bool isClassType(T)(Object object)
 {
-    return (cast(T) object) !is null;
+    return (cast(T)object) !is null;
 }
 
 /** Returns true if the string is in form "D.D"
@@ -640,7 +640,7 @@ if (isXmlString!S)
     if (count >= s.length)
         return s;
     else
-        return s[0 .. count];
+        return s[0..count];
 }
 
 /** Returns number of code-points from left of a string
@@ -655,7 +655,7 @@ if (isXmlString!S)
     if (count >= s.length)
         return s;
     else
-        return s[0 .. count] ~ "...";
+        return s[0..count] ~ "...";
 }
 
 /** Convert from one string type to another. If both types are the same,
@@ -724,7 +724,7 @@ if (isXmlString!S)
     if (count >= s.length)
         return s;
     else
-        return s[$ - count .. $];
+        return s[$ - count..$];
 }
 
 void splitName(S)(in const(XmlChar!S)[] name,
@@ -741,10 +741,10 @@ do
     auto colonIndex = name.indexOf(':');
     if (colonIndex >= 0)
     {
-        prefix = name[0 .. colonIndex];
+        prefix = name[0..colonIndex];
         auto nameLength = name.length;
         if (colonIndex + 1 < nameLength)
-            localName = name[colonIndex + 1 .. nameLength];
+            localName = name[colonIndex + 1..nameLength];
         else
             localName = "";
     }
@@ -802,10 +802,10 @@ do
 {
     if (index >= 0)
     {
-        name = s[0 .. index];
+        name = s[0..index];
         auto sLength = s.length;
         if (index + 1 < sLength)
-            value = s[index + 1 .. sLength];
+            value = s[index + 1..sLength];
         else
             value = null;
         return 1;
@@ -1052,18 +1052,18 @@ unittest  // xml_util.isChar
 {
     outputXmlTraceProgress("unittest xml_util.isChar");
 
-    assert(isChar(cast(dchar) 0x9));
-    assert(isChar(cast(dchar) 0xA));
-    assert(isChar(cast(dchar) 0xD));
+    assert(isChar(cast(dchar)0x9));
+    assert(isChar(cast(dchar)0xA));
+    assert(isChar(cast(dchar)0xD));
 
-    foreach (c; 0x20 .. 0xD7FF + 1)
-        assert(isChar(cast(dchar) c));
+    foreach (c; 0x20..0xD7FF + 1)
+        assert(isChar(cast(dchar)c));
 
-    foreach (c; 0xE000 .. 0xFFFD + 1)
-        assert(isChar(cast(dchar) c));
+    foreach (c; 0xE000..0xFFFD + 1)
+        assert(isChar(cast(dchar)c));
 
-    foreach (c; 0x10000 .. 0x10FFFF + 1)
-        assert(isChar(cast(dchar) c));
+    foreach (c; 0x10000..0x10FFFF + 1)
+        assert(isChar(cast(dchar)c));
 
     assert(isChar('a'));
     assert(isChar('A'));
@@ -1071,23 +1071,23 @@ unittest  // xml_util.isChar
     assert(isChar('J'));
     assert(isChar('z'));
     assert(isChar('Z'));
-    assert(isChar(cast(dchar) 0xD7FF));
-    assert(isChar(cast(dchar) 0xE000));
-    assert(isChar(cast(dchar) 0xFFFD));
-    assert(isChar(cast(dchar) 0x10000));
-    assert(isChar(cast(dchar) 0x10FFFF));
+    assert(isChar(cast(dchar)0xD7FF));
+    assert(isChar(cast(dchar)0xE000));
+    assert(isChar(cast(dchar)0xFFFD));
+    assert(isChar(cast(dchar)0x10000));
+    assert(isChar(cast(dchar)0x10FFFF));
 
-    assert(!isChar(cast(dchar) 0x0));
-    assert(!isChar(cast(dchar) 0x8));
-    assert(!isChar(cast(dchar) 0xB));
-    assert(!isChar(cast(dchar) 0xC));
-    assert(!isChar(cast(dchar) 0xE));
-    assert(!isChar(cast(dchar) 0x1F));
-    assert(!isChar(cast(dchar) 0xD800));
-    assert(!isChar(cast(dchar) 0xDFFF));
-    assert(!isChar(cast(dchar) 0xFFFE));
-    assert(!isChar(cast(dchar) 0xFFFF));
-    assert(!isChar(cast(dchar) 0x110000));
+    assert(!isChar(cast(dchar)0x0));
+    assert(!isChar(cast(dchar)0x8));
+    assert(!isChar(cast(dchar)0xB));
+    assert(!isChar(cast(dchar)0xC));
+    assert(!isChar(cast(dchar)0xE));
+    assert(!isChar(cast(dchar)0x1F));
+    assert(!isChar(cast(dchar)0xD800));
+    assert(!isChar(cast(dchar)0xDFFF));
+    assert(!isChar(cast(dchar)0xFFFE));
+    assert(!isChar(cast(dchar)0xFFFF));
+    assert(!isChar(cast(dchar)0x110000));
 }
 
 unittest  // xml_util.isDigit
@@ -1105,52 +1105,52 @@ unittest  // xml_util.isDigit
     assert(isDigit('8'));
     assert(isDigit('9'));
 
-    foreach (c; 0x0030 .. 0x0039 + 1)
+    foreach (c; 0x0030..0x0039 + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0660..0x0669 + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x06F0..0x06F9 + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0966..0x096F + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x09E6..0x09EF + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0A66..0x0A6F + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0AE6..0x0AEF + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0B66..0x0B6F + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0BE7..0x0BEF + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0C66..0x0C6F + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0CE6..0x0CEF + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0D66..0x0D6F + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0E50..0x0E59 + 1)
+        assert(isDigit(cast(dchar)c));
+
+    foreach (c; 0x0ED0..0x0ED9 + 1)
         assert(isDigit(cast(dchar) c));
 
-    foreach (c; 0x0660 .. 0x0669 + 1)
-        assert(isDigit(cast(dchar) c));
+    foreach (c; 0x0F20..0x0F29 + 1)
+        assert(isDigit(cast(dchar)c));
 
-    foreach (c; 0x06F0 .. 0x06F9 + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0966 .. 0x096F + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x09E6 .. 0x09EF + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0A66 .. 0x0A6F + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0AE6 .. 0x0AEF + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0B66 .. 0x0B6F + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0BE7 .. 0x0BEF + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0C66 .. 0x0C6F + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0CE6 .. 0x0CEF + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0D66 .. 0x0D6F + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0E50 .. 0x0E59 + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0ED0 .. 0x0ED9 + 1)
-        assert(isDigit(cast(dchar) c));
-
-    foreach (c; 0x0F20 .. 0x0F29 + 1)
-        assert(isDigit(cast(dchar) c));
-
-    assert(!isDigit(cast(dchar) 0x0));
+    assert(!isDigit(cast(dchar)0x0));
     assert(!isDigit(' '));
     assert(!isDigit('a'));
     assert(!isDigit('A'));
@@ -1164,23 +1164,23 @@ unittest  // xml_util.isExtender
 {
     outputXmlTraceProgress("unittest xml_util.isExtender");
 
-    assert(isExtender(cast(dchar) 0x00B7));
-    assert(isExtender(cast(dchar) 0x02D0));
-    assert(isExtender(cast(dchar) 0x02D1));
-    assert(isExtender(cast(dchar) 0x0387));
-    assert(isExtender(cast(dchar) 0x0640));
-    assert(isExtender(cast(dchar) 0x0E46));
-    assert(isExtender(cast(dchar) 0x0EC6));
-    assert(isExtender(cast(dchar) 0x3005));
+    assert(isExtender(cast(dchar)0x00B7));
+    assert(isExtender(cast(dchar)0x02D0));
+    assert(isExtender(cast(dchar)0x02D1));
+    assert(isExtender(cast(dchar)0x0387));
+    assert(isExtender(cast(dchar)0x0640));
+    assert(isExtender(cast(dchar)0x0E46));
+    assert(isExtender(cast(dchar)0x0EC6));
+    assert(isExtender(cast(dchar)0x3005));
 
-    foreach (c; 0x3031 .. 0x3035 + 1)
-        assert(isExtender(cast(dchar) c));
+    foreach (c; 0x3031..0x3035 + 1)
+        assert(isExtender(cast(dchar)c));
 
-    foreach (c; 0x309D .. 0x309E + 1)
-        assert(isExtender(cast(dchar) c));
+    foreach (c; 0x309D..0x309E + 1)
+        assert(isExtender(cast(dchar)c));
 
-    foreach (c; 0x30FC .. 0x30FE + 1)
-        assert(isExtender(cast(dchar) c));
+    foreach (c; 0x30FC..0x30FE + 1)
+        assert(isExtender(cast(dchar)c));
 }
 
 unittest  // xml_util.isIdeographic
@@ -1193,13 +1193,13 @@ unittest  // xml_util.isIdeographic
     assert(isIdeographic('\u3021'));
     assert(isIdeographic('\u3029'));
 
-    assert(isIdeographic(cast(dchar) 0x3007));
+    assert(isIdeographic(cast(dchar)0x3007));
 
-    foreach (c; 0x4E00 .. 0x9FA5 + 1)
-        assert(isIdeographic(cast(dchar) c));
+    foreach (c; 0x4E00..0x9FA5 + 1)
+        assert(isIdeographic(cast(dchar)c));
 
-    foreach (c; 0x3021 .. 0x3029 + 1)
-        assert(isIdeographic(cast(dchar) c));
+    foreach (c; 0x3021..0x3029 + 1)
+        assert(isIdeographic(cast(dchar)c));
 }
 
 unittest  // all code points for xml_util.isChar, xml_util.isDigit, xml_util.isIdeographic
@@ -1210,7 +1210,7 @@ unittest  // all code points for xml_util.isChar, xml_util.isDigit, xml_util.isI
 
         outputXmlTraceProgress("unittest xml_util.isChar, isDigit, isIdeographic");
 
-        foreach (c; 0 .. dchar.max + 1)
+        foreach (c; 0..dchar.max + 1)
         {
             assert(isChar(c) == lookup(charTable, c), "isChar: " ~ c.to!string());
             assert(isDigit(c) == lookup(digitTable, c), "isDigit: " ~ c.to!string());

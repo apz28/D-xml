@@ -378,15 +378,10 @@ public:
             return first;
         }
 
+        debug (PhamXml) ++childVersion;
+
         newChild._parent = this;
-        dlinkInsertEnd(_childLast, newChild);
-
-        debug (PhamXml)
-        {
-            ++childVersion;
-        }
-
-        return newChild;
+        return DLinkNodeFunctions.insertEnd(_childLast, newChild);
     }
 
     /** Finds an attribute matched name with name and returns it;
@@ -400,10 +395,10 @@ public:
     final XmlAttribute!S findAttribute(const(C)[] name) nothrow
     {
         const equalName = document.equalName;
-        for (auto i = firstAttribute; i !is null; i = i.nextSibling)
+        for (XmlNode!S i = firstAttribute; i !is null; i = i.nextSibling)
         {
             if (equalName(i.name, name))
-                return cast(XmlAttribute!S) i;
+                return cast(XmlAttribute!S)i;
         }
         return null;
     }
@@ -420,10 +415,10 @@ public:
     final XmlAttribute!S findAttribute(const(C)[] localName, const(C)[] namespaceUri)
     {
         const equalName = document.equalName;
-        for (auto i = firstAttribute; i !is null; i = i.nextSibling)
+        for (XmlNode!S i = firstAttribute; i !is null; i = i.nextSibling)
         {
             if (equalName(i.localName, localName) && equalName(i.namespaceUri, namespaceUri))
-                return cast(XmlAttribute!S) i;
+                return cast(XmlAttribute!S)i;
         }
         return null;
     }
@@ -436,10 +431,10 @@ public:
     */
     final XmlAttribute!S findAttributeById()
     {
-        for (auto i = firstAttribute; i !is null; i = i.nextSibling)
+        for (XmlNode!S i = firstAttribute; i !is null; i = i.nextSibling)
         {
             if (equalCaseInsensitive!S(i.name, "id"))
-                return cast(XmlAttribute!S) i;
+                return cast(XmlAttribute!S)i;
         }
         return null;
     }
@@ -462,7 +457,7 @@ public:
         for (auto i = firstChild; i !is null; i = i.nextSibling)
         {
             if (i.nodeType == XmlNodeType.element && equalName(i.name, name))
-                return cast(XmlElement!S) i;
+                return cast(XmlElement!S)i;
         }
 
         if (deep)
@@ -501,7 +496,7 @@ public:
             if (i.nodeType == XmlNodeType.element &&
                 equalName(i.localName, localName) &&
                 equalName(i.namespaceUri, namespaceUri))
-                return cast(XmlElement!S) i;
+                return cast(XmlElement!S)i;
         }
 
         if (deep)
@@ -530,7 +525,7 @@ public:
     final const(C)[] getAttribute(const(C)[] name)
     {
         auto a = findAttribute(name);
-        return (a is null) ? null : a.value;
+        return a is null ? null : a.value;
     }
 
     /** Finds an attribute matched localName + namespaceUri with localName + namespaceUri and returns its' value;
@@ -545,7 +540,7 @@ public:
     final const(C)[] getAttribute(const(C)[] localName, const(C)[] namespaceUri)
     {
         auto a = findAttribute(localName, namespaceUri);
-        return (a is null) ? null : a.value;
+        return a is null ? null : a.value;
     }
 
     /** Finds an attribute matched name with caseinsensitive "ID" and returns its' value;
@@ -554,7 +549,7 @@ public:
     final const(C)[] getAttributeById()
     {
         auto a = findAttributeById();
-        return (a is null) ? null : a.value;
+        return a is null ? null : a.value;
     }
 
     /** Finds an element that have the mached attribute name id and returns it;
@@ -573,7 +568,7 @@ public:
         for (auto i = firstChild; i !is null; i = i.nextSibling)
         {
             if (i.nodeType == XmlNodeType.element && equalName(i.getAttributeById(), id))
-                return cast(XmlElement!S) i;
+                return cast(XmlElement!S)i;
         }
 
         for (auto i = firstChild; i !is null; i = i.nextSibling)
@@ -638,15 +633,10 @@ public:
             return first;
         }
 
+        debug (PhamXml) ++childVersion;
+
         newChild._parent = this;
-        dlinkInsertAfter(refChild, newChild);
-
-        debug (PhamXml)
-        {
-            ++childVersion;
-        }
-
-        return newChild;
+        return DLinkNodeFunctions.insertAfter(refChild, newChild);
     }
 
     /** Insert a child node, newChild, before anchor node, refChild and returns refChild
@@ -683,15 +673,10 @@ public:
             return first;
         }
 
+        debug (PhamXml) ++childVersion;
+
         newChild._parent = this;
-        dlinkInsertAfter(refChild._prev, newChild);
-
-        debug (PhamXml)
-        {
-            ++childVersion;
-        }
-
-        return newChild;
+        return DLinkNodeFunctions.insertAfter(refChild._prev, newChild);
     }
 
     /** Returns string of xml structure of this node
@@ -726,15 +711,10 @@ public:
     {
         checkParent(removedAttribute, false, "removeAttribute()");
 
+        debug (PhamXml) ++attrbVersion;
+
         removedAttribute._parent = null;
-        dlinkRemove(_attrbLast, removedAttribute);
-
-        debug (PhamXml)
-        {
-            ++attrbVersion;
-        }
-
-        return removedAttribute;
+        return cast(XmlAttribute!S)DLinkNodeFunctions.remove(_attrbLast, removedAttribute);
     }
 
     /** Remove an attribute with name, name, from its' attribute list
@@ -756,15 +736,12 @@ public:
     {
         if (_attrbLast !is null)
         {
+            debug (PhamXml) ++attrbVersion;
+
             while (_attrbLast !is null)
             {
                 _attrbLast._parent = null;
-                dlinkRemove(_attrbLast, _attrbLast);
-            }
-
-            debug (PhamXml)
-            {
-                ++attrbVersion;
+                DLinkNodeFunctions.remove(_attrbLast, _attrbLast);
             }
         }
     }
@@ -777,17 +754,14 @@ public:
     {
         if (_childLast !is null)
         {
+            debug (PhamXml) ++childVersion;
+
             while (_childLast !is null)
             {
                 if (deep)
                     _childLast.removeChildNodes(Yes.deep);
                 _childLast._parent = null;
-                dlinkRemove(_childLast, _childLast);
-            }
-
-            debug (PhamXml)
-            {
-                ++childVersion;
+                DLinkNodeFunctions.remove(_childLast, _childLast);
             }
         }
     }
@@ -803,15 +777,10 @@ public:
     {
         checkParent(removedChild, true, "removeChild()");
 
+        debug (PhamXml) ++childVersion;
+
         removedChild._parent = null;
-        dlinkRemove(_childLast, removedChild);
-
-        debug (PhamXml)
-        {
-            ++childVersion;
-        }
-
-        return removedChild;
+        return DLinkNodeFunctions.remove(_childLast, removedChild);
     }
 
     /** Replace an child node, oldChild, with newChild
@@ -829,10 +798,12 @@ public:
         checkChild(newChild, "replaceChild()");
         checkParent(oldChild, true, "replaceChild()");
 
+        debug (PhamXml) ++childVersion;
+
         auto pre = oldChild.previousSibling;
 
         oldChild._parent = null;
-        dlinkRemove(_childLast, oldChild);
+        DLinkNodeFunctions.remove(_childLast, oldChild);
 
         insertChildAfter(newChild, pre);
 
@@ -911,7 +882,7 @@ public:
         if (_parent !is null)
         {
             if (_parent.nodeType == XmlNodeType.document)
-                return cast(XmlDocument!S) _parent;
+                return cast(XmlDocument!S)_parent;
             else
                 d = _parent.document;
         }
@@ -929,16 +900,16 @@ public:
     /** Returns its' first attribute node
         A null if node has no attribute
     */
-    @property final XmlNode!S firstAttribute() nothrow
+    @property final XmlAttribute!S firstAttribute() nothrow
     {
-        return (_attrbLast is null) ? null : _attrbLast._next;
+        return _attrbLast is null ? null : cast(XmlAttribute!S)(_attrbLast._next);
     }
 
     /** Returns its' first child node. A null if node has no child
     */
     @property final XmlNode!S firstChild() nothrow
     {
-        return (_childLast is null) ? null : _childLast._next;
+        return _childLast is null ? null : _childLast._next;
     }
 
     /** Return true if a node has any attribute node, false otherwise
@@ -1031,9 +1002,9 @@ public:
 
     /** Returns its' last attribute node. A null if node has no attribute
     */
-    @property final XmlNode!S lastAttribute() nothrow
+    @property final XmlAttribute!S lastAttribute() nothrow
     {
-        return _attrbLast;
+        return cast(XmlAttribute!S)_attrbLast;
     }
 
     /** Returns its' last child node. A null if node has no child
@@ -1047,7 +1018,7 @@ public:
     */
     @property size_t level() nothrow
     {
-        return (parent is null) ? 0 : parent.level + 1;
+        return parent is null ? 0 : parent.level + 1;
     }
 
     /** Return node's localname if any, null otherwise
@@ -1101,7 +1072,7 @@ public:
 
         auto last = nodeType == XmlNodeType.attribute ? parent.lastAttribute : parent.lastChild;
 
-        return (this is last) ? null : _next;
+        return this is last ? null : _next;
     }
 
     /** Returns an enum of XmlNodeType of its' presentation
@@ -1178,7 +1149,7 @@ public:
 
         auto first = nodeType == XmlNodeType.attribute ? parent.firstAttribute : parent.firstChild;
 
-        return (this is first) ? null : _prev;
+        return this is first ? null : _prev;
     }
 
     /** Return node's value if any, null otherwise
@@ -1207,15 +1178,10 @@ package:
                 n.removeAttribute(newAttribute);
         }
 
+        debug (PhamXml) ++attrbVersion;
+
         newAttribute._parent = this;
-        dlinkInsertEnd(_attrbLast, newAttribute);
-
-        debug (PhamXml)
-        {
-            ++attrbVersion;
-        }
-
-        return newAttribute;
+        return cast(XmlAttribute!S)DLinkNodeFunctions.insertEnd(_attrbLast, newAttribute);
     }
 
     final void checkAttribute(XmlNode!S attribute, string op)
@@ -1327,7 +1293,7 @@ protected:
     {
         assert(hasAttributes == true);
 
-        auto attrb = firstAttribute;
+        XmlNode!S attrb = firstAttribute;
         attrb.write(writer);
 
         attrb = attrb.nextSibling;
@@ -1361,10 +1327,6 @@ protected:
         return writer;
     }
 
-public:
-    XmlNode!S _next;
-    XmlNode!S _prev;
-
 protected:
     XmlDocument!S _ownerDocument;
     XmlNode!S _attrbLast;
@@ -1376,6 +1338,13 @@ protected:
         size_t attrbVersion;
         size_t childVersion;
     }
+
+private:
+    mixin DLinkFunctions!(XmlNode!S) DLinkNodeFunctions;
+
+private:
+    XmlNode!S _next;
+    XmlNode!S _prev;
 }
 
 /** A state of a XmlNodeList struct
@@ -1489,8 +1458,7 @@ public:
         }
         else
         {
-            debug (PhamXml)
-            checkVersionChanged();
+            debug (PhamXml) checkVersionChanged();
 
             if (empty)
                 return null;
@@ -1520,8 +1488,7 @@ public:
             return _flatList.length - _currentIndex;
         else
         {
-            debug (PhamXml)
-            checkVersionChanged();
+            debug (PhamXml) checkVersionChanged();
 
             if (_length == size_t.max)
             {
@@ -1566,8 +1533,7 @@ public:
             ++_currentIndex;
         else
         {
-            debug (PhamXml)
-            checkVersionChanged();
+            debug (PhamXml) checkVersionChanged();
 
             if (_listType == XmlNodeListType.childNodesDeep)
                 popFrontDeep();
@@ -2553,21 +2519,21 @@ public:
     */
     @property final XmlDeclaration!S documentDeclaration() nothrow
     {
-        return cast(XmlDeclaration!S) findChild(XmlNodeType.declaration);
+        return cast(XmlDeclaration!S)findChild(XmlNodeType.declaration);
     }
 
     /** Returns the xml element node (root one) if any, null otherwise
     */
     @property final XmlElement!S documentElement() nothrow
     {
-        return cast(XmlElement!S) findChild(XmlNodeType.element);
+        return cast(XmlElement!S)findChild(XmlNodeType.element);
     }
 
     /** Returns the xml document-type node if any, null otherwise
     */
     @property final XmlDocumentType!S documentType() nothrow
     {
-        return cast(XmlDocumentType!S) findChild(XmlNodeType.documentType);
+        return cast(XmlDocumentType!S)findChild(XmlNodeType.documentType);
     }
 
     /** Returns its entityTable; allow customized entity mapped values
@@ -3114,7 +3080,7 @@ public:
             if (_content.length > 1)
                 writer.put('(');
             _content[0].write(writer);
-            foreach (e; _content[1 .. $])
+            foreach (e; _content[1..$])
             {
                 writer.put(',');
                 e.write(writer);
@@ -3168,7 +3134,7 @@ public:
         {
             writer.put('(');
             _subChoices[0].write(writer);
-            foreach (e; _subChoices[1 .. $])
+            foreach (e; _subChoices[1..$])
             {
                 writer.put('|');
                 e.write(writer);
@@ -4008,7 +3974,7 @@ unittest  // XmlDocument
     root.appendChild(doc.createElement("a2"))
         .appendAttribute(doc.createAttribute("a2", "&<>'\""));
     root.appendChild(doc.createElement("a3"))
-        .appendAttribute(cast(XmlAttribute!string) doc.createAttribute("prefix_a", "a3", "localhost.com").value("value"));
+        .appendAttribute(cast(XmlAttribute!string)doc.createAttribute("prefix_a", "a3", "localhost.com").value("value"));
     root.appendChild(doc.createElement("a4"))
         .appendAttribute("id").value("123");
     root.appendChild(doc.createElement("c"))

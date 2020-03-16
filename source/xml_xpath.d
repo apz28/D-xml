@@ -12,8 +12,9 @@
 module pham.xml.xpath;
 
 import std.conv : to;
-import std.typecons : Flag, No, Yes;
+import std.exception : assumeWontThrow;
 import std.math : isNaN;
+import std.typecons : Flag, No, Yes;
 
 import pham.utl.enumset;
 import pham.utl.object;
@@ -538,7 +539,7 @@ public:
                     result = 0;
                     break;
                 case XPathDataType.boolean:
-                    result = cast(int)boolean - cast(int)other.boolean;
+                    result = cast(int)boolean - cast(int)(other.boolean);
                     break;
                 case XPathDataType.number:
                     result = cmp(number, other.number);
@@ -1766,8 +1767,8 @@ private void fctSubstring(S)(XPathFunction!S context, ref XPathContext!S inputCo
 
     const(XmlChar!S)[] result;
     const(XmlChar!S)[] s = context.argumentList[0].get!(const(XmlChar!S)[])(inputContext);
-    int pos = cast(int) context.argumentList[1].get!double(inputContext);
-    int cnt = cast(int) context.argumentList[2].get!double(inputContext);
+    int pos = cast(int)context.argumentList[1].get!double(inputContext);
+    int cnt = cast(int)context.argumentList[2].get!double(inputContext);
 
     // Based 1 in xpath, so convert to based 0
     --pos;
@@ -2967,6 +2968,8 @@ enum XPathScannerLexKind
 struct XPathScanner(S = string)
 if (isXmlString!S)
 {
+@safe:
+
 public:
     alias C = XmlChar!S;
 
@@ -3148,7 +3151,7 @@ public:
         return true;
     }
 
-    const(C)[] scanName()
+    const(C)[] scanName() nothrow
     in
     {
         assert(isNameStartC(currentChar));
@@ -3165,12 +3168,12 @@ public:
         }
 
         version (none) version (unittest)
-        outputXmlTraceXPathParserF("scanName(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
+        outputXmlTraceXPathParserF("scanName(%s [%d..%d])", _xPathExpression[start..end], start, end);
 
-        return _xPathExpression[start .. end];
+        return _xPathExpression[start..end];
     }
 
-    double scanNumberM()
+    double scanNumberM() nothrow
     in
     {
         assert(isDigit(currentChar));
@@ -3189,12 +3192,12 @@ public:
         }
 
         version (none) version (unittest)
-        outputXmlTraceXPathParserF("scanNumberM(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
+        outputXmlTraceXPathParserF("scanNumberM(%s [%d..%d])", _xPathExpression[start..end], start, end);
 
-        return to!double(_xPathExpression[start .. end]);
+        return assumeWontThrow(to!double(_xPathExpression[start..end]));
     }
 
-    double scanNumberS()
+    double scanNumberS() nothrow
     in
     {
         assert(currentChar == '.' || isDigit(currentChar));
@@ -3221,9 +3224,9 @@ public:
         }
 
         version (none) version (unittest)
-        outputXmlTraceXPathParserF("scanNumberS(%s [%d .. %d])", _xPathExpression[start .. end], start, end);
+        outputXmlTraceXPathParserF("scanNumberS(%s [%d..%d])", _xPathExpression[start..end], start, end);
 
-        return to!double(_xPathExpression[start .. end]);
+        return assumeWontThrow(to!double(_xPathExpression[start..end]));
     }
 
     const(C)[] scanText()
@@ -3248,9 +3251,9 @@ public:
         nextChar();
 
         version (none) version (unittest)
-        outputXmlTraceXPathParserF("scanText(%s [%d .. %d])", leftStringIndicator!S(_xPathExpression[start .. end], 30), start, end);
+        outputXmlTraceXPathParserF("scanText(%s [%d..%d])", leftStringIndicator!S(_xPathExpression[start..end], 30), start, end);
 
-        return _xPathExpression[start .. end];
+        return _xPathExpression[start..end];
     }
 
     void skipSpace() nothrow
@@ -4369,7 +4372,7 @@ unittest  // XPathParser
     string getOutput()
     {
         string s = output[0];
-        foreach (e; output[1 .. $])
+        foreach (e; output[1..$])
             s ~= "\n" ~ e;
         return s;
     }

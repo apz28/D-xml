@@ -31,6 +31,8 @@ import pham.xml.dom;
 struct XmlParser(S, Flag!"SAX" SAX = No.SAX)
 if (isXmlString!S)
 {
+@safe:
+
 public:
     alias C = XmlChar!S;
 
@@ -593,7 +595,7 @@ private:
                 case '*':
                 case '+':
                     if (last !is null && last.multiIndicator == 0)
-                        last.multiIndicator = cast(XmlChar!S) reader.moveFront();
+                        last.multiIndicator = cast(XmlChar!S)reader.moveFront();
                     else
                         throw new XmlParserException(reader.sourceLoc, XmlMessage.eMultipleTextFound, reader.front);
                     break;
@@ -620,7 +622,7 @@ private:
             case '*':
             case '+':
                 if (parent.multiIndicator == 0)
-                    parent.multiIndicator = cast(XmlChar!S) reader.moveFront();
+                    parent.multiIndicator = cast(XmlChar!S)reader.moveFront();
                 else
                     throw new XmlParserException(reader.sourceLoc, XmlMessage.eMultipleTextFound, reader.front);
                 break;
@@ -872,7 +874,7 @@ private:
             throw new XmlParserException(endTagName.loc, XmlMessage.eExpectedEndName, beginTagName, endTagName.s);
         expectChar!(skipSpaceBefore)('>');
 
-        auto element = cast(XmlElement!S) popNode();
+        auto element = cast(XmlElement!S)popNode();
         auto parentNode = peekNode();
 
         static if (SAX)

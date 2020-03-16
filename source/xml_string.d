@@ -24,6 +24,8 @@ import pham.xml.buffer;
 struct XmlString(S = string)
 if (isXmlString!S)
 {
+@safe:
+
 public:
     alias C = XmlChar!S;
 

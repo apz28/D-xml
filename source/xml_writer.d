@@ -57,8 +57,8 @@ public:
             import std.encoding : encode;
 
             C[6] b;
-            size_t n = encode(c, b);
-            put(b[0 .. n]);
+            const n = encode(c, b);
+            put(b[0..n]);
         }
     }
 
