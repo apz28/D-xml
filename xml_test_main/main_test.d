@@ -21,7 +21,7 @@ import std.file;
 import std.stdio;
 
 import pham.xml_util;
-import pham.xml_unittest;
+import pham.xml_test;
 
 __gshared bool outputXmlTraceTiming;
 
@@ -56,22 +56,22 @@ public:
             switch (getEncodedMarker(temp))
             {
                 case XmlEncodedMarker.utf8:
-                    inXml = cast(string)(cast(char[]) temp[3 .. $]);
+                    inXml = cast(string)(cast(char[])temp[3..$]);
                     break;
                 case XmlEncodedMarker.utf16be:
-                    inXml = to!string(cast(wstring)(cast(wchar[]) temp[2 .. $]));
+                    inXml = to!string(cast(wstring)(cast(wchar[])temp[2..$]));
                     break;
                 case XmlEncodedMarker.utf16le:
-                    inXml = to!string(cast(wstring)(cast(wchar[]) temp[2 .. $]));
+                    inXml = to!string(cast(wstring)(cast(wchar[])temp[2..$]));
                     break;
                 case XmlEncodedMarker.utf32be:
-                    inXml = to!string(cast(dstring)(cast(dchar[]) temp[4 .. $]));
+                    inXml = to!string(cast(dstring)(cast(dchar[])temp[4..$]));
                     break;
                 case XmlEncodedMarker.utf32le:
-                    inXml = to!string(cast(dstring)(cast(dchar[]) temp[4 .. $]));
+                    inXml = to!string(cast(dstring)(cast(dchar[])temp[4..$]));
                     break;
                 default:
-                    inXml = cast(string) temp;
+                    inXml = cast(string)temp;
             }
 
             version (unittest)
@@ -299,7 +299,7 @@ private:
             }
             catch (Exception e)
             {
-                testItem.error = true;                
+                testItem.error = true;
                 if (testItem.inXml.length != 0)
                     testItem.errXml = testItem.inXml ~ "\n\n\n" ~ e.toString();
                 else
@@ -352,9 +352,9 @@ public:
         {
             ulong memEndSize = getGCSize(false, memTiming);
             if (outputXmlTraceTiming)
-                writefln("memory usage: begin: %s, end: %s, diff: %s", 
-                    formatNumber!ulong(memBeginSize), 
-                    formatNumber!ulong(memEndSize), 
+                writefln("memory usage: begin: %s, end: %s, diff: %s",
+                    formatNumber!ulong(memBeginSize),
+                    formatNumber!ulong(memEndSize),
                     formatNumber!ulong(memEndSize - memBeginSize));
         }
 
@@ -382,10 +382,10 @@ public:
         if (options.expectedOkCount != 0)
         {
             if (options.expectedOkCount != testResult.okCount)
-                writefln("execute: error: %s, ok: %s, total: %s, elapsedTime: %s, expectedOkCount: %s", 
-                    formatNumber!uint(testResult.errorCount), 
-                    formatNumber!uint(testResult.okCount), 
-                    formatNumber!uint(testResult.totalCount), 
+                writefln("execute: error: %s, ok: %s, total: %s, elapsedTime: %s, expectedOkCount: %s",
+                    formatNumber!uint(testResult.errorCount),
+                    formatNumber!uint(testResult.okCount),
+                    formatNumber!uint(testResult.totalCount),
                     formatNumber!long(testResult.elapsedTime),
                     formatNumber!uint(options.expectedOkCount));
 
