@@ -9,15 +9,14 @@
  *
  */
 
-module pham.xml.object;
+module pham.xml_object;
 
 import std.exception : assumeWontThrow;
 import std.format : format;
 
-import pham.utl.object;
-
-import pham.xml.message;
-import pham.xml.type;
+import pham.utl_object;
+import pham.xml_message;
+import pham.xml_type;
 
 @safe:
 
@@ -34,22 +33,24 @@ public:
 public:
     const(C)[][const(C)[]] items;
 
-    /** Returns true if name, n, is existed in table; otherwise false
-        Params:
-            n = is a name to be searched for        
-    */
+    /** 
+     * Returns true if name, n, is existed in table; otherwise false
+     * Params:
+     *  n = is a name to be searched for        
+     */
     bool exist(const(C)[] n) const
     {
         auto e = n in items;
         return e !is null;
     }
 
-    /** Insert name, n, into table
-        Params:
-            n = is a name to be inserted
-        Returns:
-            existing its name, n
-    */
+    /** 
+     * Insert name, n, into table
+     * Params:
+     *  n = is a name to be inserted
+     * Returns:
+     *  existing its name, n
+     */
     const(C)[] put(const(C)[] n)
     in
     {

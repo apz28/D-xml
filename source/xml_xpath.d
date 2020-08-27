@@ -9,29 +9,27 @@
  *
  */
 
-module pham.xml.xpath;
+module pham.xml_xpath;
 
 import std.conv : to;
 import std.exception : assumeWontThrow;
 import std.math : isNaN;
 import std.typecons : Flag, No, Yes;
 
-import pham.utl.enumset;
-import pham.utl.object;
-import pham.utl.singleton;
-
-import pham.xml.type;
-import pham.xml.message;
-import pham.xml.exception;
-import pham.xml.util;
-import pham.xml.object;
-import pham.xml.buffer;
-import pham.xml.writer;
-import pham.xml.dom;
+import pham.utl_enumset;
+import pham.utl_object;
+import pham.xml_type;
+import pham.xml_message;
+import pham.xml_exception;
+import pham.xml_util;
+import pham.xml_object;
+import pham.xml_buffer;
+import pham.xml_writer;
+import pham.xml_dom;
 
 @safe:
 
-/** Returns first node of matching xpath expression    
+/** Returns first node of matching xpath expression
     Params:
         source = a context node to search from
         xpath = a xpath expression string
@@ -45,12 +43,12 @@ if (isXmlString!S)
     return resultList.empty ? null : resultList.front;
 }
 
-/** Returns node-list of matching xpath expression    
+/** Returns node-list of matching xpath expression
     Params:
         source = a context node to search from
         xpath = a xpath expression string
     Returns:
-        a node-list, XmlNodeList, of matching xpath expression        
+        a node-list, XmlNodeList, of matching xpath expression
 */
 public XmlNodeList!S selectNodes(S = string)(XmlNode!S source, S xpath)
 if (isXmlString!S)
@@ -169,10 +167,10 @@ enum XPathNodeType
 enum XPathOp
 {
     error,
-    // Logical   
+    // Logical
     and,
     or,
-    // Equality  
+    // Equality
     eq,
     ne,
     // Relational
@@ -186,7 +184,7 @@ enum XPathOp
     multiply,
     divide,
     mod,
-    // Union     
+    // Union
     union_
 }
 
@@ -286,7 +284,7 @@ immutable ToXmlNodeTypeTable toXmlNodeTypeTable = ToXmlNodeTypeTable(
     ToXmlNodeTypeTable.Entry(XPathNodeType.significantWhitespace, XmlNodeType.significantWhitespace),
     ToXmlNodeTypeTable.Entry(XPathNodeType.text, XmlNodeType.text),
     ToXmlNodeTypeTable.Entry(XPathNodeType.whitespace, XmlNodeType.whitespace)
-); 
+);
 
 pragma (inline, true)
 XmlNodeType toXmlNodeType(XPathNodeType nodeType) nothrow pure
@@ -427,7 +425,7 @@ public:
             case XPathDataType.text:
                 this._text = source.text;
                 break;
-        }            
+        }
     }
 
     ~this()
@@ -498,7 +496,7 @@ public:
             case XPathDataType.text:
                 this._text = source.text;
                 break;
-        }            
+        }
     }
 
     bool opCast(B: bool)() const nothrow
@@ -513,13 +511,13 @@ public:
                 return number != 0;
             case XPathDataType.text:
                 return text.length != 0;
-        }            
+        }
     }
 
 	bool opEquals(const ref typeof(this) other)
 	{
         version (unittest)
-        outputXmlTraceXPathParserF("XPathValue.opEquals(this[%d]: %s, other[%d]: %s)", 
+        outputXmlTraceXPathParserF("XPathValue.opEquals(this[%d]: %s, other[%d]: %s)",
             type, toString(), other.type, other.toString());
 
         return opCmp(other) == 0;
@@ -547,19 +545,19 @@ public:
                 case XPathDataType.text:
                     result = sicmp(text, other.text);
                     break;
-            }            
-        } 
+            }
+        }
         else if (this.type == XPathDataType.empty || other.type == XPathDataType.empty)
             result = cast(int)XPathDataType.empty - cast(int)other.empty;
         else
             result = sicmp(toString(), other.toString());
 
         version (unittest)
-        outputXmlTraceXPathParserF("XPathValue.opCmp(this[%d]: %s, other[%d]: %s): %d", 
+        outputXmlTraceXPathParserF("XPathValue.opCmp(this[%d]: %s, other[%d]: %s): %d",
             type, toString(), other.type, other.toString(), result);
 
         return result;
-    }        
+    }
 
     void clear() nothrow
     {
@@ -576,7 +574,7 @@ public:
         final switch(_type)
         {
             case XPathDataType.empty:
-            case XPathDataType.boolean:                
+            case XPathDataType.boolean:
             case XPathDataType.number:
                 break;
             case XPathDataType.text:
@@ -774,7 +772,7 @@ public:
 
     this(XmlNode!S xpathNode)
     {
-        version (unittest) 
+        version (unittest)
         nodeIndent = &_nodeIndent;
 
         this._xpathNode = xpathNode;
@@ -953,7 +951,7 @@ public:
     {
         version (unittest)
         outputXmlTraceXPathParserF("%s.this(axisType: %s, input: %s, nodeType: %s, prefix: %s, localName: %s)",
-            shortClassName(this), axisType, shortClassName(input), nodetype, prefix, localName);        
+            shortClassName(this), axisType, shortClassName(input), nodetype, prefix, localName);
 
         this._parent = parent;
         this._input = input;
@@ -1025,7 +1023,7 @@ public:
     final override void evaluate(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
     {
         version (unittest)
-        {        
+        {
             outputXmlTraceXPathParserF("%s%s.evaluate(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
                 inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
                 inputContext.resNodes.length);
@@ -1049,7 +1047,7 @@ public:
     {
         import std.format : format;
 
-        version (none) version (unittest) 
+        version (none) version (unittest)
         outputXmlTraceXPathParserF("%s.write", shortClassName(this));
 
         string n = format("::name(axisType=%s, nodeType=%s, abbreviated=%s)", axisType, nodeType, abbreviated);
@@ -1161,7 +1159,7 @@ protected:
                     outputContext.resNodes.insertBack(p);
                 p = p.parent;
             }
-        }        
+        }
 
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateAncestorOrSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
@@ -1226,7 +1224,7 @@ protected:
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateDescendant(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
             inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
-            outputContext.resNodes.length);        
+            outputContext.resNodes.length);
     }
 
     final void evaluateDescendantOrSelf(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -1323,7 +1321,7 @@ protected:
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateParent(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
             inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
-            outputContext.resNodes.length);        
+            outputContext.resNodes.length);
     }
 
     final void evaluatePreceding(ref XPathContext!S inputContext, ref XPathContext!S outputContext)
@@ -1377,7 +1375,7 @@ protected:
         version (unittest)
         outputXmlTraceXPathParserF("%s%s.evaluateSelf(axisType: %s, nodeType: %s, abbreviated: %s, qName: %s, nodeListCount: %d)",
             inputContext.indentString, shortClassName(this), axisType, nodeType, abbreviated, qualifiedName(),
-            outputContext.resNodes.length);        
+            outputContext.resNodes.length);
     }
 
 protected:
@@ -1395,7 +1393,7 @@ public:
     this(XPathNode!S parent, XPathNode!S input, XPathNode!S condition)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(input: %s, condition: %s)", shortClassName(this), 
+        outputXmlTraceXPathParserF("%s.this(input: %s, condition: %s)", shortClassName(this),
             shortClassName(input), shortClassName(condition));
 
         this._parent = parent;
@@ -1407,7 +1405,7 @@ public:
     {
         version (unittest)
         {
-            outputXmlTraceXPathParserF("%s%s.evaluate(input: %s, condition: %s, nodeListCount: %d)", 
+            outputXmlTraceXPathParserF("%s%s.evaluate(input: %s, condition: %s, nodeListCount: %d)",
                 inputContext.indentString, shortClassName(this),
                 shortClassName(input), shortClassName(condition),
                 inputContext.resNodes.length);
@@ -1713,7 +1711,7 @@ private void fctNumber(S)(XPathFunction!S context, ref XPathContext!S inputConte
 
 private void fctPosition(S)(XPathFunction!S context, ref XPathContext!S inputContext, ref XPathContext!S outputContext)
 {
-    double result; 
+    double result;
     if (!inputContext.resNodes.empty)
     {
         result = inputContext.filterNodes.indexOf(inputContext.resNodes.front);
@@ -1799,7 +1797,7 @@ private void fctSubstringBefore(S)(XPathFunction!S context, ref XPathContext!S i
     auto sub = context.argumentList[1].get!(const(XmlChar!S)[])(inputContext);
     auto searchResult = s.findSplit(sub);
 
-    if (searchResult[1] == sub) 
+    if (searchResult[1] == sub)
         outputContext.resValue = searchResult[1];
     else
         outputContext.resValue = "";
@@ -1833,7 +1831,7 @@ private void fctTranslate(S)(XPathFunction!S context, ref XPathContext!S inputCo
     //todo
 }
 
-class XPathUserDefinedFunctionEntry(S = string) : XmlObject!S 
+class XPathUserDefinedFunctionEntry(S = string) : XmlObject!S
 {
 public:
     this(const(C)[] prefix, const(C)[] localName, XPathResultType resultType,
@@ -1993,8 +1991,8 @@ public:
     do
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(function: %s, argc: %d)", shortClassName(this), 
-            functionType, argumentList.length);        
+        outputXmlTraceXPathParserF("%s.this(function: %s, argc: %d)", shortClassName(this),
+            functionType, argumentList.length);
 
         this._parent = parent;
         this._functionType = functionType;
@@ -2006,7 +2004,7 @@ public:
     this(XPathNode!S parent, const(C)[] prefix, const(C)[] localName, XPathNode!S[] argumentList)
     {
         version (unittest)
-        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s, argc: %d)", shortClassName(this), 
+        outputXmlTraceXPathParserF("%s.this(prefix: %s, localName: %s, argc: %d)", shortClassName(this),
             prefix, localName, argumentList.length);
 
         this._parent = parent;
@@ -2217,7 +2215,7 @@ class XPathOperand(S = string) : XPathNode!S
 public:
     this(XPathNode!S parent, bool value)
     {
-        version (unittest) 
+        version (unittest)
         outputXmlTraceXPathParserF("%s.this(value: %s)", shortClassName(this), value);
 
         this._parent = parent;
@@ -2384,7 +2382,7 @@ private void opCompare(string Op, S)(XPathOperator!S opNode, ref XPathContext!S 
             normalizeValueTo!S(v2, v1.type);
 
             version (none) version (unittest)
-            outputXmlTraceXPathParserF("%s%s.evaluate%s(name: %s, value: %s, v1: %s)", 
+            outputXmlTraceXPathParserF("%s%s.evaluate%s(name: %s, value: %s, v1: %s)",
                 inputContext.indentString, shortClassName(opNode), Op,
                 e2.name, e2.toText(), v1.toString());
 
@@ -2429,7 +2427,7 @@ class XPathOperator(S = string) : XPathNode!S
 public:
     this(XPathNode!S parent, XPathOp opType, XPathNode!S operand1, XPathNode!S operand2)
     {
-        version (unittest) 
+        version (unittest)
         outputXmlTraceXPathParserF("%s.this(opType: %s, operand1: %s, operand2: %s)",
             shortClassName(this), opType, shortClassName(operand1), shortClassName(operand2));
 
@@ -2659,7 +2657,7 @@ class XPathRoot(S = string) : XPathNode!S
 public:
     this(XPathNode!S parent)
     {
-        version (unittest) 
+        version (unittest)
         outputXmlTraceXPathParser(shortClassName(this), ".this()");
 
         this._parent = parent;
@@ -2720,7 +2718,7 @@ public:
 
         if (result is null)
             throw new XmlInvalidOperationException(XmlMessage.eInvalidVariableName, qualifiedName());
-        
+
         outputContext.resValue = *result;
     }
 
@@ -3449,7 +3447,7 @@ public:
 private:
     XPathScanner!S scanner;
 
-    // The recursive is like 
+    // The recursive is like
     // ParseOrExpr->ParseAndExpr->ParseEqualityExpr->parseRelationalExpr...->parseFilterExpr->parsePredicate->parseExpression
     // So put 200 limitation here will max cause about 2000~3000 depth stack.
     size_t parseDepth;
@@ -3552,7 +3550,7 @@ private:
         return result;
     }
 
-    // OrExpr ::= ( OrExpr 'or' )? AndExpr 
+    // OrExpr ::= ( OrExpr 'or' )? AndExpr
     XPathNode!S parseOrExpr(XPathNode!S aInput)
     {
         version (unittest)
@@ -3576,7 +3574,7 @@ private:
         while (true);
     }
 
-    // AndExpr ::= ( AndExpr 'and' )? EqualityExpr 
+    // AndExpr ::= ( AndExpr 'and' )? EqualityExpr
     XPathNode!S parseAndExpr(XPathNode!S aInput)
     {
         version (unittest)
@@ -3616,8 +3614,8 @@ private:
 
         do
         {
-            auto op = scanner.kind == XPathScannerLexKind.eq 
-                ? XPathOp.eq 
+            auto op = scanner.kind == XPathScannerLexKind.eq
+                ? XPathOp.eq
                 : (scanner.kind == XPathScannerLexKind.ne ? XPathOp.ne : XPathOp.error);
             if (op == XPathOp.error)
                 return result;
@@ -3629,7 +3627,7 @@ private:
     }
 
     // RelationalOp ::= '<' | '>' | '<=' | '>='
-    // RelationalExpr ::= ( RelationalExpr RelationalOp )? AdditiveExpr  
+    // RelationalExpr ::= ( RelationalExpr RelationalOp )? AdditiveExpr
     XPathNode!S parseRelationalExpr(XPathNode!S aInput)
     {
         version (unittest)
@@ -3674,7 +3672,7 @@ private:
 
         do
         {
-            auto op = scanner.kind == XPathScannerLexKind.plus 
+            auto op = scanner.kind == XPathScannerLexKind.plus
                 ? XPathOp.plus
                 : (scanner.kind == XPathScannerLexKind.minus ? XPathOp.minus : XPathOp.error);
             if (op == XPathOp.error)
@@ -3740,7 +3738,7 @@ private:
             return parseUnionExpr(aInput);
     }
 
-    // UnionExpr ::= ( UnionExpr '|' )? PathExpr  
+    // UnionExpr ::= ( UnionExpr '|' )? PathExpr
     XPathNode!S parseUnionExpr(XPathNode!S aInput)
     {
         version (unittest)
@@ -3783,7 +3781,7 @@ private:
         XPathNode!S result;
         if (scanner.isPrimaryExpr())
         {
-            // in this moment we should distinct LocationPas vs FilterExpr 
+            // in this moment we should distinct LocationPas vs FilterExpr
             // (which starts from is PrimaryExpr)
             result = parseFilterExpr(aInput);
             if (scanner.kind == XPathScannerLexKind.slash)
@@ -3799,12 +3797,12 @@ private:
             }
         }
         else
-            result = parseLocationPath(null); // Must pass null 
+            result = parseLocationPath(null); // Must pass null
 
         return result;
     }
 
-    // FilterExpr ::= PrimaryExpr | FilterExpr Predicate 
+    // FilterExpr ::= PrimaryExpr | FilterExpr Predicate
     XPathNode!S parseFilterExpr(XPathNode!S aInput)
     {
         version (unittest)
@@ -3900,7 +3898,7 @@ private:
     }
 
     // PathOp ::= '/' | '//'
-    // RelativeLocationPath ::= ( RelativeLocationPath PathOp )? Step 
+    // RelativeLocationPath ::= ( RelativeLocationPath PathOp )? Step
     XPathNode!S parseRelativeLocationPath(XPathNode!S aInput)
     {
         version (unittest)
@@ -4057,7 +4055,7 @@ private:
             ++nodeIndent;
             scope (exit)
                 --nodeIndent;
-        }        
+        }
 
         XPathNode!S result;
         switch (scanner.kind)
@@ -4186,9 +4184,9 @@ private:
         return new XPathFunction!S(aInput, prefix, name, argList);
     }
 
-    // LocationPathPattern ::= '/' | RelativePathPattern | '//' RelativePathPattern | 
+    // LocationPathPattern ::= '/' | RelativePathPattern | '//' RelativePathPattern |
     //  '/' RelativePathPattern |
-    //  IdKeyPattern (('/' | '//') RelativePathPattern)?  
+    //  IdKeyPattern (('/' | '//') RelativePathPattern)?
     XPathNode!S parseLocationPathPattern(XPathNode!S aInput)
     {
         version (unittest)
@@ -4241,7 +4239,7 @@ private:
         return parseRelativePathPattern(result);
     }
 
-    // IdKeyPattern ::= 'id' '(' Literal ')' | 'key' '(' Literal ',' Literal ')'  
+    // IdKeyPattern ::= 'id' '(' Literal ')' | 'key' '(' Literal ',' Literal ')'
     XPathNode!S parseIdKeyPattern(XPathNode!S aInput)
     in
     {
@@ -4319,8 +4317,8 @@ private:
         return result;
     }
 
-    // StepPattern ::= ChildOrAttributeAxisSpecifier NodeTest Predicate*   
-    // ChildOrAttributeAxisSpecifier ::= @ ? | ('child' | 'attribute') '::' 
+    // StepPattern ::= ChildOrAttributeAxisSpecifier NodeTest Predicate*
+    // ChildOrAttributeAxisSpecifier ::= @ ? | ('child' | 'attribute') '::'
     XPathNode!S parseStepPattern(XPathNode!S aInput)
     {
         version (unittest)
@@ -4459,13 +4457,13 @@ unittest  // XPathParser
 
 unittest  // XPathParser.selectNodes
 {
-    import pham.xml.test;
+    import pham.xml_test;
 
     outputXmlTraceProgress("unittest XPathParser.selectNodes");
 
     auto doc = new XmlDocument!string().load(xpathXml);
     auto nodeList = doc.documentElement.selectNodes("descendant::book[author/last-name='Austen']");
-    
+
     assert(nodeList.length == 3);
     assert(nodeList.front.getAttribute("publicationdate") == "1997");
     assert(nodeList.moveFront.name == "book");
@@ -4473,7 +4471,7 @@ unittest  // XPathParser.selectNodes
     assert(nodeList.moveFront.name == "book");
     assert(nodeList.front.getAttribute("publicationdate") == "1982");
     assert(nodeList.moveFront.name == "book");
-    
+
     //writeln("nodeList.length: ", nodeList.length);
     //foreach (e; nodeList)
     //    writeln("nodeName: ", e.name, ", position: ", e.position);

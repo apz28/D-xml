@@ -9,19 +9,18 @@
  *
  */
 
-module pham.xml.buffer;
+module pham.xml_buffer;
 
 import std.typecons : Flag, No, Yes;
 import std.array : Appender; 
 
-import pham.utl.dlinklist;
-
-import pham.xml.type;
-import pham.xml.message;
-import pham.xml.exception;
-import pham.xml.util;
-import pham.xml.object;
-import pham.xml.entity_table;
+import pham.utl_dlinklist;
+import pham.xml_type;
+import pham.xml_message;
+import pham.xml_exception;
+import pham.xml_util;
+import pham.xml_object;
+import pham.xml_entity_table;
 
 @safe:
 

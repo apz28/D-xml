@@ -9,14 +9,13 @@
  *
  */
 
-module pham.xml.entity_table;
+module pham.xml_entity_table;
 
-import pham.utl.singleton;
-
-import pham.xml.type;
-import pham.xml.message;
-import pham.xml.util;
-import pham.xml.object;
+import pham.utl_object;
+import pham.xml_type;
+import pham.xml_message;
+import pham.xml_util;
+import pham.xml_object;
 
 @safe:
 
@@ -26,7 +25,7 @@ public:
     const(C)[][const(C)[]] data;
 
 public:
-    this()
+    this() pure
     {
         initDefault();
     }
@@ -68,7 +67,12 @@ public:
     alias data this;
 
 protected:
-    final void initDefault() nothrow
+    static XmlEntityTable!S createDefaultEntityTable() nothrow pure
+    {
+        return new XmlEntityTable!S();
+    }
+
+    final void initDefault() nothrow pure
     {
         data["&amp;"] = "&";
         data["&apos;"] = "'";
@@ -81,11 +85,6 @@ protected:
 
 private:
     __gshared XmlEntityTable!S _defaultEntityTable;
-
-    static XmlEntityTable!S createDefaultEntityTable() nothrow
-    {
-        return new XmlEntityTable!S();
-    }
 }
 
 unittest // XmlEntityTable.defaultEntityTable

@@ -9,14 +9,14 @@
  *
  */
 
-module pham.xml.util;
+module pham.xml_util;
 
 import std.traits : isFloatingPoint, isIntegral;
 import std.typecons : Flag;
 
-import pham.xml.type;
-import pham.xml.message;
-import pham.xml.exception;
+import pham.xml_type;
+import pham.xml_message;
+import pham.xml_exception;
 
 @safe:
 
@@ -24,7 +24,7 @@ version (unittest)
 {
     import std.traits : isSomeChar;
 
-    import pham.utl.test;
+    import pham.utl_test;
 
     debug (xmlTraceProfile)
         enum isXmlTraceProgress = false;

@@ -9,9 +9,9 @@
  *
  */
  
-module pham.xml.message;
+module pham.xml_message;
 
-import pham.xml.type;
+import pham.xml_type;
 
 nothrow @safe:
 

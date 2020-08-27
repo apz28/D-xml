@@ -9,26 +9,24 @@
  *
  */
 
-module pham.xml.dom;
+module pham.xml_dom;
 
 import std.typecons : Flag, No, Yes;
 
-import pham.utl.dlinklist;
-import pham.utl.enumset;
-import pham.utl.object;
-import pham.utl.singleton;
-
-import pham.xml.type;
-import pham.xml.message;
-import pham.xml.exception;
-import pham.xml.util;
-import pham.xml.object;
-import pham.xml.buffer;
-import pham.xml.string;
-import pham.xml.entity_table;
-import pham.xml.reader;
-import pham.xml.writer;
-import pham.xml.parser;
+import pham.utl_dlinklist;
+import pham.utl_enumset;
+import pham.utl_object;
+import pham.xml_type;
+import pham.xml_message;
+import pham.xml_exception;
+import pham.xml_util;
+import pham.xml_object;
+import pham.xml_buffer;
+import pham.xml_string;
+import pham.xml_entity_table;
+import pham.xml_reader;
+import pham.xml_writer;
+import pham.xml_parser;
 
 @safe:
 
@@ -1371,7 +1369,7 @@ public:
     alias XmlNodeListFilterEvent = bool delegate(ref XmlNodeList!S list, XmlNode!S node);
 
 public:
-    this(this)
+    this(this) nothrow
     {
         version (none) version (unittest)
         outputXmlTraceParser("XmlNodeList.this(this)");
@@ -2006,12 +2004,13 @@ public:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
+    static XmlName!S createDefaultQualifiedName() nothrow pure
     {
         return new XmlName!S(XmlConst!S.CDataTagName);
     }
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml comment node object
@@ -2044,12 +2043,13 @@ package:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
+    static XmlName!S createDefaultQualifiedName() nothrow pure
     {
         return new XmlName!S(XmlConst!S.commentTagName);
     }
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml declaration node object
@@ -2170,14 +2170,11 @@ public:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
+    static XmlName!S createDefaultQualifiedName() nothrow pure
     {
         return new XmlName!S(XmlConst!S.declarationTagName);
     }
 
-protected:
     final void breakText(const(C)[] s)
     {
         import std.array : split;
@@ -2229,7 +2226,7 @@ protected:
             writer.putAttribute(XmlConst!S.declarationStandaloneName, s);
         }
 
-        _innerText = buffer.valueAndClear();        
+        _innerText = buffer.valueAndClear();
 
         return _innerText;
     }
@@ -2254,6 +2251,9 @@ protected:
 
 protected:
     const(C)[] _innerText;
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml document node object
@@ -2552,7 +2552,7 @@ public:
 
 package:
     pragma (inline, true)
-    final const(C)[] addSymbol(const(C)[] symbol)
+    final const(C)[] addSymbol(const(C)[] symbol) nothrow
     in
     {
         assert(symbol.length != 0);
@@ -2563,7 +2563,7 @@ package:
     }
 
     pragma (inline, true)
-    final const(C)[] addSymbolIf(const(C)[] symbol)
+    final const(C)[] addSymbolIf(const(C)[] symbol) nothrow
     {
         if (symbol.length == 0 || !useSymbolTable)
             return symbol;
@@ -2659,14 +2659,6 @@ package:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
-    {
-        return new XmlName!S(XmlConst!S.documentTagName);
-    }
-
-protected:
     pragma (inline, true)
     final XmlBuffer!(S, No.CheckEncoded) acquireBuffer(XmlNodeType fromNodeType,
         size_t capacity = 0)
@@ -2678,6 +2670,11 @@ protected:
             b.capacity = capacity;
 
         return b;
+    }
+
+    static XmlName!S createDefaultQualifiedName() nothrow pure
+    {
+        return new XmlName!S(XmlConst!S.documentTagName);
     }
 
     pragma (inline, true)
@@ -2735,6 +2732,9 @@ protected:
     XmlEntityTable!S _entityTable;
     XmlIdentifierList!S _symbolTable;
     int _loading;
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml document-fragment node object
@@ -3234,7 +3234,7 @@ public:
     final override XmlWriter!S write(XmlWriter!S writer)
     {
         const Flag!"hasAttribute" a = hasAttributes ? Yes.hasAttribute : No.hasAttribute;
-        
+
         const Flag!"hasChild" c = hasChildNodes ? Yes.hasChild : No.hasChild;
 
         const onlyOneNodeText = isOnlyNode(firstChild) && firstChild.nodeType == XmlNodeType.text;
@@ -3552,12 +3552,13 @@ public:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
+    static XmlName!S createDefaultQualifiedName() nothrow pure
     {
         return new XmlName!S(XmlConst!S.significantWhitespaceTagName);
     }
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml text node object
@@ -3599,12 +3600,13 @@ package:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
+    static XmlName!S createDefaultQualifiedName() nothrow pure
     {
         return new XmlName!S(XmlConst!S.textTagName);
     }
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml whitespace node object
@@ -3624,12 +3626,13 @@ public:
     }
 
 protected:
-    __gshared XmlName!S _defaultQualifiedName;
-
-    static XmlName!S createDefaultQualifiedName()
+    static XmlName!S createDefaultQualifiedName() nothrow pure
     {
         return new XmlName!S(XmlConst!S.whitespaceTagName);
     }
+
+private:
+    __gshared XmlName!S _defaultQualifiedName;
 }
 
 /** A xml custom node object for any text type node object
@@ -3822,7 +3825,7 @@ protected:
 class XmlName(S = string) : XmlObject!S
 {
 public:
-    this(XmlDocument!S ownerDocument, const(C)[] prefix, const(C)[] localName, const(C)[] namespaceUri)
+    this(XmlDocument!S ownerDocument, const(C)[] prefix, const(C)[] localName, const(C)[] namespaceUri) nothrow
     in
     {
         assert(localName.length != 0);
@@ -3838,7 +3841,7 @@ public:
             this._name = localName;
     }
 
-    this(XmlDocument!S ownerDocument, const(C)[] qualifiedName)
+    this(XmlDocument!S ownerDocument, const(C)[] qualifiedName) nothrow
     in
     {
         assert(qualifiedName.length != 0);
@@ -3897,7 +3900,7 @@ public:
     }
 
 package:
-    this(const(C)[] staticName)
+    this(const(C)[] staticName) nothrow
     {
         this._localName = staticName;
         this._name = staticName;

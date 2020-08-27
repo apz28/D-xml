@@ -9,15 +9,15 @@
  *
  */
 
-module pham.xml.string;
+module pham.xml_string;
 
 import std.typecons : Flag, No, Yes;
 
-import pham.xml.type;
-import pham.xml.message;
-import pham.xml.util;
-import pham.xml.entity_table;
-import pham.xml.buffer;
+import pham.xml_type;
+import pham.xml_message;
+import pham.xml_util;
+import pham.xml_entity_table;
+import pham.xml_buffer;
 
 @safe:
 
