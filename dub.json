@@ -1,5 +1,7 @@
 {
 	"name": "pham_xml",
+	"targetName": "pham_xml",
+	"targetType": "library",	
 	"description": "DOM, SAX, XPath XML Implementation.",
 	"authors": ["An Pham"],
 	"homepage": "",
