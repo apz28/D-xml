@@ -13,7 +13,7 @@ module main;
 
 import std.typecons : No, Yes;
 
-import pham.xml_new;
+import pham.xml_dom;
 import pham.xml_xpath;
 import main_test;
 
@@ -31,7 +31,7 @@ Object loadXmlFromFile(string fileName)
 
 const(char)[] saveXml(Object doc)
 {
-    return (cast(XmlDocument!string) doc).outerXml(Yes.prettyOutput);
+    return (cast(XmlDocument!string)doc).outerXml(Yes.prettyOutput);
 }
 
 int main(string[] argv)
