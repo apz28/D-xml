@@ -402,7 +402,7 @@ public:
         return _onlyOneNodeText != 0;
     }
 
-    @property final int nodeLevel() const nothrow
+    @property final size_t nodeLevel() const nothrow
     {
         return _nodeLevel;
     }

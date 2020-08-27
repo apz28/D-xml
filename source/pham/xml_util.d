@@ -366,10 +366,10 @@ private string formatGroup(const(char)[] v, in FormatGroupSpec spec = FormatGrou
     import std.range : Appender, appender, walkLength;
 
     char[100] buffer;
-    int bLen;
-    int cLen = v.length;
-    int c = 2 - (cLen % 3);
-    for (int i = 0; cLen > 0; ++i)
+    ptrdiff_t bLen;
+    ptrdiff_t cLen = v.length;
+    ptrdiff_t c = 2 - (cLen % 3);
+    for (ptrdiff_t i = 0; cLen > 0; ++i)
     {
         char e = v[i];
         buffer[bLen++] = e;
@@ -697,11 +697,11 @@ in
 }
 do
 {
-    int l;
-    int r = pairTable.length - 1;
+    ptrdiff_t l;
+    ptrdiff_t r = pairTable.length - 1;
     while (l <= r)
     {
-        int m = (l + r) >> 1;
+        const m = (l + r) >> 1;
         if (c < pairTable[m][0])
             r = m - 1;
         else if (c > pairTable[m][1])

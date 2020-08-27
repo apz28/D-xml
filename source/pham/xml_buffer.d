@@ -307,7 +307,7 @@ public:
 
         const(C)[] r;
         size_t lastI;
-        foreach (int i, c; s)
+        foreach (i, c; s)
         {
             switch (c)
             {
